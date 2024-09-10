@@ -5,6 +5,7 @@ import SpiralMatrixAnimation from "./components/SpiralAnimation";
 import RotateImageVisualizer from "./components/RotateImageVisualizer";
 import BinaryTreeTraversalVisualizer from "./components/BinaryTreeTraversalVisualizer";
 import SortingAlgorithmVisualizer from "./components/SortingAlgorithmVisualizer";
+import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
 
 function App() {
   const [currentView, setCurrentView] = useState("home");
@@ -21,6 +22,8 @@ function App() {
         return <BinaryTreeTraversalVisualizer />;
       case "sortingAlgorithms":
         return <SortingAlgorithmVisualizer />;
+      case "binarySearch":
+        return <BinarySearchVisualizer />;
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }

@@ -1,4 +1,5 @@
 
+
 import {
   Card,
   CardContent,
@@ -41,6 +42,13 @@ const visualizations = [
     icon: <SortDesc className="h-8 w-8 text-primary" />,
     key: "sortingAlgorithms",
   },
+{
+  title: "Binary Search",
+  description: "Visualize the binary search algorithm",
+  icon: <Code2 className="h-8 w-8 text-primary" />,
+  key: "binarySearch",
+
+}
   // Add more visualizations here
 ];
 
