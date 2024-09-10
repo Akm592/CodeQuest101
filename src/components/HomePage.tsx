@@ -1,5 +1,4 @@
-
-
+import React from "react";
 import {
   Card,
   CardContent,
@@ -7,49 +6,52 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Code2, GitBranch, Grid , SortDesc } from "lucide-react";
+import {
+  Code2,
+  GitBranch,
+  Grid,
+  SortDesc,
+  Search,
+  RotateCw,
+} from "lucide-react";
 
 const visualizations = [
   {
     title: "Longest Subarray Sum K",
-    description:
-      "Visualize the algorithm for finding the longest subarray with sum K",
-    icon: <Code2 className="h-8 w-8 text-primary" />,
+    description: "Find the longest subarray with sum K",
+    icon: <Code2 className="h-6 w-6 text-primary" />,
     key: "longestSubarray",
   },
   {
     title: "Spiral Matrix",
-    description: "Animate the spiral traversal of a matrix",
-    icon: <Grid className="h-8 w-8 text-primary" />,
+    description: "Animate spiral traversal of a matrix",
+    icon: <Grid className="h-6 w-6 text-primary" />,
     key: "spiralMatrix",
   },
   {
     title: "Binary Tree Traversal",
-    description: "Visualize different tree traversal algorithms",
-    icon: <GitBranch className="h-8 w-8 text-primary" />,
+    description: "Visualize tree traversal algorithms",
+    icon: <GitBranch className="h-6 w-6 text-primary" />,
     key: "binaryTree",
   },
   {
     title: "Rotate Image",
     description: "Rotate a square matrix in-place",
-    icon: <Code2 className="h-8 w-8 text-primary" />,
+    icon: <RotateCw className="h-6 w-6 text-primary" />,
     key: "rotateImage",
   },
-
   {
     title: "Sorting Algorithms",
-    description: "Visualize popular sorting algorithms in action",
-    icon: <SortDesc className="h-8 w-8 text-primary" />,
+    description: "Visualize popular sorting algorithms",
+    icon: <SortDesc className="h-6 w-6 text-primary" />,
     key: "sortingAlgorithms",
   },
-{
-  title: "Binary Search",
-  description: "Visualize the binary search algorithm",
-  icon: <Code2 className="h-8 w-8 text-primary" />,
-  key: "binarySearch",
-
-}
-  // Add more visualizations here
+  {
+    title: "Binary Search",
+    description: "Visualize the binary search algorithm",
+    icon: <Search className="h-6 w-6 text-primary" />,
+    key: "binarySearch",
+  },
 ];
 
 interface HomePageProps {
@@ -58,37 +60,94 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">
-        Welcome to CodeQuest
-      </h1>
-      <p className="text-xl text-center mb-12">
-        Explore popular coding questions through interactive visualizations
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {visualizations.map((viz) => (
-          <Card
-            key={viz.key}
-            className="hover:shadow-lg transition-shadow duration-300"
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {viz.icon}
-                <span>{viz.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>{viz.description}</CardDescription>
-              <button
-                onClick={() => onSelectVisualization(viz.key)}
-                className="mt-4 inline-block bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded"
-              >
-                Explore
-              </button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="min-h-screen flex flex-col w-screen">
+      <main className="flex-grow w-full">
+        <section className="w-full bg-gradient-to-b from-background to-background/80 py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Welcome to CodeQuest
+            </h1>
+            <p className="text-xl text-center mb-12 max-w-3xl mx-auto">
+              Embark on an interactive journey through popular coding challenges
+              and algorithmic visualizations.
+            </p>
+          </div>
+        </section>
+
+        <section className="w-full bg-secondary/5 py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visualizations.map((viz) => (
+                <Card
+                  key={viz.key}
+                  className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-lg">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        {viz.icon}
+                      </div>
+                      <span>{viz.title}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="mb-4">
+                      {viz.description}
+                    </CardDescription>
+                    <button
+                      onClick={() => onSelectVisualization(viz.key)}
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      Explore <Code2 className="h-4 w-4" />
+                    </button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full bg-primary/5 py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-8">
+              About CodeQuest
+            </h2>
+            <p className="text-lg text-center max-w-3xl mx-auto">
+              CodeQuest is an innovative platform designed to help developers
+              master complex algorithms and data structures through interactive
+              visualizations. Our mission is to make learning engaging,
+              intuitive, and accessible to coders of all levels.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer className="w-full bg-primary text-primary-foreground py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p>&copy; 2024 CodeQuest. All rights reserved.</p>
+            <nav className="mt-4 md:mt-0">
+              <ul className="flex space-x-4">
+                <li>
+                  <a href="#" className="hover:underline">
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
