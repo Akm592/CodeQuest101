@@ -13,6 +13,9 @@ import {
   SortDesc,
   Search,
   RotateCw,
+  Github,
+  Linkedin,
+  Mail,
 } from "lucide-react";
 
 const visualizations = [
@@ -54,6 +57,34 @@ const visualizations = [
   },
 ];
 
+interface Contributor {
+  name: string;
+  role: string;
+  image: string;
+  github?: string;
+  linkedin?: string;
+  email?: string;
+}
+
+const contributors: Contributor[] = [
+  {
+    name: "Ashish Mishra",
+    role: "FullStack Developer",
+    image: "/path/to/john-doe-image.jpg",
+    github: "https://github.com/Akm592",
+    linkedin: "https://www.linkedin.com/in/ashish-kumar-mishra-a286a2224/",
+    email: "ashishkumarmishra952@gmail.com",
+  },
+  {
+    name: "Puneet Prashar",
+    role: "Data Scientist",
+    image: "/path/to/jane-smith-image.jpg",
+    github: "https://github.com/puneetprashar2003",
+    email:""
+  
+  },
+  // Add more contributors as needed
+];
 interface HomePageProps {
   onSelectVisualization: (key: string) => void;
 }
@@ -120,6 +151,55 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
             </p>
           </div>
         </section>
+
+        <section className="w-full py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-8">
+              Our Contributors
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {contributors.map((contributor, index) => (
+                <Card key={index} className="flex flex-col items-center p-6">
+                  {/* <img
+                    src={contributor.image}
+                    alt={contributor.name}
+                    className="w-32 h-32 rounded-full mb-4"
+                  /> */}
+                  <h3 className="text-xl font-semibold">{contributor.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {contributor.role}
+                  </p>
+                  <div className="flex space-x-4">
+                    {contributor.github && (
+                      <a
+                        href={contributor.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Github className="w-5 h-5" />
+                      </a>
+                    )}
+                    {contributor.linkedin && (
+                      <a
+                        href={contributor.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </a>
+                    )}
+                    {contributor.email && (
+                      <a href={`mailto:${contributor.email}`}>
+                        <Mail className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <footer className="w-full bg-primary text-primary-foreground py-8">
