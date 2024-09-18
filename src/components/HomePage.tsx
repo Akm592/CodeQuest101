@@ -55,6 +55,21 @@ const visualizations = [
     icon: <Search className="h-6 w-6 text-primary" />,
     key: "binarySearch",
   },
+  {
+    title: "Linked List",
+    description: "Visualize linked list operations",
+    icon: <GitBranch className="h-6 w-6 text-primary" />,
+    key: "linkedList",
+  },
+  {
+    title:"Stack and Queue",
+    description:"Visualize stack and queue operations",
+    icon:<GitBranch className="h-6 w-6 text-primary" />,
+    key:"stack"
+
+  }
+
+
 ];
 
 interface Contributor {
