@@ -51,8 +51,8 @@ function App() {
       <div className="min-h-screen bg-background">
         <Helmet>
           <meta
-            name="google-site-verification"
-            content="1UpHMajCLJISBerWywJuL9Qa6Lux3RHXe3k6IBrmVNY"
+            name="msvalidate.01"
+            content="7F4C5D26D211FB92C876A48B2F0225CC"
           />
         </Helmet>
         <AnimatePresence mode="wait">
