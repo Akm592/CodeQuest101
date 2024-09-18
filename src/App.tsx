@@ -10,6 +10,7 @@ import SortingAlgorithmVisualizer from "./components/SortingAlgorithmVisualizer"
 import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
 import LinkedListVisualizer from "./components/LinkedListVisualizer";
 import StackAndQueueVisualizer from "./components/StackVisualizater";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
@@ -70,6 +71,7 @@ function App() {
           <span>Back to Home</span>
         </motion.button>
       )}
+      <Analytics />
     </div>
   );
 }
