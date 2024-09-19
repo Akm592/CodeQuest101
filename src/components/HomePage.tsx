@@ -92,7 +92,7 @@ const contributors: Contributor[] = [
   },
   {
     name: "Puneet Prashar",
-    role: "Data Scientist",
+    role: "SoftWare Developer",
     image: "/path/to/jane-smith-image.jpg",
     github: "https://github.com/puneetprashar2003",
     email:""
