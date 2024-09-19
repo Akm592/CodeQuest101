@@ -31,7 +31,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
   const [tortoise, setTortoise] = useState<number | null>(null);
   const [hare, setHare] = useState<number | null>(null);
   const [cycleDetected, setCycleDetected] = useState<boolean>(false);
-  const [middleNode, setMiddleNode] = useState<number | null>(null);
+  const [middleNodes, setMiddleNodes] = useState<number[]>([]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(500);
@@ -67,7 +67,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
     setTortoise(0);
     setHare(0);
     setCycleDetected(false);
-    setMiddleNode(null);
+    setMiddleNodes([]);
     setIsRunning(false);
     setIsPaused(false);
     setStep(0);
@@ -195,12 +195,23 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
       }
     } else {
       if (hare === null) {
-        setMiddleNode(tortoise);
+        const middleIndex = Math.floor((nodes.length - 1) / 2);
+        if (nodes.length % 2 === 0) {
+          setMiddleNodes([middleIndex, middleIndex + 1]);
+          setExplanation(
+            `Middle nodes found at positions ${middleIndex} and ${
+              middleIndex + 1
+            }. For even-length lists, we consider both middle nodes. Learn more: ` +
+              "https://leetcode.com/problems/middle-of-the-linked-list/"
+          );
+        } else {
+          setMiddleNodes([middleIndex]);
+          setExplanation(
+            `Middle node found at position ${middleIndex}. For odd-length lists, there is a single middle node. Learn more: ` +
+              "https://leetcode.com/problems/middle-of-the-linked-list/"
+          );
+        }
         setIsRunning(false);
-        setExplanation(
-          `Middle node found at position ${tortoise}. This algorithm uses two pointers: a slow pointer (tortoise) and a fast pointer (hare). When the fast pointer reaches the end or there's no next node for it to move to, the slow pointer will be at the middle. For even-length lists, it returns the second middle node. Learn more: ` +
-            "https://leetcode.com/problems/middle-of-the-linked-list/"
-        );
       } else {
         setExplanation(
           `Step ${step}: Tortoise at node ${tortoise}, Hare at node ${hare}. The tortoise moves one step at a time, while the hare moves two steps.`
@@ -208,6 +219,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
       }
     }
   }, [tortoise, hare, mode, nodes, step]);
+
   const renderNodes = () => {
     return (
       <div className="flex flex-wrap justify-center items-center gap-4 pt-16 ">
@@ -230,7 +242,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
                     : ""
                 }
                 ${
-                  index === middleNode
+                  middleNodes.includes(index)
                     ? "border-green-500 shadow-lg shadow-green-200"
                     : ""
                 }
@@ -299,6 +311,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
       </div>
     );
   };
+
   return (
     <div className="min-h-screen w-screen bg-background">
       <Card className="w-full max-w-7xl mx-auto">
