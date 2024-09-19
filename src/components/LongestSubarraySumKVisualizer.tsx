@@ -1,13 +1,8 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Slider } from "../components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Slider } from "./ui/slider";
 import { PlayCircle, PauseCircle, RotateCcw } from "lucide-react";
 
 const LongestSubarraySumKVisualizer = () => {
@@ -68,104 +63,106 @@ const LongestSubarraySumKVisualizer = () => {
   const toggleRunning = () => setIsRunning((prev) => !prev);
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
-        <CardTitle className="text-2xl sm:text-3xl font-bold text-center">
-          Longest Sub-Array with Sum K Visualizer
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="space-y-4">
-          <Input
-            type="text"
-            value={arr.join(", ")}
-            onChange={(e) => {
-              setArr(e.target.value.split(",").map(Number));
-              reset();
-            }}
-            placeholder="Enter array (comma-separated)"
-            className="w-full border-2 border-gray-300 focus:border-blue-500 rounded-md p-2"
-          />
-          <div className="flex flex-col sm:flex-row gap-4">
+    <div className="min-h-screen w-screen flex items-center justify-center bg-gray-100 p-4">
+      <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+        <CardHeader className="bg-black text-white p-4 sm:p-6">
+          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
+            Longest Sub-Array with Sum K Visualizer
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="space-y-4">
             <Input
-              type="number"
-              value={k}
+              type="text"
+              value={arr.join(", ")}
               onChange={(e) => {
-                setK(Number(e.target.value));
+                setArr(e.target.value.split(",").map(Number));
                 reset();
               }}
-              placeholder="Enter target sum (k)"
-              className="w-full sm:w-1/2 border-2 border-gray-300 focus:border-blue-500 rounded-md p-2"
+              placeholder="Enter array (comma-separated)"
+              className="w-full border-2 border-gray-300 focus:border-black rounded-md p-2"
             />
-            <div className="w-full sm:w-1/2 flex items-center space-x-4">
-              <span className="text-sm font-medium">Speed:</span>
-              <Slider
-                value={[speed]}
-                onValueChange={(value) => setSpeed(value[0])}
-                min={100}
-                max={2000}
-                step={100}
-                className="flex-grow"
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Input
+                type="number"
+                value={k}
+                onChange={(e) => {
+                  setK(Number(e.target.value));
+                  reset();
+                }}
+                placeholder="Enter target sum (k)"
+                className="w-full sm:w-1/2 border-2 border-gray-300 focus:border-black rounded-md p-2"
               />
+              <div className="w-full sm:w-1/2 flex items-center space-x-4">
+                <span className="text-sm font-medium">Speed:</span>
+                <Slider
+                  value={[speed]}
+                  onValueChange={(value) => setSpeed(value[0])}
+                  min={100}
+                  max={2000}
+                  step={100}
+                  className="flex-grow"
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex justify-center space-x-4">
-          <Button
-            onClick={toggleRunning}
-            disabled={isDone}
-            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
-            <span>{isRunning ? "Pause" : "Start"}</span>
-          </Button>
-          <Button
-            onClick={reset}
-            className="flex items-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
-        </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {arr.map((num, index) => (
-            <div
-              key={index}
-              className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center border-2 rounded-md text-sm sm:text-base font-medium transition-all duration-300 ${
-                index >= left && index < right
-                  ? "bg-blue-100 border-blue-500"
-                  : "border-gray-300"
-              } ${index === left ? "border-l-4 border-l-green-500" : ""} ${
-                index === right - 1 ? "border-r-4 border-r-red-500" : ""
-              } ${
-                isDone && index >= maxStart && index <= maxEnd
-                  ? "bg-yellow-100 border-yellow-500"
-                  : ""
-              }`}
+          <div className="flex justify-center space-x-4">
+            <Button
+              onClick={toggleRunning}
+              disabled={isDone}
+              className="flex items-center space-x-2 bg-black hover:bg-gray-800 text-white"
             >
-              {num}
-            </div>
-          ))}
-        </div>
-        <div className="text-center space-y-2">
-          <p className="text-sm sm:text-base">
-            Current Sum: <span className="font-bold">{currentSum}</span>
-          </p>
-          <p className="text-sm sm:text-base">
-            Max Length: <span className="font-bold">{maxLength}</span>
-          </p>
-          <p className="text-sm sm:text-base">
-            Target Sum (k): <span className="font-bold">{k}</span>
-          </p>
-          {isDone && (
-            <p className="font-bold mt-4 text-lg sm:text-xl text-blue-600">
-              Longest subarray with sum {k}: [
-              {arr.slice(maxStart, maxEnd + 1).join(", ")}]
+              {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
+              <span>{isRunning ? "Pause" : "Start"}</span>
+            </Button>
+            <Button
+              onClick={reset}
+              className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white"
+            >
+              <RotateCcw size={20} />
+              <span>Reset</span>
+            </Button>
+          </div>
+          <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+            {arr.map((num, index) => (
+              <div
+                key={index}
+                className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center border-2 rounded-md text-xs sm:text-sm md:text-base font-medium transition-all duration-300 ${
+                  index >= left && index < right
+                    ? "bg-gray-200 border-black"
+                    : "border-gray-300"
+                } ${index === left ? "border-l-4 border-l-black" : ""} ${
+                  index === right - 1 ? "border-r-4 border-r-black" : ""
+                } ${
+                  isDone && index >= maxStart && index <= maxEnd
+                    ? "bg-gray-300 border-black"
+                    : ""
+                }`}
+              >
+                {num}
+              </div>
+            ))}
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-sm sm:text-base">
+              Current Sum: <span className="font-bold">{currentSum}</span>
             </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            <p className="text-sm sm:text-base">
+              Max Length: <span className="font-bold">{maxLength}</span>
+            </p>
+            <p className="text-sm sm:text-base">
+              Target Sum (k): <span className="font-bold">{k}</span>
+            </p>
+            {isDone && (
+              <p className="font-bold mt-4 text-base sm:text-lg md:text-xl text-black">
+                Longest subarray with sum {k}: [
+                {arr.slice(maxStart, maxEnd + 1).join(", ")}]
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Select,
@@ -25,6 +25,7 @@ const BinaryTreeTraversalVisualizer = () => {
   const [traversalType, setTraversalType] = useState<TraversalType>("in-order");
   const [traversalSteps, setTraversalSteps] = useState<number[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [svgSize, setSvgSize] = useState({ width: 600, height: 400 });
 
   // Sample binary tree
   const root = React.useMemo(() => {
@@ -46,25 +47,32 @@ const BinaryTreeTraversalVisualizer = () => {
 
   type TraversalType = "in-order" | "pre-order" | "post-order";
 
-  const traverse = useCallback((node: TreeNodeType | null, type: TraversalType, steps: number[] = []): number[] => {
-    if (!node) return steps;
+  const traverse = useCallback(
+    (
+      node: TreeNodeType | null,
+      type: TraversalType,
+      steps: number[] = []
+    ): number[] => {
+      if (!node) return steps;
 
-    if (type === "pre-order") {
-      steps.push(node.val);
-      traverse(node.left, type, steps);
-      traverse(node.right, type, steps);
-    } else if (type === "in-order") {
-      traverse(node.left, type, steps);
-      steps.push(node.val);
-      traverse(node.right, type, steps);
-    } else if (type === "post-order") {
-      traverse(node.left, type, steps);
-      traverse(node.right, type, steps);
-      steps.push(node.val);
-    }
+      if (type === "pre-order") {
+        steps.push(node.val);
+        traverse(node.left, type, steps);
+        traverse(node.right, type, steps);
+      } else if (type === "in-order") {
+        traverse(node.left, type, steps);
+        steps.push(node.val);
+        traverse(node.right, type, steps);
+      } else if (type === "post-order") {
+        traverse(node.left, type, steps);
+        traverse(node.right, type, steps);
+        steps.push(node.val);
+      }
 
-    return steps;
-  }, []);
+      return steps;
+    },
+    []
+  );
 
   const startTraversal = useCallback(() => {
     const steps = traverse(root, traversalType);
@@ -104,14 +112,14 @@ const BinaryTreeTraversalVisualizer = () => {
             cx={x}
             cy={y}
             r={20}
-            fill={isCurrent ? "#ff6b6b" : isVisited ? "#4ecdc4" : "#f7fff7"}
-            stroke="#2f2d2e"
+            fill={isCurrent ? "#000000" : isVisited ? "#808080" : "#ffffff"}
+            stroke="#000000"
             strokeWidth="2"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.3 }}
           />
-          <text x={x} y={y + 5} textAnchor="middle" fill="#2f2d2e">
+          <text x={x} y={y + 5} textAnchor="middle" fill="#ffffff">
             {node.val}
           </text>
           {node.left && (
@@ -121,10 +129,15 @@ const BinaryTreeTraversalVisualizer = () => {
                 y1={y + 20}
                 x2={x - 40 / level}
                 y2={y + 60}
-                stroke="#2f2d2e"
+                stroke="#000000"
                 strokeWidth="2"
               />
-              {renderTree({ node: node.left, x: x - 80 / level, y: y + 80, level: level + 1 })}
+              {renderTree({
+                node: node.left,
+                x: x - 80 / level,
+                y: y + 80,
+                level: level + 1,
+              })}
             </>
           )}
           {node.right && (
@@ -134,10 +147,15 @@ const BinaryTreeTraversalVisualizer = () => {
                 y1={y + 20}
                 x2={x + 40 / level}
                 y2={y + 60}
-                stroke="#2f2d2e"
+                stroke="#000000"
                 strokeWidth="2"
               />
-              {renderTree({ node: node.right, x: x + 80 / level, y: y + 80, level: level + 1 })}
+              {renderTree({
+                node: node.right,
+                x: x + 80 / level,
+                y: y + 80,
+                level: level + 1,
+              })}
             </>
           )}
         </g>
@@ -146,51 +164,69 @@ const BinaryTreeTraversalVisualizer = () => {
     [currentStep, traversalSteps]
   );
 
+  useEffect(() => {
+    const handleResize = () => {
+      const width = Math.max(300, Math.min(window.innerWidth - 40, 1200));
+      const height = Math.max(300, Math.min(window.innerHeight - 300, 800));
+      setSvgSize({ width, height });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">
+    <div className="flex flex-col items-center p-4 bg-white min-h-screen">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
         Binary Tree Traversal Visualizer
       </h1>
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap justify-center gap-2">
         <Select
           value={traversalType}
           onValueChange={(value: TraversalType) => setTraversalType(value)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-white border-black text-black">
             <SelectValue placeholder="Select a traversal type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border-black">
             <SelectItem value="in-order">In-order</SelectItem>
             <SelectItem value="pre-order">Pre-order</SelectItem>
             <SelectItem value="post-order">Post-order</SelectItem>
           </SelectContent>
         </Select>
         <button
-          className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           onClick={startTraversal}
         >
           Start Traversal
         </button>
         <button
-          className="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           onClick={nextStep}
         >
           Next Step
         </button>
         <button
-          className="ml-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           onClick={resetTraversal}
         >
           Reset
         </button>
       </div>
-      <svg width="600" height="400">
-        {renderTree({ node: root, x: 300, y: 40, level: 1 })}
+      <svg
+        width={svgSize.width}
+        height={svgSize.height}
+        className="border border-black"
+      >
+        {renderTree({ node: root, x: svgSize.width / 2, y: 40, level: 1 })}
       </svg>
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold">Traversal Steps:</h2>
-        <p>{traversalSteps.join(" -> ")}</p>
-        <p>
+      <div className="mt-4 text-center">
+        <h2 className="text-lg md:text-xl font-semibold">Traversal Steps:</h2>
+        <p className="text-sm md:text-base overflow-x-auto max-w-full">
+          {traversalSteps.join(" -> ")}
+        </p>
+        <p className="text-sm md:text-base">
           Current Step: {currentStep + 1} / {traversalSteps.length}
         </p>
       </div>

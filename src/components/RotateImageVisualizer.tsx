@@ -1,4 +1,4 @@
-import  { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -27,14 +27,12 @@ const RotateImageVisualizer = () => {
     const n = mat.length;
     const steps: RotationStep[] = [];
 
-    // Step 1: Transpose the matrix
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
         steps.push({ type: "swap", i, j, i2: j, j2: i });
       }
     }
 
-    // Step 2: Reverse each row
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < Math.floor(n / 2); j++) {
         steps.push({ type: "swap", i, j, i2: i, j2: n - 1 - j });
@@ -87,7 +85,7 @@ const RotateImageVisualizer = () => {
   );
 
   const getCellStyle = useCallback(
-    (i: number , j : number) => {
+    (i: number, j: number) => {
       if (step > 0 && step <= rotationSteps.length) {
         const currentStep = rotationSteps[step - 1];
         if (
@@ -95,7 +93,7 @@ const RotateImageVisualizer = () => {
           ((i === currentStep.i && j === currentStep.j) ||
             (i === currentStep.i2 && j === currentStep.j2))
         ) {
-          return "bg-yellow-200 border-yellow-500";
+          return "bg-gray-200 border-gray-500";
         }
       }
       return "border-gray-300";
@@ -117,9 +115,9 @@ const RotateImageVisualizer = () => {
             return (
               <div
                 key={`${isRotated ? "rotated-" : ""}${i}-${j}`}
-                className={`w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center border-2 rounded-md text-sm sm:text-base font-medium transition-all duration-300 ${
+                className={`w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-md text-xs sm:text-sm md:text-base font-medium transition-all duration-300 ${
                   isRotated && step >= rotationSteps.length
-                    ? "bg-green-100 border-green-500"
+                    ? "bg-gray-100 border-gray-500"
                     : getCellStyle(i, j)
                 }`}
               >
@@ -134,20 +132,21 @@ const RotateImageVisualizer = () => {
   );
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-6">
-        <CardTitle className="text-2xl sm:text-3xl font-bold text-center">
+    <div className=" bg-white w-screen">
+    <Card className="w-full  mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <CardHeader className="bg-black text-white p-4 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
           Rotate Image Visualizer
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="space-y-4">
           <Input
             type="text"
             value={JSON.stringify(matrix)}
             onChange={handleMatrixChange}
             placeholder="Enter matrix (e.g., [[1,2,3],[4,5,6],[7,8,9]])"
-            className="w-full border-2 border-gray-300 focus:border-purple-500 rounded-md p-2"
+            className="w-full border-2 border-gray-300 focus:border-gray-500 rounded-md p-2"
           />
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium">Speed:</span>
@@ -165,7 +164,7 @@ const RotateImageVisualizer = () => {
           <Button
             onClick={toggleRunning}
             disabled={step >= rotationSteps.length}
-            className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white"
+            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white"
           >
             {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
             <span>{isRunning ? "Pause" : "Start"}</span>
@@ -178,16 +177,19 @@ const RotateImageVisualizer = () => {
             <span>Reset</span>
           </Button>
         </div>
-        <div className="flex justify-center items-center space-x-4">
+        <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
           {renderMatrix(matrix)}
-          <ArrowRight size={32} className="text-purple-500" />
+          <ArrowRight
+            size={32}
+            className="text-gray-500 transform rotate-90 sm:rotate-0"
+          />
           {renderMatrix(matrix, true)}
         </div>
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
             Step: {step} / {rotationSteps.length}
           </p>
-          <p className="text-md">
+          <p className="text-sm sm:text-md">
             {step > 0 && step <= rotationSteps.length
               ? rotationSteps[step - 1].type === "swap"
                 ? `Swapping (${rotationSteps[step - 1].i},${
@@ -203,6 +205,7 @@ const RotateImageVisualizer = () => {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 };
 

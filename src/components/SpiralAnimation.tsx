@@ -1,4 +1,4 @@
-import  { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -79,20 +79,21 @@ const SpiralMatrixAnimation = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
-        <CardTitle className="text-2xl sm:text-3xl font-bold text-center">
+    <div className="w-screen mx-auto bg-white shadow-lg rounded-lg overflow-hidden pb-10 pt-5 pr-10  pl-10">
+    <Card className="w-full max-w-6xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <CardHeader className="bg-black text-white p-4 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
           Spiral Matrix Animation
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="space-y-4">
           <Input
             type="text"
             value={JSON.stringify(matrix)}
             onChange={handleMatrixChange}
             placeholder="Enter matrix (e.g., [[1,2,3],[4,5,6],[7,8,9]])"
-            className="w-full border-2 border-gray-300 focus:border-green-500 rounded-md p-2"
+            className="w-full border-2 border-gray-300 focus:border-black rounded-md p-2"
           />
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium">Speed:</span>
@@ -110,7 +111,7 @@ const SpiralMatrixAnimation = () => {
           <Button
             onClick={toggleRunning}
             disabled={currentStep >= traversalOrder.length}
-            className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white"
+            className="flex items-center space-x-2 bg-black hover:bg-gray-800 text-white"
           >
             {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
             <span>{isRunning ? "Pause" : "Start"}</span>
@@ -125,7 +126,7 @@ const SpiralMatrixAnimation = () => {
         </div>
         <div className="flex justify-center">
           <div
-            className={`grid gap-1`}
+            className={`grid gap-1 sm:gap-2`}
             style={{
               gridTemplateColumns: `repeat(${matrix[0].length}, minmax(0, 1fr))`,
             }}
@@ -134,11 +135,11 @@ const SpiralMatrixAnimation = () => {
               row.map((cell, j) => (
                 <div
                   key={`${i}-${j}`}
-                  className={`w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center border-2 rounded-md text-sm sm:text-base font-medium transition-all duration-300 ${
+                  className={`w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-md text-xs sm:text-sm md:text-base font-medium transition-all duration-300 ${
                     traversalOrder
                       .slice(0, currentStep)
                       .some(([r, c]) => r === i && c === j)
-                      ? "bg-green-100 border-green-500"
+                      ? "bg-gray-200 border-black"
                       : "border-gray-300"
                   }`}
                 >
@@ -149,10 +150,10 @@ const SpiralMatrixAnimation = () => {
           </div>
         </div>
         <div className="text-center space-y-2">
-          <p className="text-lg font-semibold">
+          <p className="text-base sm:text-lg font-semibold">
             Step: {currentStep} / {traversalOrder.length}
           </p>
-          <p className="text-md">
+          <p className="text-sm sm:text-md">
             Traversal Order:{" "}
             {traversalOrder
               .slice(0, currentStep)
@@ -162,6 +163,7 @@ const SpiralMatrixAnimation = () => {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 };
 

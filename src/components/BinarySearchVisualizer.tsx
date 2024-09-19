@@ -85,45 +85,48 @@ const BinarySearchVisualizer: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-6">
-        <CardTitle className="text-2xl sm:text-3xl font-bold text-center">
+    <div className="min-h-screen w-screen flex items-center justify-center bg-gray-100 p-4">
+    <Card className="w-full mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <CardHeader className="bg-black text-white p-4 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
           Binary Search Visualizer
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="flex justify-between items-center flex-wrap gap-4">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <Input
             type="number"
             value={target}
             onChange={(e) => setTarget(Number(e.target.value))}
             placeholder="Enter target number"
-            className="w-48"
+            className="w-full sm:w-48"
           />
-          <Button
-            onClick={binarySearch}
-            disabled={isRunning}
-            className="flex items-center space-x-2"
-          >
-            <PlayCircle size={20} />
-            <span>Start Search</span>
-          </Button>
-          <Button
-            onClick={resetSearch}
-            disabled={isRunning}
-            className="flex items-center space-x-2"
-          >
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
-          <Button
-            onClick={generateSortedArray}
-            disabled={isRunning}
-            className="flex items-center space-x-2"
-          >
-            <Shuffle size={20} />
-            <span>New Array</span>
-          </Button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button
+              onClick={binarySearch}
+              disabled={isRunning}
+              className="flex items-center space-x-2 bg-black text-white hover:bg-gray-800"
+            >
+              <PlayCircle size={20} />
+              <span>Start Search</span>
+            </Button>
+            <Button
+              onClick={resetSearch}
+              disabled={isRunning}
+              className="flex items-center space-x-2 bg-black text-white hover:bg-gray-800"
+            >
+              <RotateCcw size={20} />
+              <span>Reset</span>
+            </Button>
+            <Button
+              onClick={generateSortedArray}
+              disabled={isRunning}
+              className="flex items-center space-x-2 bg-black text-white hover:bg-gray-800"
+            >
+              <Shuffle size={20} />
+              <span>New Array</span>
+            </Button>
+          </div>
         </div>
         <div className="flex items-center space-x-4">
           <span className="text-sm font-medium">Speed:</span>
@@ -136,31 +139,35 @@ const BinarySearchVisualizer: React.FC = () => {
             className="flex-grow"
           />
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
           <Input
             value={customArrayInput}
             onChange={(e) => setCustomArrayInput(e.target.value)}
             placeholder="Enter custom array (comma-separated)"
-            className="flex-grow"
+            className="w-full sm:flex-grow"
           />
-          <Button onClick={handleCustomArrayInput} disabled={isRunning}>
+          <Button
+            onClick={handleCustomArrayInput}
+            disabled={isRunning}
+            className="w-full sm:w-auto bg-black text-white hover:bg-gray-800"
+          >
             Set Custom Array
           </Button>
         </div>
-        <div className="h-64 flex items-end justify-center relative">
+        <div className="h-64 sm:h-80 md:h-96 flex items-end justify-center relative">
           {array.map((value, index) => (
             <div
               key={index}
-              className={`w-8 mx-1 relative ${
+              className={`w-4 sm:w-6 md:w-8 mx-0.5 sm:mx-1 relative ${
                 index === mid
-                  ? "bg-yellow-500"
+                  ? "bg-gray-900"
                   : index >= left && index <= right
-                  ? "bg-blue-500"
+                  ? "bg-gray-600"
                   : "bg-gray-300"
               }`}
               style={{ height: `${(value / Math.max(...array)) * 100}%` }}
             >
-              <div className="text-xs text-center">{value}</div>
+              <div className="text-xs text-center overflow-hidden">{value}</div>
               {index === left && (
                 <div className="absolute -top-6 left-0 text-xs font-bold">
                   L
@@ -188,6 +195,7 @@ const BinarySearchVisualizer: React.FC = () => {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 };
 
