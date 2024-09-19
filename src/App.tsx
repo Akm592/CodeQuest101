@@ -10,6 +10,7 @@ import SortingAlgorithmVisualizer from "./components/SortingAlgorithmVisualizer"
 import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
 import LinkedListVisualizer from "./components/LinkedListVisualizer";
 import StackAndQueueVisualizer from "./components/StackVisualizater";
+import FloydsAlgorithmVisualizer from "./components/FloydsAlgorithmVisualizer";
 import { Analytics } from "@vercel/analytics/react";
 
 function App() {
@@ -41,6 +42,8 @@ function App() {
         return <LinkedListVisualizer />;
       case "stack":
         return <StackAndQueueVisualizer />;
+      case "hareTortoise":
+        return <FloydsAlgorithmVisualizer />;
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }

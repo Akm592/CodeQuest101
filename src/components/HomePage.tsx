@@ -62,14 +62,17 @@ const visualizations = [
     key: "linkedList",
   },
   {
-    title:"Stack and Queue",
-    description:"Visualize stack and queue operations",
-    icon:<GitBranch className="h-6 w-6 text-primary" />,
-    key:"stack"
-
-  }
-
-
+    title: "Stack and Queue",
+    description: "Visualize stack and queue operations",
+    icon: <GitBranch className="h-6 w-6 text-primary" />,
+    key: "stack",
+  },
+  {
+    title: " Hare-Tortoise",
+    description: "Visualize Hare-Tortoise algorithm",
+    icon: <GitBranch className="h-6 w-6 text-primary" />,
+    key: "hareTortoise",
+  },
 ];
 
 interface Contributor {
