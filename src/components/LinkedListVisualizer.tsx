@@ -369,8 +369,8 @@ const LinkedListVisualizer: React.FC = () => {
     );
   };
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Linked List Visualizer</h1>
+    <div className="mx-auto px-4 py-8 w-screen">
+      <h1 className="text-3xl text-center font-bold mb-6">Linked List Visualizer</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="w-full">
