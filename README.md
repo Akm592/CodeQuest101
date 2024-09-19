@@ -1,6 +1,6 @@
 # CodeQuest: Interactive Algorithm Visualizations
 
-![CodeQuest Logo](https://via.placeholder.com/150)
+
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/codequest/codequest.svg)](https://github.com/codequest/codequest/stargazers)
@@ -30,26 +30,7 @@ CodeQuest is an innovative platform designed to help developers master complex a
 4. Use the step-by-step controls to understand the algorithm's flow
 5. Read the accompanying explanations for deeper insights
 
-## 👥 Our Contributors
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/ashishmishra">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Ashish Mishra"/><br />
-        <sub><b>Ashish Mishra</b></sub>
-      </a><br />
-      <sub>FullStack Developer</sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/puneetprashar">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Puneet Prashar"/><br />
-        <sub><b>Puneet Prashar</b></sub>
-      </a><br />
-      <sub>Software Developer</sub>
-    </td>
-  </tr>
-</table>
 
 ## 🤝 Contributing
 
