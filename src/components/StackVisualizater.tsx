@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 const StackAndQueueVisualizer: React.FC = () => {
-  const [stack, setStack] = useState<number[]>([]);
-  const [queue, setQueue] = useState<number[]>([]);
+  const [stack, setStack] = useState<number[]>([1, 2, 3, 4]);
+  const [queue, setQueue] = useState<number[]>([5, 6, 7, 8]);
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedTab, setSelectedTab] = useState<string>("stack");
 
@@ -35,6 +35,12 @@ const StackAndQueueVisualizer: React.FC = () => {
     if (queue.length > 0) {
       setQueue(queue.slice(1));
     }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.8 },
   };
 
   return (
@@ -102,18 +108,22 @@ const StackAndQueueVisualizer: React.FC = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex flex-col-reverse items-center sm:flex-row sm:justify-center sm:flex-wrap h-[300px] overflow-y-auto">
-                    {stack.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        className="bg-primary text-primary-foreground w-full sm:w-20 h-10 flex items-center justify-center m-1"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                      >
-                        {item}
-                      </motion.div>
-                    ))}
+                  <div className="flex flex-col-reverse items-center h-[300px] overflow-y-auto">
+                    <AnimatePresence>
+                      {stack.map((item, index) => (
+                        <motion.div
+                          key={`${item}-${index}`}
+                          className="bg-primary text-primary-foreground w-full h-10 flex items-center justify-center m-1"
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          transition={{ duration: 0.3 }}
+                        >
+                          {item}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </CardContent>
               </Card>
@@ -150,23 +160,28 @@ const StackAndQueueVisualizer: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-center sm:flex-row sm:justify-start sm:flex-wrap h-[300px] overflow-y-auto">
-                    {queue.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        className="bg-primary text-primary-foreground w-full sm:w-20 h-10 flex items-center justify-center m-1"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                      >
-                        {item}
-                      </motion.div>
-                    ))}
+                    <AnimatePresence>
+                      {queue.map((item, index) => (
+                        <motion.div
+                          key={`${item}-${index}`}
+                          className="bg-primary text-primary-foreground w-full sm:w-20 h-10 flex items-center justify-center m-1"
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          transition={{ duration: 0.3 }}
+                        >
+                          {item}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
+
         <Card className="h-fit">
           <CardHeader>
             <CardTitle className="text-xl md:text-2xl">
