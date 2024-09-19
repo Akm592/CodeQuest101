@@ -1,10 +1,10 @@
 # CodeQuest: Interactive Algorithm Visualizations
 
-
+![CodeQuest Logo](https://via.placeholder.com/150)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/codequest/codequest.svg)](https://github.com/codequest/codequest/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/codequest/codequest.svg)](https://github.com/codequest/codequest/issues)
+[![GitHub stars](https://img.shields.io/github/stars/Akm592/CodeQuest.svg)](https://github.com/Akm592/CodeQuest/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/Akm592/CodeQuest.svg)](https://github.com/Akm592/CodeQuest/issues)
 
 ## 🚀 Welcome to CodeQuest
 
@@ -24,7 +24,7 @@ CodeQuest is an innovative platform designed to help developers master complex a
 
 ## 🛠️ Getting Started
 
-1. Visit [CodeQuest Website](https://www.codequest.com)
+1. Visit [CodeQuest Website](https://akm592.github.io/CodeQuest/)
 2. Browse through our collection of algorithm visualizations
 3. Select a problem to start your interactive learning experience
 4. Use the step-by-step controls to understand the algorithm's flow
@@ -41,19 +41,17 @@ We welcome contributions from the community! If you'd like to contribute, please
 3. Make your changes
 4. Submit a pull request
 
-For more details, check out our [Contributing Guidelines](CONTRIBUTING.md).
+For more details, check out our [Contributing Guidelines](https://github.com/Akm592/CodeQuest/blob/main/CONTRIBUTING.md).
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/Akm592/CodeQuest/blob/main/LICENSE) file for details.
 
 ## 📞 Contact Us
 
 Have questions or suggestions? Reach out to us:
 
-
-
-- GitHub Issues: [Report a bug or request a feature](https://github.com/codequest/codequest/issues)
+- GitHub Issues: [Report a bug or request a feature](https://github.com/Akm592/CodeQuest/issues)
 
 ---
 
