@@ -78,6 +78,13 @@ const visualizations = [
     description: "Visualize tree data structure",
     icon: <GitBranch className="h-6 w-6 text-primary" />,
     key: "tree",
+  },
+  {
+    title:"Neural Network",
+  description:"Visualize Neural Network",
+  icon:<GitBranch className="h-6 w-6 text-primary" />,
+  key:"neuralNetwork"
+    
   }
 ];
 

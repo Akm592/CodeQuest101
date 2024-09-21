@@ -12,6 +12,7 @@ import LinkedListVisualizer from "./components/LinkedListVisualizer";
 import StackAndQueueVisualizer from "./components/StackVisualizater";
 import FloydsAlgorithmVisualizer from "./components/FloydsAlgorithmVisualizer";
 import TreeVisualizer from "./components/TreeVisualizer"; 
+import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import { Analytics } from "@vercel/analytics/react";
 
 function App() {
@@ -47,6 +48,8 @@ function App() {
         return <FloydsAlgorithmVisualizer />;
       case "tree":
         return <TreeVisualizer />;
+      case "neuralNetwork":
+        return <NeuralNetworkVisualizer />;
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }
