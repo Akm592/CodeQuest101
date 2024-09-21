@@ -11,6 +11,7 @@ import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
 import LinkedListVisualizer from "./components/LinkedListVisualizer";
 import StackAndQueueVisualizer from "./components/StackVisualizater";
 import FloydsAlgorithmVisualizer from "./components/FloydsAlgorithmVisualizer";
+import TreeVisualizer from "./components/TreeVisualizer"; 
 import { Analytics } from "@vercel/analytics/react";
 
 function App() {
@@ -44,6 +45,8 @@ function App() {
         return <StackAndQueueVisualizer />;
       case "hareTortoise":
         return <FloydsAlgorithmVisualizer />;
+      case "tree":
+        return <TreeVisualizer />;
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }

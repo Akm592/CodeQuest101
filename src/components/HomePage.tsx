@@ -73,6 +73,12 @@ const visualizations = [
     icon: <GitBranch className="h-6 w-6 text-primary" />,
     key: "hareTortoise",
   },
+  {
+    title: "Tree Data Structure",
+    description: "Visualize tree data structure",
+    icon: <GitBranch className="h-6 w-6 text-primary" />,
+    key: "tree",
+  }
 ];
 
 interface Contributor {
