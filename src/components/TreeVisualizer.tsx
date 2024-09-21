@@ -1,3 +1,4 @@
+// TreeVisualizer.tsx
 import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TreeNode from "./trees/TreeNode";
@@ -27,14 +28,23 @@ const TreeVisualizer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(-1);
   const [isTraversing, setIsTraversing] = useState<boolean>(false);
 
-  useEffect(() => {
+  const resetTree = useCallback(() => {
     const initialTree: TreeNodeType = {
       value: 5,
       left: { value: 3, left: null, right: null },
       right: { value: 7, left: null, right: null },
     };
     setRoot(initialTree);
+    setHighlightedNode(null);
+    setExplanation("");
+    setTraversalSteps([]);
+    setCurrentStep(-1);
+    setIsTraversing(false);
   }, []);
+
+  useEffect(() => {
+    resetTree();
+  }, [resetTree, treeType]);
 
   const handleOperation = useCallback(
     (op: "insert" | "delete" | "search", val: number) => {
@@ -186,7 +196,7 @@ const TreeVisualizer: React.FC = () => {
                 exit="hidden"
               />
             )}
-          </AnimatePresence>
+        </AnimatePresence>
           <TreeNode
             node={node}
             x={x}
@@ -213,7 +223,10 @@ const TreeVisualizer: React.FC = () => {
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-6 border border-black items-center">
         <TreeControls
           treeType={treeType}
-          setTreeType={setTreeType}
+          setTreeType={(type) => {
+            setTreeType(type);
+            resetTree();
+          }}
           handleOperation={handleOperation}
         />
         <div className="mt-4 flex flex-wrap gap-4 justify-center">
