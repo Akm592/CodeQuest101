@@ -81,6 +81,7 @@ const visualizations = {
       icon: <GitBranch className="h-6 w-6 text-primary" />,
       key: "hareTortoise",
     },
+    
   ],
   dataStructures: [
     {
@@ -107,6 +108,13 @@ const visualizations = {
       icon: <GitBranch className="h-6 w-6 text-primary" />,
       key: "tree",
     },
+    {
+      title: "Graph Data Structure",
+      description: "Visualize graph data structure",
+      icon: <GitBranch className="h-6 w-6 text-primary" />,
+      key: "graph",
+    },
+    
   ],
   machineLearning: [
     {
