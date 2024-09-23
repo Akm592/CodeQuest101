@@ -20,42 +20,50 @@ type TraversalStep = {
   currentNode: Node;
 };
 
-const generateRandomGraph = (): Graph => {
-  const nodeCount = Math.floor(Math.random() * 6) + 3; // 5 to 10 nodes
-  const nodes = Array.from({ length: nodeCount }, (_, i) =>
-    String.fromCharCode(65 + i)
-  );
-  const edges: Edge[] = [];
-  const directed = Math.random() < 0.5; // 50% chance of being directed
+// Predefined directed graph with 7 nodes
+const directedGraph: Graph = {
+  nodes: ["A", "B", "C", "D", "E", "F", "G"],
+  edges: [
+    ["A", "B"],
+    ["A", "C"],
+    ["B", "D"],
+    ["C", "E"],
+    ["E", "F"],
+    ["F", "G"],
+    ["D", "G"],
+  ],
+  directed: true,
+};
 
-  // Generate random edges
-  for (let i = 0; i < nodes.length; i++) {
-    const edgeCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 edges per node
-    for (let j = 0; j < edgeCount; j++) {
-      const target = nodes[Math.floor(Math.random() * nodes.length)];
-      if (target !== nodes[i]) {
-        edges.push([nodes[i], target]);
-      }
-    }
-  }
-
-  return { nodes, edges, directed };
+// Predefined non-directed graph with 7 nodes
+const nonDirectedGraph: Graph = {
+  nodes: ["A", "B", "C", "D", "E", "F", "G"],
+  edges: [
+    ["A", "B"],
+    ["A", "C"],
+    ["B", "D"],
+    ["C", "E"],
+    ["E", "F"],
+    ["F", "G"],
+    ["D", "G"],
+    ["A", "G"],
+  ],
+  directed: false,
 };
 
 const GraphTraversalVisualizer: React.FC = () => {
-  const [graph, setGraph] = useState<Graph>(generateRandomGraph());
+  const [graph, setGraph] = useState<Graph>(nonDirectedGraph);
   const [traversalType, setTraversalType] = useState<"bfs" | "dfs">("bfs");
   const [currentStep, setCurrentStep] = useState(0);
   const [traversalSteps, setTraversalSteps] = useState<TraversalStep[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [speed, setSpeed] = useState(1000);
-  const [startNode, setStartNode] = useState<string | null>(null);
+  const [startNode, setStartNode] = useState<string | null>("A");
 
   useEffect(() => {
-    const newGraph = generateRandomGraph();
-    setGraph(newGraph);
-    setStartNode(newGraph.nodes[0]); // Set the first node as the default start node
+    setGraph(nonDirectedGraph);
+    setStartNode(nonDirectedGraph.nodes[0]);
   }, []);
 
   const resetTraversal = useCallback(() => {
@@ -146,19 +154,23 @@ const GraphTraversalVisualizer: React.FC = () => {
   }, [traversalType, bfs, dfs, startNode]);
 
   const toggleDirected = useCallback(() => {
-    setGraph((prevGraph) => ({
-      ...prevGraph,
-      directed: !prevGraph.directed,
-    }));
-    resetTraversal();
-  }, [resetTraversal]);
-
-  const handleNodeClick = useCallback((nodeId: string) => {
-    if (!isRunning) {
-      setStartNode(nodeId);
-      resetTraversal();
+    if (graph.directed) {
+      setGraph(nonDirectedGraph);
+    } else {
+      setGraph(directedGraph);
     }
-  }, [isRunning, resetTraversal]);
+    resetTraversal();
+  }, [graph.directed, resetTraversal]);
+
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      if (!isRunning) {
+        setStartNode(nodeId);
+        resetTraversal();
+      }
+    },
+    [isRunning, resetTraversal]
+  );
 
   useEffect(() => {
     if (isRunning && currentStep < traversalSteps.length - 1) {
