@@ -3,7 +3,7 @@ import GraphVisualization from "./Graphs/GraphVisualization";
 import TraversalControls from "./Graphs/TraversalControls";
 import ExplanationPanel from "./Graphs/ExplanationPanel";
 import Explanation from "./Graphs/Explanation";
-import { Switch } from "./ui/switch";
+
 
 type Node = string;
 type Edge = [string, string];
@@ -57,7 +57,7 @@ const GraphTraversalVisualizer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [traversalSteps, setTraversalSteps] = useState<TraversalStep[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(true);
+
   const [speed, setSpeed] = useState(1000);
   const [startNode, setStartNode] = useState<string | null>("A");
 
@@ -184,12 +184,12 @@ const GraphTraversalVisualizer: React.FC = () => {
   }, [isRunning, currentStep, traversalSteps, speed]);
 
   return (
-    <div className="flex flex-col items-center p-4 bg-gray-100 min-h-screen w-screen">
-      <h1 className="text-4xl font-bold mb-6 text-gray-800">
+    <div className="flex flex-col items-center p-2 sm:p-4 bg-gray-100 min-h-screen w-screen">
+      <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-gray-800 text-center">
         Graph Traversal Visualizer
       </h1>
-      <div className="w-full max-w-7xl bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-        <div className="flex justify-between items-center mb-4">
+      <div className="w-full max-w-7xl bg-white rounded-xl shadow-lg p-3 sm:p-6 border border-gray-200">
+        <div className="mb-4">
           <TraversalControls
             traversalType={traversalType}
             setTraversalType={setTraversalType}
@@ -202,19 +202,10 @@ const GraphTraversalVisualizer: React.FC = () => {
             toggleDirected={toggleDirected}
             startNode={startNode}
           />
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">
-              Show Explanation
-            </span>
-            <Switch
-              checked={showExplanation}
-              onCheckedChange={setShowExplanation}
-            />
-          </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-1/2">
             <GraphVisualization
               graph={graph}
               currentStep={currentStep}
@@ -223,18 +214,18 @@ const GraphTraversalVisualizer: React.FC = () => {
               startNode={startNode}
             />
           </div>
-          {showExplanation && (
-            <div className="flex-1">
-              <ExplanationPanel
-                currentStep={currentStep}
-                traversalSteps={traversalSteps}
-                traversalType={traversalType}
-              />
-            </div>
-          )}
+          <div className="w-full lg:w-1/2">
+            <ExplanationPanel
+              currentStep={currentStep}
+              traversalSteps={traversalSteps}
+              traversalType={traversalType}
+            />
+          </div>
         </div>
 
-        {showExplanation && <Explanation />}
+        <div className="mt-4">
+          <Explanation />
+        </div>
       </div>
     </div>
   );
