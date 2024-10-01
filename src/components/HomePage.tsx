@@ -114,6 +114,12 @@ const visualizations = {
       icon: <GitBranch className="h-6 w-6 text-primary" />,
       key: "graph",
     },
+    {
+      title: "Hash Map",
+      description: "Visualize hash map operations",
+      icon: <GitBranch className="h-6 w-6 text-primary" />,
+      key: "hashMap",
+    }
     
   ],
   machineLearning: [

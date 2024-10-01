@@ -15,6 +15,7 @@ import TreeVisualizer from "./components/TreeVisualizer";
 import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import GraphTraversalVisualizer from "./components/GraphTraversalVisualizer";
 import { Analytics } from "@vercel/analytics/react";
+import HashMapVisualizer from "./components/HashMapVisualizer";
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
@@ -54,6 +55,10 @@ function App() {
 
       case "graph":
         return <GraphTraversalVisualizer />;
+  
+      case "hashMap":
+        return <HashMapVisualizer />;
+
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }
