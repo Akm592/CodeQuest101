@@ -15,6 +15,8 @@ import TreeVisualizer from "./components/TreeVisualizer";
 import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import GraphTraversalVisualizer from "./components/GraphTraversalVisualizer";
 import { Analytics } from "@vercel/analytics/react";
+import ChatInterface from "./components/chatbot/chatBot";
+
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
@@ -51,9 +53,12 @@ function App() {
         return <TreeVisualizer />;
       case "neuralNetwork":
         return <NeuralNetworkVisualizer />;
+      
 
       case "graph":
         return <GraphTraversalVisualizer />;
+      case "chatbot":
+        return <ChatInterface />;
       default:
         return <HomePage onSelectVisualization={setCurrentView} />;
     }
