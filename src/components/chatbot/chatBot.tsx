@@ -5,12 +5,15 @@ import { motion } from "framer-motion";
 import InputArea from "./InputArea";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
+import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer"; // Updated import path if both files are in the same folder
 
 interface Message {
   id: string;
   sender: "user" | "bot";
   text: string;
   timestamp: string;
+  isVisualization?: boolean; // Flag to indicate if message is a visualization
+  visualizationData?: any; // Data for visualization
 }
 
 const ChatInterface: React.FC = () => {
@@ -21,8 +24,8 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const chatWindowRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom whenever messages update
   useEffect(() => {
-    // Scroll to bottom on new messages
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
@@ -30,11 +33,9 @@ const ChatInterface: React.FC = () => {
 
   const handleSendMessage = async () => {
     const trimmedInput = inputValue.trim();
-    if (!trimmedInput) {
-      return; // Prevent sending empty messages
-    }
+    if (!trimmedInput) return;
 
-    setError(null); // Clear any previous errors
+    setError(null);
     setIsLoading(true);
     setIsTyping(true);
 
@@ -48,33 +49,51 @@ const ChatInterface: React.FC = () => {
       }),
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
-    setInputValue(""); // Clear input field after sending
+    setInputValue("");
 
     try {
       const response = await axios.post("http://localhost:8000/chat", {
         user_input: trimmedInput,
-      }); // Backend API endpoint
-      const botResponseText = response.data.bot_response;
-      const botMessage: Message = {
-        id: Date.now().toString() + "-bot",
-        sender: "bot",
-        text: botResponseText,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+      });
+      const responseData = response.data;
+      const botResponseText = responseData.bot_response;
+      const responseType = responseData.response_type;
+      const visualizationData = responseData.visualization_data;
+
+      let botMessage: Message;
+      if (responseType === "visualization" && visualizationData) {
+        botMessage = {
+          id: Date.now().toString() + "-bot",
+          sender: "bot",
+          text: botResponseText, // You might want a custom message here
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isVisualization: true,
+          visualizationData: visualizationData,
+        };
+      } else {
+        botMessage = {
+          id: Date.now().toString() + "-bot",
+          sender: "bot",
+          text: botResponseText,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+      }
+
+      // Simulate bot "typing" delay before adding the bot message
       setTimeout(() => {
-        // Simulate bot typing delay for better UX
         setMessages((prevMessages) => [...prevMessages, botMessage]);
         setIsTyping(false);
-      }, 700); // Adjust delay as needed
+      }, 700);
     } catch (apiError: any) {
       console.error("API Error:", apiError);
       setIsTyping(false);
-      setError(
-        apiError.message || "Failed to get response from AI. Please try again."
-      );
+      setError(apiError.message || "Failed to get response from AI.");
       const errorBotMessage: Message = {
         id: Date.now().toString() + "-error",
         sender: "bot",
@@ -84,7 +103,7 @@ const ChatInterface: React.FC = () => {
           minute: "2-digit",
         }),
       };
-      setMessages((prevMessages) => [...prevMessages, errorBotMessage]); // Add error message to chat
+      setMessages((prevMessages) => [...prevMessages, errorBotMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +115,7 @@ const ChatInterface: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      // Send message on Enter, not Shift+Enter (for new lines in input if needed)
-      e.preventDefault(); // Prevent default newline behavior in input
+      e.preventDefault();
       handleSendMessage();
     }
   };
@@ -135,6 +153,36 @@ const ChatInterface: React.FC = () => {
         isLoading={isLoading}
       />
     </div>
+  );
+};
+
+// The MessageBubble component is defined here if you want to use it inside ChatWindow.
+// Ensure that ChatWindow renders each message with MessageBubble.
+export const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
+  const isUserMessage = message.sender === "user";
+  const bubbleClassName = isUserMessage
+    ? "bg-blue-500 text-white ml-auto rounded-bl-none"
+    : "bg-gray-300 text-gray-800 rounded-br-none";
+  const containerClassName = isUserMessage ? "items-end" : "items-start";
+
+  return (
+    <motion.div
+      className={`flex flex-col ${containerClassName} max-w-2xl`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className={`p-3 ${bubbleClassName} rounded-xl mb-1`}>
+        {message.isVisualization ? (
+          <AlgorithmVisualizer visualizationData={message.visualizationData} />
+        ) : (
+          message.text
+        )}
+      </div>
+      <span className="text-gray-500 text-xs self-end">
+        {message.timestamp}
+      </span>
+    </motion.div>
   );
 };
 
