@@ -1,22 +1,14 @@
-// src/components/chatbot/AlgorithmVisualizer.tsx
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-interface AlgorithmVisualizerProps {
-  visualizationData: any; // Type this more specifically based on your data structure
-}
+const AlgorithmVisualizer = ({ visualizationData }) => {
+  const svgRef = useRef(null);
+  const timeoutsRef = useRef([]);
 
-const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({
-  visualizationData,
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null);
-  // Ref to store timeouts for bubble sort animation cleanup
-  const timeoutsRef = useRef<number[]>([]);
-
-  // Cleanup any pending timeouts when visualizationData changes or on unmount
+  // Clean up any timeouts when visualizationData changes or on unmount
   useEffect(() => {
     return () => {
-      timeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+      timeoutsRef.current.forEach((id) => clearTimeout(id));
       timeoutsRef.current = [];
     };
   }, [visualizationData]);
@@ -24,152 +16,505 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({
   useEffect(() => {
     if (!visualizationData || !svgRef.current) return;
 
-    // Clear any pending timeouts from previous animations
-    timeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+    // Clear previous timeouts and svg content
+    timeoutsRef.current.forEach((id) => clearTimeout(id));
     timeoutsRef.current = [];
-
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove(); // Clear previous visualization
+    svg.selectAll("*").remove();
 
-    if (
-      visualizationData.visualizationType === "sorting" &&
-      visualizationData.algorithm === "bubble_sort"
-    ) {
-      renderBubbleSort(svg, visualizationData);
-    } else if (
-      visualizationData.visualizationType === "tree" &&
-      visualizationData.structure === "binary_tree"
-    ) {
-      renderBinaryTree(svg, visualizationData);
-    }
-    // ... add more conditions for other visualization types ...
-  }, [visualizationData]);
-
-  const renderBubbleSort = (
-    svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-    data: any
-  ) => {
-    // --- D3.js Bubble Sort Visualization Logic ---
-    const steps = data.steps;
-    const width = 600;
-    const height = 200;
-    const barWidth = 50;
-    const barPadding = 10;
-
+    const width = 800;
+    const height = 400;
     svg.attr("width", width).attr("height", height);
 
-    const updateBars = (stepData: any) => {
-      // Use a key function (here, using the index) for proper data binding
-      const bars = svg
-        .selectAll("rect")
-        .data(stepData.array, (_d: any, i: number) => i);
+    switch (visualizationData.visualizationType) {
+      case "sorting":
+        renderSortingAnimation(svg, visualizationData, width, height);
+        break;
+      case "graph":
+        renderGraph(svg, visualizationData, width, height);
+        break;
+      case "tree":
+        renderTree(svg, visualizationData, width, height);
+        break;
+      case "stack":
+        renderStack(svg, visualizationData, width, height);
+        break;
+      case "queue":
+        renderQueue(svg, visualizationData, width, height);
+        break;
+      case "hashmap":
+        renderHashMap(svg, visualizationData, width, height);
+        break;
+      default:
+        renderUnsupported(svg, width, height);
+    }
+  }, [visualizationData]);
 
+  // ----------------- Renderers -----------------
+
+  // 1. Sorting Animation
+  const renderSortingAnimation = (svg, data, width, height) => {
+    const steps = data.steps || [];
+    const barWidth = 40;
+    const barPadding = 10;
+
+    const updateBars = (step) => {
+      const arr = step.array || [];
+      const maxValue = Math.max(...arr);
+      const scale = d3
+        .scaleLinear()
+        .domain([0, maxValue])
+        .range([0, height - 100]);
+
+      const bars = svg.selectAll("rect").data(arr);
       bars.exit().remove();
-
       bars
         .enter()
         .append("rect")
-        .attr("x", (d, i) => i * (barWidth + barPadding))
-        .attr("y", height) // Start from bottom and animate up
-        .attr("width", barWidth)
-        .attr("height", 0)
-        .attr("fill", "steelblue")
         .merge(bars)
+        .attr("x", (d, i) => i * (barWidth + barPadding) + 50)
+        .attr("y", (d) => height - scale(d) - 50)
+        .attr("width", barWidth)
+        .attr("height", (d) => scale(d))
+        .attr("fill", "steelblue")
         .transition()
-        .duration(750)
-        .attr("x", (d, i) => i * (barWidth + barPadding))
-        .attr("y", (d: number) => height - d * 20) // Scale height based on value (example scaling)
-        .attr("height", (d: number) => d * 20);
+        .duration(500);
 
-      // Display step message (optional)
-      svg.selectAll(".message").remove();
+      svg
+        .selectAll(".value-label")
+        .data(arr)
+        .join("text")
+        .attr("class", "value-label")
+        .attr("x", (d, i) => i * (barWidth + barPadding) + 50 + barWidth / 2)
+        .attr("y", (d) => height - scale(d) - 55)
+        .attr("text-anchor", "middle")
+        .text((d) => d);
+
+      svg.selectAll(".step-message").remove();
       svg
         .append("text")
-        .attr("class", "message")
+        .attr("class", "step-message")
         .attr("x", width / 2)
-        .attr("y", 20)
+        .attr("y", 30)
         .attr("text-anchor", "middle")
-        .text(stepData.message);
+        .text(step.message);
     };
 
-    // Animate through steps (simple sequential animation)
-    steps.forEach((stepData: any, index: number) => {
-      const timeoutId = window.setTimeout(() => {
-        updateBars(stepData);
-      }, index * 1500); // Delay between steps
+    steps.forEach((step, idx) => {
+      const timeoutId = window.setTimeout(() => updateBars(step), idx * 1000);
       timeoutsRef.current.push(timeoutId);
     });
   };
 
-  const renderBinaryTree = (
-    svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-    data: any
-  ) => {
-    // --- D3.js Binary Tree Visualization Logic ---
-    const nodes = data.nodes;
-    const width = 600;
-    const height = 400;
+  // 2. Graph Rendering & Traversal Animation
+const renderGraph = (svg, data, width, height) => {
+  // Clear any existing content
+  svg.selectAll("*").remove();
 
-    svg.attr("width", width).attr("height", height);
+  // Set up the SVG
+  svg.attr("viewBox", `0 0 ${width} ${height}`).style("overflow", "visible");
 
-    const treeLayout = d3.tree().size([height, width - 100]);
+  let nodes = data.nodes || [];
+  let edges = data.edges || [];
 
-    // Build the hierarchy by mapping child IDs to full node objects
-    const root = d3.hierarchy(nodes[0], (d: any) => {
-      const node = nodes.find((n: any) => n.id === d.id);
-      return node && Array.isArray(node.children)
-        ? node.children.map((childId: any) =>
-            nodes.find((n: any) => n.id === childId)
-          )
-        : [];
+  // Convert string IDs to object references
+  edges = edges.map((link) => ({
+    source:
+      typeof link.source === "string"
+        ? nodes.find((n) => n.id === link.source)
+        : link.source,
+    target:
+      typeof link.target === "string"
+        ? nodes.find((n) => n.id === link.target)
+        : link.target,
+  }));
+
+  // Create drag behavior
+  const drag = d3
+    .drag()
+    .on("start", (event, d) => {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    })
+    .on("drag", (event, d) => {
+      d.fx = event.x;
+      d.fy = event.y;
+    })
+    .on("end", (event, d) => {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
     });
 
-    treeLayout(root);
+  // Create force simulation
+  const simulation = d3
+    .forceSimulation(nodes)
+    .force(
+      "link",
+      d3
+        .forceLink(edges)
+        .id((d) => d.id)
+        .distance(100)
+    )
+    .force("charge", d3.forceManyBody().strength(-200))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collision", d3.forceCollide().radius(30));
 
-    // Draw links
+  // Create container groups
+  const linkGroup = svg.append("g").attr("class", "edges");
+  const nodeGroup = svg.append("g").attr("class", "nodes");
+
+  // Create edges
+  const link = linkGroup
+    .selectAll("line")
+    .data(edges)
+    .join("line")
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6)
+    .attr("stroke-width", 2);
+
+  // Create nodes
+  const node = nodeGroup.selectAll("g").data(nodes).join("g").call(drag);
+
+  // Add circles to nodes
+  node.append("circle").attr("r", 20).attr("fill", "#69b3a2");
+
+  // Add labels to nodes
+  node
+    .append("text")
+    .text((d) => d.id)
+    .attr("text-anchor", "middle")
+    .attr("dy", ".35em")
+    .attr("fill", "white");
+
+  // Ensure edges are behind nodes
+  linkGroup.lower();
+
+  // Update positions on each tick
+  simulation.on("tick", () => {
+    // Constrain nodes within boundaries
+    nodes.forEach((d) => {
+      d.x = Math.max(20, Math.min(width - 20, d.x));
+      d.y = Math.max(20, Math.min(height - 20, d.y));
+    });
+
+    // Update link positions
+    link
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y);
+
+    // Update node positions
+    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+  });
+
+  // Handle animation steps
+  if (data.steps && data.steps.length > 0) {
+    const timeoutsRef = [];
+
+    data.steps.forEach((step, idx) => {
+      const timeoutId = setTimeout(() => {
+        // Reset colors
+        node.select("circle").attr("fill", "#69b3a2");
+
+        // Highlight visited nodes
+        if (step.visitedNodes?.length > 0) {
+          node
+            .select("circle")
+            .filter((d) => step.visitedNodes.includes(d.id))
+            .attr("fill", "orange");
+        }
+
+        // Highlight current node
+        if (step.currentNode) {
+          node
+            .select("circle")
+            .filter((d) => d.id === step.currentNode)
+            .attr("fill", "red");
+        }
+
+        // Update step message
+        svg.selectAll(".graph-step-message").remove();
+        svg
+          .append("text")
+          .attr("class", "graph-step-message")
+          .attr("x", width / 2)
+          .attr("y", 30)
+          .attr("text-anchor", "middle")
+          .text(step.message || "");
+      }, idx * 1000);
+
+      timeoutsRef.push(timeoutId);
+    });
+
+    // Cleanup function
+    return () => timeoutsRef.forEach((id) => clearTimeout(id));
+  }
+};
+
+  // 3. Tree Visualization (Handles nested or flat structures)
+const renderTree = (svg, data, width, height) => {
+  // Validate input data
+  if (!data || typeof data !== "object") {
+    console.error("Invalid data provided to renderTree:", data);
+    return;
+  }
+
+  // Extract nodes from different possible data structures
+  let nodes;
+  if (data.visualization_data && data.visualization_data.nodes) {
+    nodes = data.visualization_data.nodes;
+  } else if (data.nodes) {
+    nodes = data.nodes;
+  } else if (Array.isArray(data)) {
+    nodes = data;
+  } else {
+    console.error("No valid nodes data found in:", data);
     svg
-      .selectAll(".link")
-      .data(root.links())
-      .enter()
-      .append("path")
-      .attr("class", "link")
-      .attr("fill", "none")
-      .attr("stroke", "#ccc")
-      .attr(
-        "d",
-        d3
-          .linkVertical()
-          .x((d: any) => d.y)
-          .y((d: any) => d.x)
-      );
-
-    // Draw nodes
-    const node = svg
-      .selectAll(".node")
-      .data(root.descendants())
-      .enter()
-      .append("g")
-      .attr("class", "node")
-      .attr("transform", (d) => `translate(${d.y},${d.x})`);
-
-    node
-      .append("circle")
-      .attr("r", 20)
-      .attr("fill", "lightgreen")
-      .attr("stroke", "green")
-      .attr("stroke-width", 2);
-
-    node
       .append("text")
-      .attr("dy", ".35em")
+      .attr("x", 10)
+      .attr("y", 30)
+      .text("Invalid tree data structure");
+    return;
+  }
+
+  const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // Transform adjacency list to hierarchical structure
+  const transformToHierarchy = (nodes) => {
+    try {
+      // Create a map of all nodes
+      const nodeMap = new Map();
+      nodes.forEach((node) => {
+        nodeMap.set(node.id, {
+          id: node.id,
+          value: node.value,
+          children: [],
+        });
+      });
+
+      // Connect nodes based on children arrays
+      nodes.forEach((node) => {
+        if (node.children) {
+          node.children.forEach((childId) => {
+            const childNode = nodeMap.get(childId);
+            if (childNode) {
+              nodeMap.get(node.id).children.push(childNode);
+            }
+          });
+        }
+      });
+
+      // Find root node (node that's not a child of any other node)
+      const childIds = new Set(nodes.flatMap((node) => node.children || []));
+      const rootNode = nodes.find((node) => !childIds.has(node.id));
+
+      if (!rootNode) {
+        throw new Error("No root node found in the tree data");
+      }
+
+      return nodeMap.get(rootNode.id);
+    } catch (error) {
+      console.error("Error transforming data to hierarchy:", error);
+      return null;
+    }
+  };
+
+  // Transform the data
+  const rootData = transformToHierarchy(nodes);
+
+  if (!rootData) {
+    svg
+      .append("text")
+      .attr("x", 10)
+      .attr("y", 30)
+      .text("Error processing tree data");
+    return;
+  }
+
+  // Create hierarchy and apply tree layout
+  const root = d3.hierarchy(rootData);
+  const treeLayout = d3.tree().size([innerWidth, innerHeight]);
+  treeLayout(root);
+
+  // Create container group with margin
+  const g = svg
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Draw links
+  g.selectAll(".link")
+    .data(root.links())
+    .join("path")
+    .attr("class", "link")
+    .attr("fill", "none")
+    .attr("stroke", "#999")
+    .attr("stroke-width", 2)
+    .attr(
+      "d",
+      d3
+        .linkVertical()
+        .x((d) => d.x)
+        .y((d) => d.y)
+    );
+
+  // Draw nodes
+  const node = g
+    .selectAll(".node")
+    .data(root.descendants())
+    .join("g")
+    .attr("class", "node")
+    .attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+  // Add circles for nodes
+  node
+    .append("circle")
+    .attr("r", 25)
+    .attr("fill", "#69b3a2")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 2);
+
+  // Add text labels
+  node
+    .append("text")
+    .text((d) => d.data.value)
+    .attr("dy", "0.35em")
+    .attr("text-anchor", "middle")
+    .attr("fill", "white")
+    .style("font-size", "16px")
+    .style("font-weight", "bold");
+};
+  // 4. Stack Visualization
+  const renderStack = (svg, data, width, height) => {
+    const stack = data.elements || [];
+    const boxHeight = 50;
+    const boxWidth = 100;
+    const spacing = 10;
+
+    svg
+      .selectAll("rect")
+      .data(stack)
+      .join("rect")
+      .attr("x", width / 2 - boxWidth / 2)
+      .attr("y", (d, i) => height - (i + 1) * (boxHeight + spacing))
+      .attr("width", boxWidth)
+      .attr("height", boxHeight)
+      .attr("fill", "#69b3a2")
+      .attr("stroke", "#234d45");
+
+    svg
+      .selectAll(".stack-text")
+      .data(stack)
+      .join("text")
+      .attr("class", "stack-text")
+      .attr("x", width / 2)
+      .attr("y", (d, i) => height - (i + 0.5) * (boxHeight + spacing))
       .attr("text-anchor", "middle")
-      // Use the node's value if available; otherwise fall back to the node id
-      .text((d) => d.data.value || d.data.id);
+      .attr("dy", "0.35em")
+      .attr("fill", "white")
+      .text((d) => d);
+
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", 30)
+      .attr("text-anchor", "middle")
+      .text("Stack");
+  };
+
+  // 5. Queue Visualization
+  const renderQueue = (svg, data, width, height) => {
+    const queue = data.elements || [];
+    const boxHeight = 50;
+    const boxWidth = 100;
+    const spacing = 10;
+
+    svg
+      .selectAll("rect")
+      .data(queue)
+      .join("rect")
+      .attr("x", (d, i) => spacing + i * (boxWidth + spacing))
+      .attr("y", height / 2 - boxHeight / 2)
+      .attr("width", boxWidth)
+      .attr("height", boxHeight)
+      .attr("fill", "#69b3a2")
+      .attr("stroke", "#234d45");
+
+    svg
+      .selectAll(".queue-text")
+      .data(queue)
+      .join("text")
+      .attr("class", "queue-text")
+      .attr("x", (d, i) => spacing + i * (boxWidth + spacing) + boxWidth / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.35em")
+      .attr("fill", "white")
+      .text((d) => d);
+
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", 30)
+      .attr("text-anchor", "middle")
+      .text("Queue");
+  };
+
+  // 6. Hash Map Visualization
+  const renderHashMap = (svg, data, width, height) => {
+    const entries = data.entries || [];
+    const bucketHeight = 50;
+    const bucketWidth = 150;
+    const spacing = 10;
+
+    entries.forEach((entry, i) => {
+      const g = svg
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${spacing},${spacing + i * (bucketHeight + spacing)})`
+        );
+
+      g.append("rect")
+        .attr("width", bucketWidth)
+        .attr("height", bucketHeight)
+        .attr("fill", "#69b3a2")
+        .attr("stroke", "#234d45");
+
+      g.append("text")
+        .attr("x", bucketWidth / 2)
+        .attr("y", bucketHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.35em")
+        .attr("fill", "white")
+        .text(`${entry.key}: ${entry.value}`);
+    });
+
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", 30)
+      .attr("text-anchor", "middle")
+      .text("HashMap");
+  };
+
+  // Fallback for unsupported types
+  const renderUnsupported = (svg, width, height) => {
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Unsupported visualization type");
   };
 
   return (
-    <div className="algorithm-visualizer">
-      <svg ref={svgRef}></svg>
+    <div className="w-full max-w-4xl mx-auto p-4 bg-white rounded-lg shadow-lg">
+      <svg ref={svgRef} className="w-full"></svg>
     </div>
   );
 };

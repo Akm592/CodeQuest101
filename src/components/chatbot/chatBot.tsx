@@ -1,19 +1,18 @@
-// src/components/chatbot/chatBot.tsx
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import InputArea from "./InputArea";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
-import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer"; // Updated import path if both files are in the same folder
+import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer";
 
 interface Message {
   id: string;
   sender: "user" | "bot";
   text: string;
   timestamp: string;
-  isVisualization?: boolean; // Flag to indicate if message is a visualization
-  visualizationData?: any; // Data for visualization
+  isVisualization?: boolean;
+  visualizationData?: any;
 }
 
 const ChatInterface: React.FC = () => {
@@ -24,7 +23,6 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const chatWindowRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom whenever messages update
   useEffect(() => {
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
@@ -34,12 +32,12 @@ const ChatInterface: React.FC = () => {
   const handleSendMessage = async () => {
     const trimmedInput = inputValue.trim();
     if (!trimmedInput) return;
-
     setError(null);
     setIsLoading(true);
     setIsTyping(true);
 
-    const newMessage: Message = {
+    // 1) Add the user's message to the chat
+    const userMessage: Message = {
       id: Date.now().toString() + "-user",
       sender: "user",
       text: trimmedInput,
@@ -48,24 +46,27 @@ const ChatInterface: React.FC = () => {
         minute: "2-digit",
       }),
     };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
 
+    // 2) Call the backend
     try {
       const response = await axios.post("http://localhost:8000/chat", {
         user_input: trimmedInput,
       });
+
       const responseData = response.data;
       const botResponseText = responseData.bot_response;
       const responseType = responseData.response_type;
       const visualizationData = responseData.visualization_data;
 
+      // 3) Build the bot message
       let botMessage: Message;
       if (responseType === "visualization" && visualizationData) {
         botMessage = {
           id: Date.now().toString() + "-bot",
           sender: "bot",
-          text: botResponseText, // You might want a custom message here
+          text: botResponseText,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -85,11 +86,11 @@ const ChatInterface: React.FC = () => {
         };
       }
 
-      // Simulate bot "typing" delay before adding the bot message
+      // 4) Simulate a small delay to show typing indicator
       setTimeout(() => {
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        setMessages((prev) => [...prev, botMessage]);
         setIsTyping(false);
-      }, 700);
+      }, 600);
     } catch (apiError: any) {
       console.error("API Error:", apiError);
       setIsTyping(false);
@@ -103,7 +104,7 @@ const ChatInterface: React.FC = () => {
           minute: "2-digit",
         }),
       };
-      setMessages((prevMessages) => [...prevMessages, errorBotMessage]);
+      setMessages((prev) => [...prev, errorBotMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -153,36 +154,6 @@ const ChatInterface: React.FC = () => {
         isLoading={isLoading}
       />
     </div>
-  );
-};
-
-// The MessageBubble component is defined here if you want to use it inside ChatWindow.
-// Ensure that ChatWindow renders each message with MessageBubble.
-export const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
-  const isUserMessage = message.sender === "user";
-  const bubbleClassName = isUserMessage
-    ? "bg-blue-500 text-white ml-auto rounded-bl-none"
-    : "bg-gray-300 text-gray-800 rounded-br-none";
-  const containerClassName = isUserMessage ? "items-end" : "items-start";
-
-  return (
-    <motion.div
-      className={`flex flex-col ${containerClassName} max-w-2xl`}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className={`p-3 ${bubbleClassName} rounded-xl mb-1`}>
-        {message.isVisualization ? (
-          <AlgorithmVisualizer visualizationData={message.visualizationData} />
-        ) : (
-          message.text
-        )}
-      </div>
-      <span className="text-gray-500 text-xs self-end">
-        {message.timestamp}
-      </span>
-    </motion.div>
   );
 };
 
