@@ -389,42 +389,94 @@ const renderTree = (svg, data, width, height) => {
     .style("font-weight", "bold");
 };
   // 4. Stack Visualization
-  const renderStack = (svg, data, width, height) => {
-    const stack = data.elements || [];
-    const boxHeight = 50;
-    const boxWidth = 100;
-    const spacing = 10;
+const renderStack = (svg, data, width, height) => {
+  // Validate input data
+  if (!svg || !data || !width || !height) {
+    console.error("Missing required parameters");
+    return;
+  }
 
-    svg
-      .selectAll("rect")
-      .data(stack)
-      .join("rect")
-      .attr("x", width / 2 - boxWidth / 2)
-      .attr("y", (d, i) => height - (i + 1) * (boxHeight + spacing))
-      .attr("width", boxWidth)
-      .attr("height", boxHeight)
-      .attr("fill", "#69b3a2")
-      .attr("stroke", "#234d45");
+  // Extract the stack data - handle both direct array and nested structure
+  let stack = [];
+  let message = "";
 
-    svg
-      .selectAll(".stack-text")
-      .data(stack)
-      .join("text")
-      .attr("class", "stack-text")
-      .attr("x", width / 2)
-      .attr("y", (d, i) => height - (i + 0.5) * (boxHeight + spacing))
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.35em")
-      .attr("fill", "white")
-      .text((d) => d);
+  if (Array.isArray(data)) {
+    stack = data;
+  } else if (data.visualization_data && data.visualization_data.stack) {
+    stack = data.visualization_data.stack;
+  } else if (data.stack) {
+    stack = data.stack;
+  } else if (data.array) {
+    stack = data.array;
+  } else {
+    console.error("Invalid data structure");
+    return;
+  }
 
+  // Configuration
+  const boxHeight = 50;
+  const boxWidth = 100;
+  const spacing = 10;
+
+  // Clear any existing elements
+  svg.selectAll("*").remove();
+
+  // Create stack elements
+  const stackGroup = svg
+    .append("g")
+    .attr("class", "stack-group")
+    .attr(
+      "transform",
+      `translate(0, ${height - stack.length * (boxHeight + spacing)})`
+    );
+
+  // Add rectangles for stack elements
+  stackGroup
+    .selectAll("rect")
+    .data(stack)
+    .join("rect")
+    .attr("x", width / 2 - boxWidth / 2)
+    .attr("y", (d, i) => i * (boxHeight + spacing))
+    .attr("width", boxWidth)
+    .attr("height", boxHeight)
+    .attr("fill", "#69b3a2")
+    .attr("stroke", "#234d45")
+    .attr("rx", 5)
+    .attr("ry", 5);
+
+  // Add text labels for stack elements
+  stackGroup
+    .selectAll(".stack-text")
+    .data(stack)
+    .join("text")
+    .attr("class", "stack-text")
+    .attr("x", width / 2)
+    .attr("y", (d, i) => i * (boxHeight + spacing) + boxHeight / 2)
+    .attr("text-anchor", "middle")
+    .attr("dy", "0.35em")
+    .attr("fill", "white")
+    .text((d) => d);
+
+  // Add "Stack" title
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .attr("class", "stack-title")
+    .text("Stack");
+
+  // Add top pointer if stack is not empty
+  if (stack.length > 0) {
     svg
       .append("text")
-      .attr("x", width / 2)
-      .attr("y", 30)
-      .attr("text-anchor", "middle")
-      .text("Stack");
-  };
+      .attr("x", width / 2 + boxWidth / 2 + 20)
+      .attr("y", height - stack.length * (boxHeight + spacing) + boxHeight / 2)
+      .attr("text-anchor", "start")
+      .attr("dy", "0.35em")
+      .text("← Top");
+  }
+};
 
   // 5. Queue Visualization
   const renderQueue = (svg, data, width, height) => {

@@ -20,6 +20,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+
+
 interface Contributor {
   name: string;
   role: string;
@@ -227,7 +229,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
                 variant="outline"
                 size="lg"
                 className="flex items-center"
-                onClick={() => onSelectVisualization("chatbot")}
+                onClick={() =>(window.location.href = "/chat")}
               >
                 Try the AI Chatbot <MessageCircle className="ml-2" />
               </Button>

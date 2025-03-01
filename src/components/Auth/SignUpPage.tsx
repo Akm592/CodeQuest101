@@ -1,5 +1,5 @@
-// Code for the Login component
-// ../../../src/components/Auth/Login.tsx
+// ../../../src/components/Auth/SignUpPage.tsx
+// Code for the SignUpPage component
 import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -14,13 +14,16 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { GithubIcon } from "lucide-react";
 
-export const LoginPage = () => {
-  const { user, signInWithOAuth, signInWithEmail, isLoading } = useAuth();
+export const SignUpPage = () => {
+  const { user, signInWithOAuth, signUpWithEmail, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   // Redirect if already logged in
   if (user && !isLoading) {
@@ -40,29 +43,71 @@ export const LoginPage = () => {
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setAuthError("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setAuthError("Password must be at least 6 characters long.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setAuthError(null);
-      await signInWithEmail(email, password);
-    } catch (error) {
-      console.error("Error signing in with email:", error);
-      setAuthError("Invalid email or password. Please try again.");
+      await signUpWithEmail(email, password);
+      setSignupSuccess(true);
+    } catch (error: any) {
+      console.error("Error signing up with email:", error);
+      setAuthError(error.message || "Failed to sign up. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (signupSuccess) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">
+              Check Your Email
+            </CardTitle>
+            <CardDescription className="text-center">
+              We've sent a confirmation link to <strong>{email}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="mb-4">
+              Please check your email and click the confirmation link to
+              complete your registration.
+            </p>
+            <p className="text-sm text-gray-500">
+              If you don't see the email, check your spam folder or{" "}
+              <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+                try again
+              </Link>
+              .
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Sign In
+            Create an Account
           </CardTitle>
           <CardDescription className="text-center">
-            Sign in to access your account
+            Sign up to get started with CodeQuest101
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -72,7 +117,7 @@ export const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleEmailSignUp} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -85,15 +130,7 @@ export const LoginPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -103,8 +140,19 @@ export const LoginPage = () => {
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing in..." : "Sign In with Email"}
+              {isSubmitting ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
@@ -139,20 +187,31 @@ export const LoginPage = () => {
               </svg>
               Continue with Google
             </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => handleOAuthLogin("github")}
+              disabled={isSubmitting}
+            >
+              <GithubIcon className="w-5 h-5" />
+              Continue with GitHub
+            </Button>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center">
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <Link
-              to="/signup"
+              to="/login"
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
-              Sign up
+              Sign in
             </Link>
           </div>
           <p className="text-xs text-gray-500 text-center">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+            By signing up, you agree to our Terms of Service and Privacy Policy.
           </p>
         </CardFooter>
       </Card>

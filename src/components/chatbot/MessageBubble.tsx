@@ -1,7 +1,9 @@
-// src/components/chatbot/MessageBubble.tsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import Highlight from "react-highlight";
+import "highlight.js/styles/github.css";
 import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer";
 import VisualizationModal from "../Visualizer/VisualizationModal";
 
@@ -20,35 +22,66 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const [showModal, setShowModal] = useState(false);
   const isUserMessage = message.sender === "user";
   const bubbleClassName = isUserMessage
-    ? "bg-blue-500 text-white ml-auto rounded-bl-none"
-    : "bg-gray-300 text-gray-800 rounded-br-none";
+    ? "bg-blue-600 text-white ml-auto rounded-xl sm:rounded-bl-none" // Darker blue for user, more rounded on desktop
+    : "bg-gray-200 text-gray-800 rounded-xl sm:rounded-br-none"; // Lighter gray for bot, more rounded on desktop
   const containerClassName = isUserMessage ? "items-end" : "items-start";
 
-  // Custom markdown components
+  // Custom CodeBlock component using highlight.js via react-highlight
+  const CodeBlock = ({ inline, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || "");
+    if (inline) {
+      return (
+        <code
+          className="bg-gray-100 rounded-md px-2 py-1 font-mono text-sm" // More padding for inline code
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    } else {
+      return (
+        <div className="relative group my-4 rounded-md border border-gray-300">
+          {" "}
+          {/* Added border and rounded to code block container */}
+          <button
+            className="absolute top-2 right-2 bg-gray-300 hover:bg-gray-400 text-xs text-gray-800 rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity" // Improved copy button style
+            onClick={() => {
+              navigator.clipboard.writeText(
+                String(children).replace(/\n$/, "")
+              );
+            }}
+          >
+            Copy
+          </button>
+          <div className="p-4">
+            {" "}
+            {/* Added padding to code block content */}
+            <Highlight
+              className={match ? `language-${match[1]}` : ""}
+              {...props}
+            >
+              {String(children).replace(/\n$/, "")}
+            </Highlight>
+          </div>
+        </div>
+      );
+    }
+  };
+
   const components = {
-    code: ({ inline, className, children }: any) => (
-      <code
-        className={
-          inline
-            ? "bg-opacity-20 px-1 py-0.5 rounded"
-            : "block p-3 rounded-lg overflow-x-auto"
-        }
-      >
-        {children}
-      </code>
-    ),
+    code: CodeBlock,
   };
 
   return (
     <>
       <motion.div
-        className={`flex flex-col ${containerClassName} max-w-2xl`}
+        className={`flex flex-col ${containerClassName} max-w-full sm:max-w-2xl mx-2 sm:mx-auto`} // Full width on mobile, max-w on desktop, added horizontal margin
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
         <div
-          className={`p-3 ${bubbleClassName} rounded-xl mb-1 cursor-pointer`}
+          className={`p-3 ${bubbleClassName} rounded-xl cursor-pointer hover:opacity-95 transition-opacity`} // Added hover effect
           onClick={() => {
             if (message.isVisualization && message.visualizationData) {
               setShowModal(true);
@@ -56,17 +89,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           }}
         >
           {message.isVisualization && message.visualizationData ? (
-            // Optionally, you can show a smaller preview
             <AlgorithmVisualizer
               visualizationData={message.visualizationData}
             />
           ) : (
-            <ReactMarkdown components={components}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
               {message.text}
             </ReactMarkdown>
           )}
         </div>
-        <span className="text-gray-500 text-xs self-end">
+        <span className="text-gray-500 text-xs self-end mt-1 sm:mt-0">
+          {" "}
+          {/* Adjusted timestamp margin */}
           {message.timestamp}
         </span>
       </motion.div>

@@ -1,20 +1,22 @@
-// src/components/chatbot/ChatWindow.tsx
-import React from "react";
+// ChatWindow.tsx
+import React, { forwardRef } from "react";
 import MessageBubble from "./MessageBubble";
-import { Message } from "./chatBot"; // Import Message interface from ChatInterface
+import { Message } from "./chatBot"; // Import the Message interface
 
 interface ChatWindowProps {
   messages: Message[];
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
-  return (
-    <>
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
-      ))}
-    </>
-  );
-};
+const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(
+  ({ messages }, ref) => {
+    return (
+      <div ref={ref}>
+        {messages.map((message) => (
+          <MessageBubble key={message.id} message={message} />
+        ))}
+      </div>
+    );
+  }
+);
 
 export default ChatWindow;

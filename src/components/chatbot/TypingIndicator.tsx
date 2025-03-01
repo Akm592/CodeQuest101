@@ -1,5 +1,5 @@
 // src/components/chatbot/TypingIndicator.tsx
-import React from "react";
+
 import { motion } from "framer-motion";
 
 const TypingIndicator = () => {
