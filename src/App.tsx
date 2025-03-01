@@ -9,7 +9,7 @@ import {
 import { AuthProvider } from "./contexts/AuthContext";
 import Interface from "./interface";
 import ChatInterface from "./components/chatbot/chatBot";
-import { LoginPage } from "./components/Auth/login";
+import { LoginPage } from "./components/Auth/Login";
 import { AuthCallback } from "./components/Auth/AuthCallback";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { SignUpPage } from "./components/Auth/SignUpPage"; 

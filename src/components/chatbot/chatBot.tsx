@@ -7,6 +7,7 @@ import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
 import ChatSidebar from "./ChatSidebar"; // Import ChatSidebar component
+import { supabase } from "../../lib/supabaseClient";
 
 interface Message {
   id: string;
@@ -43,9 +44,17 @@ const ChatInterface = () => {
     const fetchSessions = async () => {
       if (user) {
         try {
-          const response = await axios.get("http://localhost:8000/sessions");
-          console.log("Chat sessions:", response.data);
-          setChatSessions(response.data);
+         const { data: chatSessions , error} = await supabase.from('chat_sessions').select('*').eq('user_id', user.id);
+
+          if (error) {
+            console.error("Error fetching chat sessions:", error);
+            setError("Failed to load chat sessions.");
+          } else {
+            setChatSessions(chatSessions);
+            
+          }
+
+
         } catch (err) {
           console.error("Error fetching chat sessions:", err);
           setError("Failed to load chat sessions.");
