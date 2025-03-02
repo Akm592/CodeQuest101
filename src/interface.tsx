@@ -15,7 +15,7 @@ import TreeVisualizer from "./components/TreeVisualizer";
 import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import GraphTraversalVisualizer from "./components/GraphTraversalVisualizer";
 import { Analytics } from "@vercel/analytics/react";
-import ChatInterface from "./components/chatbot/chatBot";
+
 
 function Interface() {
   const [currentView, setCurrentView] = useState(() => {

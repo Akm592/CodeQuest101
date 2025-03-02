@@ -8,28 +8,27 @@ import {
   SortDesc,
   Search,
   RotateCw,
-  Github,
-  Linkedin,
-  Mail,
+  // Github,
+  // Linkedin,
+  // Mail,
   Brain,
   Database,
   AlignJustify,
-  ExternalLink,
+  // ExternalLink,
   MessageCircle,
-
   ArrowRight,
 } from "lucide-react";
 
+import Header from "../components/Header";
 
-
-interface Contributor {
-  name: string;
-  role: string;
-  image: string;
-  github?: string;
-  linkedin?: string;
-  email?: string;
-}
+// interface Contributor {
+//   name: string;
+//   role: string;
+//   image: string;
+//   github?: string;
+//   linkedin?: string;
+//   email?: string;
+// }
 
 const categories = [
   {
@@ -133,24 +132,24 @@ const visualizations = {
   ],
 };
 
-const contributors: Contributor[] = [
-  {
-    name: "Ashish Mishra",
-    role: "FullStack Developer",
-    image: "/path/to/john-doe-image.jpg",
-    github: "https://github.com/Akm592",
-    linkedin: "https://www.linkedin.com/in/ashish-kumar-mishra-a286a2224/",
-    email: "ashishkumarmishra952@gmail.com",
-  },
-  {
-    name: "Puneet Prashar",
-    role: "Software Developer",
-    image: "/path/to/jane-smith-image.jpg",
-    github: "https://github.com/puneetprashar2003",
-    email: "",
-  },
-  // Add more contributors as needed
-];
+// const contributors: Contributor[] = [
+//   {
+//     name: "Ashish Mishra",
+//     role: "FullStack Developer",
+//     image: "/path/to/john-doe-image.jpg",
+//     github: "https://github.com/Akm592",
+//     linkedin: "https://www.linkedin.com/in/ashish-kumar-mishra-a286a2224/",
+//     email: "ashishkumarmishra952@gmail.com",
+//   },
+//   {
+//     name: "Puneet Prashar",
+//     role: "Software Developer",
+//     image: "/path/to/jane-smith-image.jpg",
+//     github: "https://github.com/puneetprashar2003",
+//     email: "",
+//   },
+//   // Add more contributors as needed
+// ];
 
 interface HomePageProps {
   onSelectVisualization: (key: string) => void;
@@ -162,38 +161,20 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
   return (
     <div className="min-h-screen flex flex-col w-screen">
       {/* HEADER */}
-      <header className="bg-white shadow-sm">
-        <nav className="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
-          <a href="#" className="text-2xl font-bold text-blue-600">
-            CodeQuest101
-          </a>
-          <div className="space-x-4">
-            <a href="#" className="text-gray-600 hover:text-blue-600">
-              Visualizations
-            </a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">
-              AI Chatbot
-            </a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">
-              About
-            </a>
-            <Button variant="outline">Sign Up</Button>
-          </div>
-        </nav>
-      </header>
+      <Header />
 
-      <main className="flex-grow">
+      <main className="flex-groww-screen">
         {/* HERO SECTION */}
-        <section className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 flex items-center">
-          <div className="container mx-auto px-6 py-24">
+        <section className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-100 to-cyan-100 flex items-center"> {/* Slightly brighter background */}
+          <div className="container mx-auto px-6 py-24 sm:py-32 md:py-48 lg:py-64"> {/* Increased padding for larger screens */}
             <div className="max-w-5xl mx-auto text-center space-y-8">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 mb-6 leading-tight">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 mb-6 leading-tight"> {/* Responsive font sizes */}
                 Visualize Code,
                 <br />
                 Master Concepts
               </h1>
 
-              <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-2xl mx-auto leading-relaxed"> {/* Slightly darker text and responsive font size */}
                 CodeQuest101 makes learning to code easier and more engaging
                 through dynamic animations and interactive visualizations.
               </p>
@@ -205,22 +186,22 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
                 </button>
               </div>
 
-              {/* Abstract decorative elements */}
-              <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
-              <div className="absolute top-20 right-10 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
-              <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
+              {/* Abstract decorative elements - Adjusted positioning for better responsiveness */}
+              <div className="absolute top-1/4 left-10 w-60 h-60 sm:w-72 sm:h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
+              <div className="absolute top-1/4 right-10 w-60 h-60 sm:w-72 sm:h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
+              <div className="absolute bottom-10 left-20 w-60 h-60 sm:w-72 sm:h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
             </div>
           </div>
         </section>
 
         {/* AI CODING TUTOR SECTION */}
-        <section className="py-20 bg-white">
-          <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center">
+        <section className="py-16 sm:py-20 bg-white"> {/* Adjusted padding */}
+          <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-center lg:justify-between"> {/* Centered on small screens, space-between on larger */}
             <div className="lg:w-1/2 mb-10 lg:mb-0">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"> {/* Responsive text size */}
                 Your AI Coding Tutor is Here
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-base sm:text-lg text-gray-600 mb-6"> {/* Responsive text size */}
                 Stuck on a coding problem? Our intelligent AI tutor provides
                 instant explanations, code examples, and personalized guidance
                 to help you learn faster and overcome challenges.
@@ -229,7 +210,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
                 variant="outline"
                 size="lg"
                 className="flex items-center"
-                onClick={() =>(window.location.href = "/chat")}
+                onClick={() => (window.location.href = "/chat")}
               >
                 Try the AI Chatbot <MessageCircle className="ml-2" />
               </Button>
@@ -247,12 +228,12 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
                       How do I implement a binary search tree in Python?
                     </p>
                   </div>
-                  <div className="bg-blue-100 rounded p-3 shadow">
+                  <div className="bg-blue-50 rounded p-3 shadow"> {/* Slightly lighter blue for response box */}
                     <p className="text-gray-800">
                       Here's an example of a binary search tree implementation
                       in Python:
                     </p>
-                    <pre className="bg-gray-800 text-green-400 p-2 rounded mt-2 text-sm overflow-x-auto">
+                    <pre className="bg-gray-800 text-green-400 p-3 rounded mt-2 text-sm overflow-x-auto font-mono"> {/* Added font-mono for code and padding */}
                       {`class Node:
     def __init__(self, value):
         self.value = value
@@ -289,28 +270,30 @@ class BinarySearchTree:
         </section>
 
         {/* VISUALIZATION SECTION */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-16 sm:py-20 bg-gray-50"> {/* Adjusted padding */}
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-12"> {/* Responsive text size */}
               Visualize Code in Action
             </h2>
             {!selectedCategory ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"> {/* Adjusted gap */}
                 {categories.map((category) => (
                   <div
                     key={category.key}
-                    className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer p-6 flex flex-col items-center hover:scale-105 transform transition-transform duration-300" // Added hover scale and shadow
                     onClick={() => setSelectedCategory(category.key)}
                   >
                     <div className="mb-4">
-                      <div className="p-4 rounded-full bg-blue-50 inline-block">
+                      <div className="p-4 rounded-full bg-blue-50 inline-flex items-center justify-center"> {/* inline-flex for alignment */}
                         {category.icon}
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-900 text-center"> {/* Centered text */}
                       {category.title}
                     </h3>
-                    <p className="text-gray-600">{category.description}</p>
+                    <p className="text-gray-600 text-center"> {/* Centered text */}
+                      {category.description}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -318,30 +301,32 @@ class BinarySearchTree:
               <>
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className="mb-6 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md transition-colors duration-200"
+                  className="mb-8 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md transition-colors duration-200 inline-flex items-center" // inline-flex for alignment
                 >
-                  Back to Categories
+                  <ArrowRight className="mr-2 rotate-180" /> Back to Categories
                 </button>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"> {/* Adjusted gap */}
                   {visualizations[
                     selectedCategory as keyof typeof visualizations
                   ].map((viz) => (
                     <div
                       key={viz.key}
-                      className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+                      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex flex-col justify-between" // justify-between for button at bottom
                     >
-                      <div className="mb-4">
-                        <div className="p-2 rounded-full bg-blue-50 inline-block">
-                          {viz.icon}
+                      <div> {/* Container for title and description */}
+                        <div className="mb-4">
+                          <div className="p-2 rounded-full bg-blue-50 inline-flex items-center justify-center"> {/* inline-flex for alignment */}
+                            {viz.icon}
+                          </div>
                         </div>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-900">
+                          {viz.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4">{viz.description}</p>
                       </div>
-                      <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                        {viz.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4">{viz.description}</p>
                       <Button
                         onClick={() => onSelectVisualization(viz.key)}
-                        className="w-full bg-black hover:bg-black-800 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-2"
+                        className="w-full bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-2"
                       >
                         Explore <Code2 className="h-4 w-4" />
                       </Button>
@@ -354,12 +339,12 @@ class BinarySearchTree:
         </section>
 
         {/* ABOUT SECTION */}
-        <section className="py-20 bg-white">
+        <section id="about" className="py-16 sm:py-20 bg-white"> {/* Added ID and padding */}
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8"> {/* Responsive text size */}
               About CodeQuest
             </h2>
-            <p className="text-lg text-center text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg text-center text-gray-600 max-w-3xl mx-auto"> {/* Responsive text size */}
               CodeQuest is an innovative platform designed to help developers
               master complex algorithms and data structures through interactive
               visualizations. Our mission is to make learning engaging,
@@ -423,17 +408,18 @@ class BinarySearchTree:
         </section> */}
 
         {/* CALL TO ACTION SECTION */}
-        <section className="bg-blue-600 text-white py-20">
+        <section className="bg-blue-700 text-white py-20"> {/* Slightly brighter blue */}
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4"> {/* Responsive text size */}
               Ready to Start Your Coding Journey?
             </h2>
-            <p className="text-xl mb-8">
+            <p className="text-lg mb-8">
               Join CodeQuest101 today and transform the way you learn to code.
             </p>
             <Button
               size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold" // Added font-semibold
+              onClick={() => (window.location.href = "/chat")}
             >
               Get Started for Free
             </Button>
@@ -444,18 +430,18 @@ class BinarySearchTree:
       {/* FOOTER */}
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left"> {/* Centered text on small screens */}
             <div className="mb-4 md:mb-0">
-              <p>&copy; 2025 CodeQuest101. All rights reserved.</p>
+              <p className="text-sm text-gray-300">© 2025 CodeQuest101. All rights reserved.</p> {/* Lighter text color */}
             </div>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-blue-400">
+            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4"> {/* Vertical spacing on small screens */}
+              <a href="#" className="hover:text-blue-400 text-sm text-gray-300"> {/* Lighter text color */}
                 Terms of Service
               </a>
-              <a href="#" className="hover:text-blue-400">
+              <a href="#" className="hover:text-blue-400 text-sm text-gray-300"> {/* Lighter text color */}
                 Privacy Policy
               </a>
-              <a href="#" className="hover:text-blue-400">
+              <a href="#" className="hover:text-blue-400 text-sm text-gray-300"> {/* Lighter text color */}
                 Contact
               </a>
             </div>

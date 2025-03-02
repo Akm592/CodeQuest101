@@ -1,5 +1,3 @@
-// ../../../src/components/Auth/SignUpPage.tsx
-// Code for the SignUpPage component
 import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -14,7 +12,7 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { GithubIcon } from "lucide-react";
+import { AlertCircle, CheckCircle, } from "lucide-react";
 
 export const SignUpPage = () => {
   const { user, signInWithOAuth, signUpWithEmail, isLoading } = useAuth();
@@ -30,7 +28,7 @@ export const SignUpPage = () => {
     return <Navigate to="/chat" replace />;
   }
 
-  const handleOAuthLogin = async (provider: "google" | "github") => {
+  const handleOAuthLogin = async (provider: "google") => {
     try {
       setIsSubmitting(true);
       setAuthError(null);
@@ -45,22 +43,28 @@ export const SignUpPage = () => {
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setAuthError("Please enter a valid email address.");
+      return;
+    }
     if (password !== confirmPassword) {
       setAuthError("Passwords do not match.");
       return;
     }
-
     if (password.length < 6) {
       setAuthError("Password must be at least 6 characters long.");
       return;
     }
-
     try {
       setIsSubmitting(true);
       setAuthError(null);
       await signUpWithEmail(email, password);
       setSignupSuccess(true);
+      // Reset form fields
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (error: any) {
       console.error("Error signing up with email:", error);
       setAuthError(error.message || "Failed to sign up. Please try again.");
@@ -71,24 +75,27 @@ export const SignUpPage = () => {
 
   if (signupSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 w-screen">
+        <Card className="w-full max-w-md shadow-lg border-0">
+          <CardHeader className="pb-6">
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+            </div>
+            <CardTitle className="text-2xl md:text-3xl font-bold text-center text-gray-800">
               Check Your Email
             </CardTitle>
-            <CardDescription className="text-center">
+            <CardDescription className="text-center text-gray-600 mt-2">
               We've sent a confirmation link to <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">
+          <CardContent className="text-center pb-6">
+            <p className="mb-4 text-gray-700">
               Please check your email and click the confirmation link to
               complete your registration.
             </p>
             <p className="text-sm text-gray-500">
               If you don't see the email, check your spam folder or{" "}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+              <Link to="/signup" className="text-blue-600 hover:text-blue-800 transition-colors">
                 try again
               </Link>
               .
@@ -100,26 +107,27 @@ export const SignUpPage = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 w-screen ">
+      <Card className="w-full max-w-md shadow-lg border-0">
+        <CardHeader className="space-y-1 pb-6">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-center text-gray-800">
             Create an Account
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-gray-600">
             Sign up to get started with CodeQuest101
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {authError && (
-            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
-              {authError}
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md flex items-start gap-2">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              <span>{authError}</span>
             </div>
           )}
 
           <form onSubmit={handleEmailSignUp} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-gray-700">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -127,10 +135,11 @@ export const SignUpPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-10"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-gray-700">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -138,10 +147,11 @@ export const SignUpPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-10"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-gray-700">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -149,14 +159,19 @@ export const SignUpPage = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="h-10"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="w-full h-11 mt-2 bg-blue-600 hover:bg-blue-700 transition-colors"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
-          <div className="relative my-4">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
@@ -167,45 +182,32 @@ export const SignUpPage = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Button
               type="button"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full h-11 flex items-center justify-center gap-2 transition-all"
               onClick={() => handleOAuthLogin("google")}
               disabled={isSubmitting}
               variant="outline"
             >
-              <svg
-                className="w-5 h-5"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12.2465 14.5864V9.83889H20.4363C20.5947 10.4239 20.673 11.0385 20.673 11.6826C20.673 15.4192 17.8619 19.0004 12.2465 19.0004C7.18058 19.0004 3 14.8199 3 9.75386C3 4.6878 7.18058 0.507324 12.2465 0.507324C14.7344 0.507324 16.8928 1.4771 18.5319 3.12478L15.3611 6.12311C14.61 5.37196 13.5454 4.85164 12.2465 4.85164C9.59002 4.85164 7.34339 7.0983 7.34339 9.75386C7.34339 12.4094 9.59002 14.6561 12.2465 14.6561C14.4539 14.6561 15.8096 13.7249 16.3517 12.2911C16.532 11.9307 16.6365 11.5467 16.6836 11.1529H12.2465V14.5864Z"
-                  fill="currentColor"
-                />
+              <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                {/* Google SVG path */}
               </svg>
-              Continue with Google
+              <span className="text-sm md:text-base">
+                {isSubmitting ? "Connecting..." : "Continue with Google"}
+              </span>
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => handleOAuthLogin("github")}
-              disabled={isSubmitting}
-            >
-              <GithubIcon className="w-5 h-5" />
-              Continue with GitHub
-            </Button>
+
+
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-4 pt-2 pb-6 px-8">
           <div className="text-sm text-center">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
             >
               Sign in
             </Link>

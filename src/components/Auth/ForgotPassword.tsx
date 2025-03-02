@@ -9,7 +9,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 export const ForgotPassword = () => {
-  const { resetPassword } = useAuth();
+  const { resetPassword } = useAuth() as unknown as { resetPassword: (email: string) => Promise<void> };
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -32,8 +32,8 @@ export const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 w-screen">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             {resetSent ? 'Check Your Email' : 'Reset Password'}
@@ -41,7 +41,7 @@ export const ForgotPassword = () => {
           <CardDescription className="text-center">
             {resetSent 
               ? `We've sent recovery instructions to ${email}` 
-              : 'Enter your email address and we'll send you a link to reset your password'}
+              : 'Enter your email address and we\'ll send you a link to reset your password'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
