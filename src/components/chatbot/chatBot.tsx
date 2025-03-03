@@ -38,6 +38,9 @@ const ChatInterface = () => {
   const [chatSessions, setChatSessions] = useState<ChatSessionInfo[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile sidebar toggle
+  const api = axios.create({
+    baseURL:import.meta.env.VITE_API_URL || "http://localhost:8000",
+  });
 
   // Fetch chat sessions for sidebar on mount and user change
   useEffect(() => {
@@ -125,9 +128,7 @@ const ChatInterface = () => {
   const loadMessageHistory = async (sessionId: string) => {
     try {
       setIsLoading(true);
-      const response = await axios.get(
-        `https://codequest-backend-l6ig.onrender.com/sessions/${sessionId}/messages`
-      );
+      const response = await api.get(`/sessions/${sessionId}/messages`);
       const historyMessages = response.data.map((msg: any) => ({
         id: msg.id,
         sender: msg.sender_type,
@@ -156,7 +157,7 @@ const ChatInterface = () => {
       setSession(newSessionRecord);
       setSelectedSessionId(newSessionRecord.id);
       setMessages([]);
-      const response = await axios.get("http://localhost:8000/sessions");
+      const response = await api.get("/sessions");
       setChatSessions(response.data);
       return newSessionRecord;
     } catch (error) {
@@ -207,8 +208,8 @@ const ChatInterface = () => {
     setInputValue("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/chat",
+      const response = await api.post(
+        "/chat",
         { user_input: trimmedInput },
         { headers: { "X-Session-ID": session.id } }
       );
