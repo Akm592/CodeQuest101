@@ -126,7 +126,7 @@ const ChatInterface = () => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `http://localhost:8000/sessions/${sessionId}/messages`
+        `https://codequest-backend-l6ig.onrender.com/sessions/${sessionId}/messages`
       );
       const historyMessages = response.data.map((msg: any) => ({
         id: msg.id,
