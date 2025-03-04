@@ -14,6 +14,7 @@ import { AuthCallback } from "./components/Auth/AuthCallback";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { SignUpPage } from "./components/Auth/SignUpPage"; 
 import { ForgotPassword } from "./components/Auth/ForgotPassword";  
+import NotFoundPage  from "./components/404";  
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
           />
 
           {/* Fallback route */}
-          <Route path="*" element={<h1>404 Not Found</h1>} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthProvider>
