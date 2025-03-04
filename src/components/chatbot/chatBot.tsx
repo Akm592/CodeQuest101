@@ -10,6 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import ChatSidebar from "./ChatSidebar";
 import { supabase } from "../../lib/supabaseClient";
 
+
 interface Message {
   id: string;
   sender: "user" | "bot";
@@ -39,7 +40,7 @@ const ChatInterface = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile sidebar toggle
   const api = axios.create({
-    baseURL:import.meta.env.VITE_API_URL || "http://localhost:8000",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   });
 
   // Fetch chat sessions for sidebar on mount and user change
@@ -275,9 +276,8 @@ const ChatInterface = () => {
 
       {/* Sidebar - Hidden by default on mobile, visible on toggle */}
       <div
-        className={`sidebar fixed md:relative z-30 h-full transition-all duration-300 ease-in-out transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        } md:flex md:flex-shrink-0`}
+        className={`sidebar fixed md:relative z-30 h-full transition-all duration-300 ease-in-out transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          } md:flex md:flex-shrink-0`}
       >
         <ChatSidebar
           sessions={chatSessions}
@@ -333,20 +333,32 @@ const ChatInterface = () => {
             </div>
 
             <div className="border-t border-gray-200 p-3 sm:p-4">
-              <div className="w-full flex items-center space-x-2">
-                <input
-                  type="text"
+              <div className="w-full flex items-end space-x-2 hide-scrollbar">
+                <textarea
+                  ref={(el) => {
+                    if (el) {
+                      el.style.height = "auto";
+                      el.style.height = `${Math.min(el.scrollHeight, 150)}px`;
+                    }
+                  }}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
                   placeholder="Type your message..."
-                  className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+                  rows={1}
+                  className="flex-1 bg-gray-100 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all resize-none overflow-y-auto hide-scrollbar"
                   disabled={isLoading}
+                  style={{ maxHeight: "150px" }}
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={isLoading || !inputValue.trim()}
-                  className="bg-blue-600 text-white rounded-full p-2 sm:p-3 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="bg-blue-600 text-white rounded-full p-2 sm:p-3 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-1"
                   aria-label="Send message"
                 >
                   {isLoading ? (
@@ -369,7 +381,7 @@ const ChatInterface = () => {
               className="fixed top-4 left-4 right-4 md:w-auto md:max-w-md md:mx-auto bg-red-50 text-red-500 px-4 py-2 rounded-lg shadow-sm border border-red-200 z-50"
             >
               {error}
-              <button 
+              <button
                 onClick={() => setError(null)}
                 className="absolute top-2 right-2 text-red-400 hover:text-red-600"
                 aria-label="Close error message"

@@ -57,7 +57,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </h2>
       </div>
 
-      <div className="flex-grow p-2 overflow-y-auto">
+      <div className="flex-grow p-2 overflow-y-auto hide-scrollbar">
         {sessions.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <LayoutList className="w-12 h-12 text-gray-300 mb-2" />
@@ -67,25 +67,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         ) : (
           <nav className="space-y-1">
             {sessions.map((session) => (
-              <button
-                key={session.id}
-                onClick={() => onSessionSelect(session.id)}
-                className={`w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                  selectedSessionId === session.id
-                    ? "bg-blue-50 border-l-4 border-blue-500"
-                    : "border-l-4 border-transparent"
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <span className={`font-medium text-gray-800 ${selectedSessionId === session.id ? "text-blue-600" : ""}`}>
-                    {session.session_name || `Chat ${sessions.indexOf(session) + 1}`}
-                  </span>
-                </div>
-                <div className="flex items-center mt-1 text-xs text-gray-500">
-                  <Clock className="w-3 h-3 mr-1" />
-                  <span>{formatDate(session.updated_at)}</span>
-                </div>
-              </button>
+         <button
+         key={session.id}
+         onClick={() => onSessionSelect(session.id)}
+         className={`w-full bg-blue-100 text-left p-3 rounded-lg transition-all duration-300 hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${
+           selectedSessionId === session.id
+             ? "bg-blue-100 border-l-4 border-blue-500 shadow-sm"
+             : "border-l-4 border-transparent"
+         }`}
+         aria-selected={selectedSessionId === session.id}
+       >
+         <div className="flex justify-between items-center">
+           <span className={`font-medium text-gray-800 truncate ${selectedSessionId === session.id ? "text-blue-600" : ""}`}>
+             {session.session_name || `Chat ${sessions.indexOf(session) + 1}`}
+           </span>
+           <div className="flex items-center text-xs text-gray-500 ml-2">
+             <Clock className="w-3 h-3 mr-1" />
+             <span>{formatDate(session.updated_at)}</span>
+           </div>
+         </div>
+       </button>
             ))}
           </nav>
         )}
