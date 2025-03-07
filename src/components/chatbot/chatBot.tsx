@@ -1,15 +1,12 @@
-// ./src/components/chatbot/ChatInterface.tsx
-
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, Menu, X } from "lucide-react"; // Added Menu and X icons
+import { Send, Loader2, MessageSquarePlus, Menu, X } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
 import ChatSidebar from "./ChatSidebar";
 import { supabase } from "../../lib/supabaseClient";
-
 
 interface Message {
   id: string;
@@ -27,6 +24,38 @@ interface ChatSessionInfo {
   updated_at: string;
 }
 
+/** SuggestionsScreen Component */
+const SuggestionsScreen = ({ onSuggestionClick }: { onSuggestionClick: (suggestion: string) => void }) => {
+  const suggestions = [
+    "Explain quicksort with a step-by-step example.",
+    "Visualize a BFS traversal on a sample graph.",
+    "Generate a linked list visualization for [1, 2, 3, 4].",
+    "Explain the two-pointer technique with an example."
+  ];
+  
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-gray-800">
+      <h2 className="text-3xl font-bold mb-6">Welcome to AI Assistant</h2>
+      <p className="text-gray-500 mb-8 text-lg">Get started with these suggestions:</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full px-4">
+        {suggestions.map((suggestion, index) => (
+          <motion.button
+            key={index}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gray-100 text-gray-700 rounded-lg p-4 text-left hover:bg-gray-200 transition-colors border border-gray-200 shadow-sm"
+            onClick={() => onSuggestionClick(suggestion)}
+          >
+            {suggestion}
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/** ChatInterface Component */
 const ChatInterface = () => {
   const { user, getChatSession, createChatSession } = useAuth();
   const [session, setSession] = useState<any>(null);
@@ -38,7 +67,7 @@ const ChatInterface = () => {
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const [chatSessions, setChatSessions] = useState<ChatSessionInfo[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile sidebar toggle
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   });
@@ -49,9 +78,9 @@ const ChatInterface = () => {
       if (user) {
         try {
           const { data: chatSessions, error } = await supabase
-            .from('chat_sessions')
-            .select('*')
-            .eq('user_id', user.id);
+            .from("chat_sessions")
+            .select("*")
+            .eq("user_id", user.id);
 
           if (error) {
             console.error("Error fetching chat sessions:", error);
@@ -76,16 +105,16 @@ const ChatInterface = () => {
       const target = event.target as HTMLElement;
       if (
         sidebarOpen &&
-        !target.closest('.sidebar') &&
-        !target.closest('.sidebar-toggle-btn')
+        !target.closest(".sidebar") &&
+        !target.closest(".sidebar-toggle-btn")
       ) {
         setSidebarOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [sidebarOpen]);
 
@@ -117,7 +146,6 @@ const ChatInterface = () => {
   useEffect(() => {
     if (selectedSessionId) {
       loadMessageHistory(selectedSessionId);
-      // Close sidebar on mobile after selecting a session
       if (window.innerWidth < 768) {
         setSidebarOpen(false);
       }
@@ -173,7 +201,6 @@ const ChatInterface = () => {
     try {
       const newSessionRecord = await createNewChatSession();
       setSession(newSessionRecord);
-      // Close sidebar on mobile after creating a new chat
       if (window.innerWidth < 768) {
         setSidebarOpen(false);
       }
@@ -189,60 +216,90 @@ const ChatInterface = () => {
     }
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    const trimmedInput = inputValue.trim();
-    if (!trimmedInput || isLoading || !session) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue.trim();
+    if (!textToSend || isLoading || !session) return;
+
+    // Reset states
     setError(null);
     setIsLoading(true);
     setIsTyping(true);
 
+    // Add user's message to the chat
     const userMessage: Message = {
       id: Date.now().toString() + "-user",
       sender: "user",
-      text: trimmedInput,
+      text: textToSend,
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
     };
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
+
+    // Clear input field only if message was sent from input
+    if (!messageText) {
+      setInputValue("");
+    }
 
     try {
-      const response = await api.post(
-        "/chat",
-        { user_input: trimmedInput },
-        { headers: { "X-Session-ID": session.id } }
-      );
+      // Send POST request to /chat endpoint
+      const response = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Session-ID": session.id,
+        },
+        body: JSON.stringify({ user_input: textToSend }),
+      });
 
-      const {
-        bot_response: botResponseText,
-        response_type: responseType,
-        visualization_data: visualizationData,
-      } = response.data;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      const botMessage: Message = {
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("Failed to get reader from response body");
+      }
+
+      let botMessage: Message = {
         id: Date.now().toString() + "-bot",
         sender: "bot",
-        text: botResponseText,
+        text: "",
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        ...(responseType === "visualization" && {
-          isVisualization: true,
-          visualizationData,
-        }),
       };
 
-      setTimeout(() => {
-        setMessages((prev) => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 600);
-    } catch (apiError: any) {
-      console.error("API Error:", apiError);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          setIsTyping(false);
+          break;
+        }
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === "text") {
+              botMessage.text += data.content;
+              setMessages((prev) => {
+                const updatedMessages = prev.filter((msg) => msg.id !== botMessage.id);
+                return [...updatedMessages, { ...botMessage }];
+              });
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error("API Error:", error);
       setIsTyping(false);
-      setError(apiError.message || "Failed to get response from AI.");
+      setError(error.message || "Failed to get response from the server.");
+
       const errorMessage: Message = {
         id: Date.now().toString() + "-error",
         sender: "bot",
@@ -271,13 +328,17 @@ const ChatInterface = () => {
     <div className="flex h-screen w-screen bg-gray-50 overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div className="md:hidden fixed inset-0 bg-black bg-opacity-30 z-20" onClick={() => setSidebarOpen(false)}></div>
+        <div
+          className="md:hidden fixed inset-0 bg-black bg-opacity-30 z-20"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
       )}
 
-      {/* Sidebar - Hidden by default on mobile, visible on toggle */}
+      {/* Sidebar */}
       <div
-        className={`sidebar fixed md:relative z-30 h-full transition-all duration-300 ease-in-out transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          } md:flex md:flex-shrink-0`}
+        className={`sidebar fixed md:relative z-30 h-full transition-all duration-300 ease-in-out transform ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        } md:flex md:flex-shrink-0`}
       >
         <ChatSidebar
           sessions={chatSessions}
@@ -290,7 +351,6 @@ const ChatInterface = () => {
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
         <header className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            {/* Sidebar Toggle Button for Mobile */}
             <button
               onClick={toggleSidebar}
               className="sidebar-toggle-btn md:hidden text-gray-700 hover:text-gray-900 focus:outline-none"
@@ -311,25 +371,51 @@ const ChatInterface = () => {
         </header>
 
         <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-4 md:px-6 overflow-hidden flex">
-          <div
-            className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col flex-1 min-h-0 w-full my-3"
-          >
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col flex-1 min-h-0 w-full my-3">
             <div
               ref={chatWindowRef}
-              className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4"
+              className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-transparent hover:scrollbar-thumb-gray-700"
             >
-              <AnimatePresence mode="popLayout">
-                <ChatWindow messages={messages} />
+              <AnimatePresence mode="wait">
+                {isLoading ? (
+                  <motion.div
+                    key="loader"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center h-full"
+                  >
+                    <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+                  </motion.div>
+                ) : messages.length === 0 ? (
+                  <motion.div
+                    key="suggestions"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <SuggestionsScreen onSuggestionClick={handleSendMessage} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="chat"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <ChatWindow messages={messages} />
+                    {isTyping && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center space-x-2 text-gray-500"
+                      >
+                        <TypingIndicator />
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
               </AnimatePresence>
-              {isTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center space-x-2 text-gray-500"
-                >
-                  <TypingIndicator />
-                </motion.div>
-              )}
             </div>
 
             <div className="border-t border-gray-200 p-3 sm:p-4">
@@ -356,7 +442,7 @@ const ChatInterface = () => {
                   style={{ maxHeight: "150px" }}
                 />
                 <button
-                  onClick={handleSendMessage}
+                  onClick={() => handleSendMessage()}
                   disabled={isLoading || !inputValue.trim()}
                   className="bg-blue-600 text-white rounded-full p-2 sm:p-3 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-1"
                   aria-label="Send message"

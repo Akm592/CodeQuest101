@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown ,{Components}from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Highlight from "react-highlight";
-import "highlight.js/styles/github.css";
+import "highlight.js/styles/monokai.css"; // Using a dark theme for modern code blocks
 import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer";
 import VisualizationModal from "../Visualizer/VisualizationModal";
 
@@ -28,36 +28,60 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
   // Custom CodeBlock component for markdown code rendering
   const CodeBlock = ({ inline, className, children, ...props }: any) => {
+    const [copied, setCopied] = useState(false);
     const match = /language-(\w+)/.exec(className || "");
+
     if (inline) {
       return (
-        <code className="bg-gray-100 rounded-md px-2 py-1 font-mono text-sm" {...props}>
+        <code
+          className="bg-gray-300 rounded-md px-2 py-1 font-mono text-sm"
+          {...props}
+        >
           {children}
         </code>
       );
     } else {
       return (
-        <div className="relative group my-4 rounded-md border border-gray-300">
+        <div className="relative group my-4 rounded-md border border-gray-600 shadow-md">
           <button
-            className="absolute top-2 right-2 bg-gray-300 hover:bg-gray-400 text-xs text-gray-800 rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            className={`absolute top-2 right-2 bg-gray-700 text-white rounded px-2 py-1 text-sm ${
+              copied ? "bg-green-500" : "hover:bg-gray-600"
+            }`}
             onClick={() => {
               navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
             }}
           >
-            Copy
+            {copied ? "Copied!" : "Copy"}
           </button>
-          <div className="p-4">
-            <Highlight className={match ? `language-${match[1]}` : ""} {...props}>
-              {String(children).replace(/\n$/, "")}
-            </Highlight>
-          </div>
+          <Highlight className={match ? `language-${match[1]}` : ""} {...props}>
+            {String(children).replace(/\n$/, "")}
+          </Highlight>
         </div>
       );
     }
   };
 
-  const components = {
+  // Custom components for ReactMarkdown to style markdown elements
+  const components:Components = {
     code: CodeBlock,
+    h1: ({ node, ...props }: { node?: any; [key: string]: any }) => (
+      <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
+    ),
+    h2: ({ node, ...props }: { node?: any; [key: string]: any }) => (
+      <h2 className="text-xl font-bold mt-4 mb-2" {...props} />
+    ),
+    p: ({ node, ...props }: { node?: any; [key: string]: any }) => <p className="my-2" {...props} />,
+    ul: ({ node, ...props }: { node?: any; [key: string]: any }) => (
+      <ul className="list-disc list-inside my-2" {...props} />
+    ),
+    ol: ({ node, ...props }: { node?: any; [key: string]: any }) => (
+      <ol className="list-decimal list-inside my-2" {...props} />
+    ),
+    a: ({ ...props }: { [key: string]: any }) => (
+      <a className="text-blue-600 hover:underline" {...props} />
+    ),
   };
 
   // Function to render message content based on visualization status
