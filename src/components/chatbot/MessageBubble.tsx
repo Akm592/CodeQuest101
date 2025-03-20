@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import ReactMarkdown ,{Components}from "react-markdown";
+import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Highlight from "react-highlight";
 import "highlight.js/styles/monokai.css"; // Using a dark theme for modern code blocks
@@ -22,8 +22,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const [showModal, setShowModal] = useState(false);
   const isUserMessage = message.sender === "user";
   const bubbleClassName = isUserMessage
-    ? "bg-blue-600 text-white ml-auto rounded-xl sm:rounded-bl-none"
-    : "bg-gray-200 text-gray-800 rounded-xl sm:rounded-br-none";
+    ? "bg-blue-600 text-white dark:bg-blue-500 dark:text-gray-100 ml-auto rounded-xl sm:rounded-bl-none"
+    : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-xl sm:rounded-br-none";
   const containerClassName = isUserMessage ? "items-end" : "items-start";
 
   // Custom CodeBlock component for markdown code rendering
@@ -34,7 +34,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     if (inline) {
       return (
         <code
-          className="bg-gray-300 rounded-md px-2 py-1 font-mono text-sm"
+          className="bg-gray-300 dark:bg-gray-600 rounded-md px-2 py-1 font-mono text-sm text-gray-800 dark:text-gray-200"
           {...props}
         >
           {children}
@@ -42,10 +42,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       );
     } else {
       return (
-        <div className="relative group my-4 rounded-md border border-gray-600 shadow-md">
+        <div className="relative group my-4 rounded-md border border-gray-600 dark:border-gray-400 shadow-md">
           <button
-            className={`absolute top-2 right-2 bg-gray-700 text-white rounded px-2 py-1 text-sm ${
-              copied ? "bg-green-500" : "hover:bg-gray-600"
+            className={`absolute top-2 right-2 bg-gray-700 dark:bg-gray-600 text-white dark:text-gray-200 rounded px-2 py-1 text-sm ${
+              copied ? "bg-green-500 dark:bg-green-600" : "hover:bg-gray-600 dark:hover:bg-gray-500"
             }`}
             onClick={() => {
               navigator.clipboard.writeText(String(children).replace(/\n$/, ""));
@@ -64,23 +64,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   };
 
   // Custom components for ReactMarkdown to style markdown elements
-  const components:Components = {
+  const components: Components = {
     code: CodeBlock,
     h1: ({ node, ...props }: { node?: any; [key: string]: any }) => (
-      <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
+      <h1 className="text-2xl font-bold mt-4 mb-2 text-gray-900 dark:text-gray-100" {...props} />
     ),
     h2: ({ node, ...props }: { node?: any; [key: string]: any }) => (
-      <h2 className="text-xl font-bold mt-4 mb-2" {...props} />
+      <h2 className="text-xl font-bold mt-4 mb-2 text-gray-900 dark:text-gray-100" {...props} />
     ),
-    p: ({ node, ...props }: { node?: any; [key: string]: any }) => <p className="my-2" {...props} />,
+    p: ({ node, ...props }: { node?: any; [key: string]: any }) => (
+      <p className="my-2 text-gray-800 dark:text-gray-200" {...props} />
+    ),
     ul: ({ node, ...props }: { node?: any; [key: string]: any }) => (
-      <ul className="list-disc list-inside my-2" {...props} />
+      <ul className="list-disc list-inside my-2 text-gray-800 dark:text-gray-200" {...props} />
     ),
     ol: ({ node, ...props }: { node?: any; [key: string]: any }) => (
-      <ol className="list-decimal list-inside my-2" {...props} />
+      <ol className="list-decimal list-inside my-2 text-gray-800 dark:text-gray-200" {...props} />
     ),
     a: ({ ...props }: { [key: string]: any }) => (
-      <a className="text-blue-600 hover:underline" {...props} />
+      <a className="text-blue-600 dark:text-blue-400 hover:underline" {...props} />
     ),
   };
 
@@ -94,7 +96,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           </div>
         );
       } else {
-        return <div className="text-red-500">Visualization data missing</div>;
+        return <div className="text-red-500 dark:text-red-400">Visualization data missing</div>;
       }
     } else {
       return (
@@ -123,7 +125,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         >
           {renderContent()}
         </div>
-        <span className="text-gray-500 text-xs self-end mt-1 sm:mt-0">
+        <span className="text-gray-500 dark:text-gray-400 text-xs self-end mt-1 sm:mt-0">
           {message.timestamp}
         </span>
       </motion.div>

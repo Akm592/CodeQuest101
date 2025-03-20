@@ -14,6 +14,7 @@ import FloydsAlgorithmVisualizer from "./components/FloydsAlgorithmVisualizer";
 import TreeVisualizer from "./components/TreeVisualizer";
 import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import GraphTraversalVisualizer from "./components/GraphTraversalVisualizer";
+import HeapDataStructure from "./components/Datastructures/Heaps/heapDataStructure";
 import { Analytics } from "@vercel/analytics/react";
 
 
@@ -55,6 +56,8 @@ function Interface() {
 
       case "graph":
         return <GraphTraversalVisualizer />;
+      case "heap":
+        return <HeapDataStructure />;
     //   case "chatbot":
     //     return <ChatInterface />;
       default:
