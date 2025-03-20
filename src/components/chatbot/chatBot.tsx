@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, Menu, X, Settings, Trash2 } from "lucide-react";
+import { Send, Loader2, MessageSquarePlus, Menu, X, Settings} from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";

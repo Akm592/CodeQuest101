@@ -1,5 +1,5 @@
 import  { useState, useEffect } from 'react';
-import { Code, MessageSquare, Users, Github, ExternalLink, Heart, Coffee, Sparkles, BookOpen } from 'lucide-react';
+import { Code, MessageSquare,Github, ExternalLink, Coffee, Sparkles, BookOpen } from 'lucide-react';
 import  Header from './Header';
 import Footer from './Footer';
 const AboutPage = () => {
