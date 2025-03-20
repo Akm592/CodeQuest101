@@ -15,6 +15,7 @@ import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { SignUpPage } from "./components/Auth/SignUpPage"; 
 import { ForgotPassword } from "./components/Auth/ForgotPassword";  
 import NotFoundPage  from "./components/404";  
+import About from "./components/About";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path= "/forgot-password" element={<ForgotPassword />} />
+          <Route path="/about" element={<About />} />
 
           {/* Protected route */}
           <Route
