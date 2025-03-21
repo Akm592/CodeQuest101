@@ -72,7 +72,7 @@ const ChatInterface = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+    baseURL: import.meta.env.VITE_API_URL,
   });
 
   // Fetch chat sessions for sidebar on mount and user change
