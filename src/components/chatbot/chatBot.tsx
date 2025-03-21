@@ -71,6 +71,7 @@ const ChatInterface = () => {
   const [theme, setTheme] = useState<string>("system");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const apiLink = import.meta.env.VITE_API_URL || "http://localhost:8000";
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   });
@@ -295,7 +296,7 @@ const ChatInterface = () => {
     const charDelay = 20;
 
     try {
-      const response = await fetch(`${api.defaults.baseURL}/chat`, {
+      const response = await fetch(`${apiLink}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
