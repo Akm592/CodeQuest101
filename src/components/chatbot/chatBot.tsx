@@ -292,10 +292,10 @@ const ChatInterface = () => {
     setMessages((prev) => [...prev, botMessage]);
 
     let delay = 0;
-    const charDelay = 50;
+    const charDelay = 20;
 
     try {
-      const response = await fetch("baseURL/chat", {
+      const response = await fetch(`${api.defaults.baseURL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
