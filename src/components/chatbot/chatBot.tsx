@@ -72,7 +72,7 @@ const ChatInterface = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   });
 
   // Fetch chat sessions for sidebar on mount and user change
@@ -295,7 +295,7 @@ const ChatInterface = () => {
     const charDelay = 50;
 
     try {
-      const response = await fetch("http://localhost:8000/chat", {
+      const response = await fetch("baseURL/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
