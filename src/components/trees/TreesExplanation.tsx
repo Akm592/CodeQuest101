@@ -1,3 +1,5 @@
+// TreesExplanation.tsx
+// **MODIFIED**: Adjusted colors for dark theme and added pseudocode for each tree type
 import React from "react";
 import { TreeType } from "./treeTypes";
 
@@ -21,20 +23,12 @@ const TreeExplanation: React.FC<TreeExplanationProps> = ({ treeType }) => {
         search: "O(h), where h is the height of the tree",
       },
       pseudocode: `
-        // Inserting a node in a Binary Tree (not necessarily a BST)
-        function insert(root, value) {
-          if (root is null) {
-            return new Node(value)
-          }
-          // Traverse the tree to find the correct position
-          if (root.left is null) {
-            root.left = insert(root.left, value)
-          } else {
-            root.right = insert(root.right, value)
-          }
-          return root
-        }
-      `,
+function traverseBinaryTree(node):
+    if node is not null:
+        traverseBinaryTree(node.left)
+        print(node.value)
+        traverseBinaryTree(node.right)
+      `.trim(),
       references: [
         {
           text: "Binary Tree Basics",
@@ -60,18 +54,15 @@ const TreeExplanation: React.FC<TreeExplanationProps> = ({ treeType }) => {
         search: "O(log n) on average, O(n) in the worst case",
       },
       pseudocode: `
-        // Searching for a value in a Binary Search Tree
-        function search(root, value) {
-          if (root is null or root.value === value) {
-            return root
-          }
-          if (value < root.value) {
-            return search(root.left, value)
-          } else {
-            return search(root.right, value)
-          }
-        }
-      `,
+function insertIntoBST(root, value):
+    if root is null:
+        return new Node(value)
+    if value < root.value:
+        root.left = insertIntoBST(root.left, value)
+    else:
+        root.right = insertIntoBST(root.right, value)
+    return root
+      `.trim(),
       references: [
         {
           text: "Binary Search Tree Overview",
@@ -97,52 +88,23 @@ const TreeExplanation: React.FC<TreeExplanationProps> = ({ treeType }) => {
         search: "O(log n)",
       },
       pseudocode: `
-        // Left Rotation in AVL Tree
-        function leftRotate(node) {
-          let rightNode = node.right
-          node.right = rightNode.left
-          rightNode.left = node
-          // Update heights
-          node.height = max(height(node.left), height(node.right)) + 1
-          rightNode.height = max(height(rightNode.left), height(rightNode.right)) + 1
-          return rightNode
-        }
-        
-        // Insertion in AVL Tree
-        function insert(root, value) {
-          if (root is null) {
-            return new Node(value)
-          }
-          if (value < root.value) {
-            root.left = insert(root.left, value)
-          } else if (value > root.value) {
-            root.right = insert(root.right, value)
-          } else {
-            return root
-          }
-          
-          // Update height and balance the tree
-          root.height = max(height(root.left), height(root.right)) + 1
-          let balance = getBalance(root)
-          
-          // Rotate to balance the tree
-          if (balance > 1 && value < root.left.value) {
-            return rightRotate(root)
-          }
-          if (balance < -1 && value > root.right.value) {
-            return leftRotate(root)
-          }
-          if (balance > 1 && value > root.left.value) {
-            root.left = leftRotate(root.left)
-            return rightRotate(root)
-          }
-          if (balance < -1 && value < root.right.value) {
-            root.right = rightRotate(root.right)
-            return leftRotate(root)
-          }
-          return root
-        }
-      `,
+function insertIntoAVL(root, value):
+    root = insert(root, value)
+    balanceFactor = height(root.left) - height(root.right)
+    if balanceFactor > 1:
+        if value < root.left.value:
+            return rotateRight(root)
+        else:
+            root.left = rotateLeft(root.left)
+            return rotateRight(root)
+    if balanceFactor < -1:
+        if value > root.right.value:
+            return rotateLeft(root)
+        else:
+            root.right = rotateRight(root.right)
+            return rotateLeft(root)
+    return root
+      `.trim(),
       references: [
         {
           text: "AVL Tree Explanation",
@@ -159,32 +121,57 @@ const TreeExplanation: React.FC<TreeExplanationProps> = ({ treeType }) => {
   const treeInfo = explanations[treeType];
 
   return (
-    <div className="mt-8 p-4 bg-gray-100 rounded max-w-7xl">
-      <h2 className="text-2xl font-bold mb-4">{treeType.toUpperCase()} Tree</h2>
+    // Container: Dark background, light text
+    <div className="mt-8 p-6 bg-gray-800 text-gray-200 rounded-lg shadow-md max-w-7xl">
+      {/* Heading: Light text */}
+      <h2 className="text-2xl font-bold mb-4 text-white">{treeType.toUpperCase()} Tree</h2>
       <p className="mb-4">{treeInfo.description}</p>
-      <h3 className="font-semibold mb-2">Properties:</h3>
-      <ul className="list-disc pl-5 mb-4">
+      {/* Sub-heading: Light text */}
+      <h3 className="text-xl font-semibold mb-2 text-gray-100">Properties:</h3>
+      <ul className="list-disc pl-5 mb-4 space-y-1">
         {treeInfo.properties.map((prop, index) => (
           <li key={index}>{prop}</li>
         ))}
       </ul>
-      <h3 className="text-xl font-semibold mb-2">Time Complexities:</h3>
-      <ul className="list-none pl-5 mb-4">
-        <li>Insertion: {treeInfo.timeComplexity.insertion}</li>
-        <li>Deletion: {treeInfo.timeComplexity.deletion}</li>
-        <li>Search: {treeInfo.timeComplexity.search}</li>
+      {/* Sub-heading: Light text */}
+      <h3 className="text-xl font-semibold mb-2 text-gray-100">Time Complexities:</h3>
+      <ul className="list-none pl-5 mb-4 space-y-1">
+        <li>
+          Insertion:{" "}
+          <code className="bg-gray-700 px-1 rounded text-sm">
+            {treeInfo.timeComplexity.insertion}
+          </code>
+        </li>
+        <li>
+          Deletion:{" "}
+          <code className="bg-gray-700 px-1 rounded text-sm">
+            {treeInfo.timeComplexity.deletion}
+          </code>
+        </li>
+        <li>
+          Search:{" "}
+          <code className="bg-gray-700 px-1 rounded text-sm">
+            {treeInfo.timeComplexity.search}
+          </code>
+        </li>
       </ul>
-      <h3 className="text-xl font-semibold mb-2">Pseudocode:</h3>
-      <pre className="bg-gray-200 p-3 rounded mb-4">{treeInfo.pseudocode}</pre>
-      <h3 className="text-xl font-semibold mb-2">References:</h3>
-      <ul className="list-disc pl-5">
+      {/* Sub-heading: Light text */}
+      <h3 className="text-xl font-semibold mb-2 text-gray-100">Pseudocode:</h3>
+      {/* Code Block: Darker background, appropriate text color */}
+      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-green-400 overflow-x-auto">
+        <code>{treeInfo.pseudocode}</code>
+      </pre>
+      {/* Sub-heading: Light text */}
+      <h3 className="text-xl font-semibold mb-2 text-gray-100">References:</h3>
+      <ul className="list-disc pl-5 space-y-1">
         {treeInfo.references.map((ref, index) => (
           <li key={index}>
+            {/* Links: Lighter blue for dark background */}
             <a
               href={ref.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600"
+              className="text-blue-400 hover:text-blue-300 hover:underline"
             >
               {ref.text}
             </a>

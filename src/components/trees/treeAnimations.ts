@@ -1,3 +1,5 @@
+// treeAnimations.ts
+// **MODIFIED**: Changed boxShadow for highlighted nodes to be visible on dark background
 import { Variants } from "framer-motion";
 
 export const nodeVariants: Variants = {
@@ -14,7 +16,9 @@ export const nodeVariants: Variants = {
   },
   highlighted: {
     scale: 1.2,
-    boxShadow: "0px 0px 8px rgba(0,0,0,0.3)",
+    // Use a light or colored glow for dark backgrounds
+    boxShadow: "0px 0px 12px rgba(255, 255, 255, 0.4)", // White glow
+    // Or consider a colored glow, e.g., blue: "0px 0px 12px rgba(59, 130, 246, 0.5)",
     transition: { duration: 0.3 },
   },
 };
