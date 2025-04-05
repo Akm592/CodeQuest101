@@ -427,7 +427,7 @@ const ChatInterface = () => {
       </div>
 
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm flex justify-between items-center">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 shadow-sm flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <button
               onClick={toggleSidebar}

@@ -1,173 +1,92 @@
 import React from "react";
-import { Card, CardContent } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
 
 const NeuralNetworkExplanation: React.FC = () => {
   return (
-    <Card className="mt-8">
-      <CardContent>
-        <h2 className="text-2xl font-bold mb-4">Neural Network Explanation</h2>
-        <div className="space-y-4">
+    // Dark Card for explanation
+    <Card className="mt-8 bg-gray-800 border border-gray-700/50 text-gray-300">
+       <CardHeader className="border-b border-gray-700/50 pb-3">
+            <CardTitle className="text-xl font-semibold text-gray-100">Understanding Neural Networks</CardTitle>
+       </CardHeader>
+      <CardContent className="pt-4 text-sm">
+        <div className="space-y-5">
           <section>
-            <h3 className="text-xl font-semibold">What is a Neural Network?</h3>
-            <p>
-              A neural network is a type of machine learning model inspired by
-              the structure and functioning of the human brain. It consists of
-              layers of interconnected nodes (neurons) that process input data,
-              recognize patterns, and make decisions or predictions. Neural
-              networks are capable of learning from data and improving their
-              performance over time, making them suitable for complex tasks such
-              as image recognition, natural language processing, and game
-              playing.
+            <h3 className="text-lg font-semibold text-gray-200 mb-1">What is a Neural Network?</h3>
+            <p className="leading-relaxed">
+              Inspired by the human brain, a neural network is a machine learning model comprising layers of interconnected nodes (neurons). These networks process input data, identify patterns, and generate outputs like predictions or classifications. They excel at learning from data, improving performance over time on complex tasks (e.g., image recognition, NLP).
             </p>
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold">Key Components</h3>
-            <ul className="list-disc pl-5">
+            <h3 className="text-lg font-semibold text-gray-200 mb-1">Key Components</h3>
+            <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong>Input Layer:</strong> The initial layer that receives
-                the raw input data and passes it to the next layer.
+                <strong>Input Layer:</strong> Receives raw input data. Each node typically corresponds to a feature.
               </li>
               <li>
-                <strong>Hidden Layers:</strong> Intermediate layers where
-                neurons process the input through weighted connections. These
-                layers extract features and learn representations from the data.
+                <strong>Hidden Layers:</strong> One or more intermediate layers where computation occurs. Neurons process weighted inputs, apply biases, and use activation functions to learn complex data representations.
               </li>
               <li>
-                <strong>Output Layer:</strong> The final layer that produces the
-                network's prediction or decision, such as classifying an image
-                or generating text.
+                <strong>Output Layer:</strong> Produces the final result (e.g., class probability, predicted value). The structure depends on the task.
               </li>
               <li>
-                <strong>Weights and Biases:</strong> Parameters that the network
-                optimizes during training. Weights control the influence of
-                input data, while biases adjust the output along with the
-                weighted sum.
+                <strong>Weights & Biases:</strong> Learnable parameters adjusted during training. Weights determine the strength of connections; biases shift the activation function's output.
               </li>
               <li>
-                <strong>Activation Functions:</strong> Functions applied to
-                neurons' output to introduce non-linearity, enabling the network
-                to model complex relationships in the data. Common activation
-                functions include ReLU, sigmoid, and tanh.
+                <strong>Activation Functions:</strong> Introduce non-linearity (e.g., ReLU, Sigmoid, Tanh), allowing the network to model complex, non-linear relationships.
               </li>
             </ul>
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold">How It Works</h3>
-            <ol className="list-decimal pl-5">
-              <li>
-                Input data is fed into the network through the input layer.
-              </li>
-              <li>
-                Each neuron in the hidden layers receives inputs, multiplies
-                them by corresponding weights, adds a bias, and then applies an
-                activation function to produce an output.
-              </li>
-              <li>
-                The output of each neuron is passed to the neurons in the next
-                layer, allowing the network to learn complex hierarchical
-                representations.
-              </li>
-              <li>
-                This process continues through all the hidden layers until the
-                output layer generates the final result, such as a
-                classification label or a predicted value.
-              </li>
-              <li>
-                During training, the network uses an algorithm like
-                backpropagation to adjust its weights and biases. This is done
-                by minimizing a loss function, which quantifies the difference
-                between the predicted and actual outcomes.
-              </li>
+            <h3 className="text-lg font-semibold text-gray-200 mb-1">How It Works (Forward Pass)</h3>
+            <ol className="list-decimal pl-5 space-y-1">
+              <li>Input data enters the Input Layer.</li>
+              <li>Data flows to Hidden Layers. Each neuron calculates a weighted sum of its inputs, adds a bias, and applies an activation function.</li>
+              <li>The output propagates layer by layer.</li>
+              <li>The Output Layer produces the final prediction.</li>
+              <li><strong>Training:</strong> The network compares predictions to actual values (using a loss function) and uses backpropagation to adjust weights and biases, minimizing the error.</li>
             </ol>
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold">Types of Neural Networks</h3>
-            <ul className="list-disc pl-5">
-              <li>
-                <strong>Feedforward Neural Networks (FNNs):</strong> The
-                simplest form of neural networks where connections between nodes
-                do not form a cycle. Information flows in one direction from
-                input to output.
-              </li>
-              <li>
-                <strong>Convolutional Neural Networks (CNNs):</strong> Primarily
-                used for image and video analysis, CNNs employ convolutional
-                layers to capture spatial hierarchies and features like edges,
-                textures, and shapes.
-              </li>
-              <li>
-                <strong>Recurrent Neural Networks (RNNs):</strong> Designed for
-                sequential data, RNNs have connections that form directed
-                cycles, enabling them to maintain a memory of previous inputs,
-                making them effective for tasks like language modeling and time
-                series prediction.
-              </li>
-              <li>
-                <strong>Long Short-Term Memory (LSTM) Networks:</strong> A
-                specialized type of RNN that can learn long-term dependencies in
-                data. LSTMs are particularly useful for tasks where context over
-                long sequences is critical, such as speech recognition and
-                translation.
-              </li>
-              <li>
-                <strong>Generative Adversarial Networks (GANs):</strong> Consist
-                of two networks, a generator and a discriminator, that compete
-                with each other to create realistic synthetic data. GANs are
-                widely used in image generation and style transfer.
-              </li>
+            <h3 className="text-lg font-semibold text-gray-200 mb-1">Common Types</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>FNNs (Feedforward):</strong> Simple, unidirectional data flow.</li>
+              <li><strong>CNNs (Convolutional):</strong> Excel at spatial hierarchies (images, video). Use convolutional filters.</li>
+              <li><strong>RNNs (Recurrent):</strong> Process sequential data (text, time series). Have internal memory loops.</li>
+              <li><strong>LSTMs/GRUs:</strong> Advanced RNNs handling long-range dependencies.</li>
+              <li><strong>Transformers:</strong> Attention-based models, state-of-the-art in NLP.</li>
+              <li><strong>GANs (Generative Adversarial):</strong> Generator vs. Discriminator networks for creating realistic data.</li>
             </ul>
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold">Applications</h3>
-            <ul className="list-disc pl-5">
-              <li>Image and Speech Recognition</li>
-              <li>Natural Language Processing (NLP)</li>
-              <li>Autonomous Vehicles</li>
-              <li>Financial Forecasting and Algorithmic Trading</li>
-              <li>Medical Diagnosis and Drug Discovery</li>
-              <li>Recommendation Systems (e.g., Netflix, Amazon)</li>
+            <h3 className="text-lg font-semibold text-gray-200 mb-1">Applications</h3>
+            <ul className="list-disc pl-5 grid grid-cols-2 gap-x-4 gap-y-1">
+              <li>Image Recognition</li>
+              <li>Speech Recognition</li>
+              <li>Machine Translation</li>
+              <li>Recommendation Systems</li>
+              <li>Autonomous Driving</li>
+              <li>Medical Diagnosis</li>
+              <li>Financial Modeling</li>
+              <li>Game Playing (AI)</li>
             </ul>
           </section>
 
-          <section>
-            <h3 className="text-xl font-semibold">
-              Further Reading and References
-            </h3>
-            <ul className="list-disc pl-5">
-              <li>
-                Goodfellow, I., Bengio, Y., & Courville, A. (2016).{" "}
-                <em>Deep Learning</em>. MIT Press. [Link to
-                book](https://www.deeplearningbook.org/)
-              </li>
-              <li>
-                LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning.{" "}
-                <em>Nature</em>, 521(7553), 436-444. [Link to
-                paper](https://www.nature.com/articles/nature14539)
-              </li>
-              <li>
-                Schmidhuber, J. (2015). Deep learning in neural networks: An
-                overview. <em>Neural Networks</em>, 61, 85-117. [Link to
-                paper](https://doi.org/10.1016/j.neunet.2014.09.003)
-              </li>
-              <li>
-                Chollet, F. (2018). <em>Deep Learning with Python</em>. Manning
-                Publications. [Link to
-                book](https://www.manning.com/books/deep-learning-with-python)
-              </li>
-              <li>
-                Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B.,
-                Warde-Farley, D., Ozair, S., ... & Bengio, Y. (2014). Generative
-                adversarial nets. In{" "}
-                <em>Advances in neural information processing systems</em> (pp.
-                2672-2680). [Link to
-                paper](https://papers.nips.cc/paper/5423-generative-adversarial-nets)
-              </li>
-            </ul>
-          </section>
+          {/* Further Reading - Keep as is, maybe style links */}
+           <section>
+             <h3 className="text-lg font-semibold text-gray-200 mb-1">Further Reading</h3>
+             <ul className="list-disc pl-5 text-xs space-y-1">
+                 {/* Example styled link */}
+                 <li>Goodfellow, I., et al. (2016). <em>Deep Learning</em>. MIT Press. <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
+                 <li>LeCun, Y., et al. (2015). Deep learning. <em>Nature</em>. <a href="https://www.nature.com/articles/nature14539" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
+                 {/* Add other links similarly */}
+                 <li>Schmidhuber, J. (2015). Deep learning overview. <em>Neural Networks</em>. <a href="https://doi.org/10.1016/j.neunet.2014.09.003" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
+
+             </ul>
+           </section>
         </div>
       </CardContent>
     </Card>

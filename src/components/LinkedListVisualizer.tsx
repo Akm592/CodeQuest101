@@ -1,440 +1,345 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Button } from "./ui/button"; // Adjust path
+import { Input } from "./ui/input"; // Adjust path
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
-} from "./ui/select";
-import { Input } from "./ui/input";
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"; // Adjust path
+import { Plus, Minus, RotateCw, Trash2, Loader2, Check, X } from "lucide-react"; // Added icons
+
+// Define Node structure for internal state if needed for complex ops, otherwise keep simple array
+interface ListNode {
+    id: string; // For animation key
+    value: number;
+}
 
 const LinkedListVisualizer: React.FC = () => {
-  const [listType, setListType] = useState<string>("singly");
-  const [nodes, setNodes] = useState<number[]>([1, 2, 3, 4]);
-  const [isReversing, setIsReversing] = useState<boolean>(false);
-  const [deletionIndex, setDeletionIndex] = useState<number>(-1);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [reversalStep, setReversalStep] = useState<number>(-1);
-  const [reversedNodes, setReversedNodes] = useState<number[]>([]);
-  const [explanation, setExplanation] = useState<string>("");
+  const [listType, setListType] = useState<"singly" | "doubly" | "circular">("singly");
+  const [nodes, setNodes] = useState<ListNode[]>([]);
+  const [operationStatus, setOperationStatus] = useState<"idle" | "running" | "finished">("idle"); // reversal, deletion etc.
+  const [currentStepIndex, setCurrentStepIndex] = useState<number>(-1); // For multi-step operations like reverse
+  const [operationTarget, setOperationTarget] = useState<number | null>(null); // e.g., index for deletion
+  const [inputValue, setInputValue] = useState<string>(""); // For add/delete input
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [explanation, setExplanation] = useState<string>("Select an operation or modify the list.");
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null); // Highlight during ops
+  const [prevPointerIndex, setPrevPointerIndex] = useState<number | null>(null); // For reversal visualization
+  const [currentPointerIndex, setCurrentPointerIndex] = useState<number | null>(null); // For reversal visualization
 
-  const reversalExplanations = {
-    singly: [
-      "Initialize three pointers: prev = null, current = head, next = null",
-      "Store next node: next = current.next",
-      "Reverse current node's pointer: current.next = prev",
-      "Move prev and current one step forward: prev = current, current = next",
-      "Repeat steps 2-4 until current becomes null",
-      "Set head to prev (last node of original list)",
-    ],
-    doubly: [
-      "Initialize two pointers: current = head, temp = null",
-      "Swap current.next and current.prev for the current node",
-      "Move to the next node: current = current.prev (original next)",
-      "Repeat steps 2-3 until current becomes null",
-      "Set head to the last node of the original list",
-    ],
-    circular: [
-      "Find the last node of the list",
-      "Initialize three pointers: prev = last, current = head, next = null",
-      "Store next node: next = current.next",
-      "Reverse current node's pointer: current.next = prev",
-      "Move prev and current one step forward: prev = current, current = next",
-      "Repeat steps 3-5 until current reaches the original head",
-      "Update head: head = prev",
-    ],
-  };
+  const generateId = () => Math.random().toString(36).substring(7);
 
+  // Initialize list
   useEffect(() => {
-    if (isReversing) {
-      const reverseAnimation = async () => {
-        const reversedArray = [...nodes].reverse();
-        setReversedNodes(reversedArray);
+      setNodes([
+          { id: generateId(), value: 10 },
+          { id: generateId(), value: 25 },
+          { id: generateId(), value: 5 },
+          { id: generateId(), value: 40 },
+      ]);
+      resetOperationState();
+  }, [listType]); // Re-initialize if list type changes
 
-        const steps =
-          reversalExplanations[listType as keyof typeof reversalExplanations];
+  const resetOperationState = () => {
+      setOperationStatus("idle");
+      setCurrentStepIndex(-1);
+      setOperationTarget(null);
+      setHighlightedIndex(null);
+      setPrevPointerIndex(null);
+      setCurrentPointerIndex(null);
+      setExplanation("Select an operation or modify the list.");
+      setInputError(null);
+      // setInputValue(""); // Keep input value? Maybe clear depending on UX preference.
+  }
 
-        for (let i = 0; i < steps.length; i++) {
-          setReversalStep(i);
-          setExplanation(steps[i]);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-        setNodes(reversedArray);
-        setIsReversing(false);
-        setReversalStep(-1);
-        setReversedNodes([]);
-        setExplanation("");
-      };
-      reverseAnimation();
-    }
-  }, [isReversing, nodes, listType]);
+  // --- List Operations ---
 
+  const handleAddNode = () => {
+      if (operationStatus === 'running') return;
+      const value = parseInt(inputValue);
+      if (isNaN(value)) {
+          setInputError("Please enter a valid number.");
+          return;
+      }
+      setInputError(null);
+      setNodes(prev => [...prev, { id: generateId(), value }]);
+      setInputValue(""); // Clear input after adding
+      setExplanation(`Added node with value ${value}.`);
+      resetOperationState(); // Reset any ongoing operation state
+  }
+
+  const handleRemoveLastNode = () => {
+      if (operationStatus === 'running' || nodes.length === 0) return;
+      setNodes(prev => prev.slice(0, -1));
+      setExplanation("Removed last node.");
+      resetOperationState();
+  }
+
+  const handleDeleteNodeByIndex = async () => {
+      if (operationStatus === 'running') return;
+      const index = parseInt(inputValue);
+      if (isNaN(index) || index < 0 || index >= nodes.length) {
+          setInputError(`Invalid index. Must be between 0 and ${nodes.length - 1}.`);
+          return;
+      }
+      setInputError(null);
+      setOperationStatus("running");
+      setOperationTarget(index);
+      setExplanation(`Deleting node at index ${index}...`);
+
+      // Highlight node to be deleted
+      setHighlightedIndex(index);
+      await sleep(700);
+
+      setNodes(prev => prev.filter((_, i) => i !== index));
+      setExplanation(`Node at index ${index} (value ${nodes[index]?.value}) deleted.`);
+
+      await sleep(500);
+      resetOperationState();
+      setInputValue(""); // Clear input
+  }
+
+  const handleReverseList = async () => {
+       if (operationStatus === 'running' || nodes.length < 2) return;
+       setOperationStatus("running");
+       setCurrentStepIndex(0);
+       setExplanation("Starting list reversal...");
+
+       let prev: number | null = null;
+       let current: number | null = 0; // Start at head index
+       let next: number | null = null;
+       const steps: { p: number|null, c: number|null, n: number|null, exp: string }[] = [];
+
+       // Simulate pointer movements (conceptual for visualization)
+       steps.push({ p: prev, c: current, n: next, exp: "Initialize pointers: prev = null, current = head(0)." });
+
+       while (current !== null && current < nodes.length) { // Check bounds
+            next = (current + 1 < nodes.length) ? current + 1 : null; // Simplified next index for visualization
+            steps.push({ p: prev, c: current, n: next, exp: `Store next (${nodes[next]?.value ?? 'null'}). Current node: ${nodes[current].value}.` });
+
+            // Visualize reversing the pointer (conceptual - actual reversal happens at the end)
+            steps.push({ p: prev, c: current, n: next, exp: `Reverse pointer: ${nodes[current].value}.next points to ${nodes[prev as number]?.value ?? 'null'}.` });
+
+            prev = current;
+            current = next;
+            steps.push({ p: prev, c: current, n: next, exp: `Move pointers: prev = ${nodes[prev]?.value ?? 'null'}, current = ${nodes[current]?.value ?? 'null'}.` });
+       }
+       steps.push({ p: prev, c: current, n: next, exp: `Reversal complete. New head is ${nodes[prev as number]?.value ?? 'null'}.` });
+
+       // Animate steps
+       for(let i = 0; i < steps.length; i++) {
+           setPrevPointerIndex(steps[i].p);
+           setCurrentPointerIndex(steps[i].c);
+           // Highlight the node 'current' is pointing to during the step
+           setHighlightedIndex(steps[i].c);
+           setExplanation(steps[i].exp);
+           setCurrentStepIndex(i);
+           await sleep(1200); // Adjust speed as needed
+       }
+
+       // Apply actual reversal
+       setNodes(prev => [...prev].reverse());
+       setExplanation("List reversed successfully!");
+       await sleep(1000);
+       resetOperationState();
+  }
+
+
+  // --- Rendering Logic ---
   const renderVisualization = () => {
-    const nodeRadius = 20;
-    const nodeDistance = 100;
-    const startX = 50;
-    const startY = 50;
+    const nodeRadius = 18;
+    const nodeWidth = nodeRadius * 2 + 10; // Diameter + padding
+    const nodeSpacing = 70; // Space between start of nodes
+    const arrowOffset = nodeRadius + 3;
+    const arrowLength = nodeSpacing - nodeWidth + 10;
+    const startX = 30;
+    const startY = 50; // Vertical center for nodes
+    const svgHeight = 120; // Fixed height
+    const svgWidth = nodes.length * nodeSpacing + startX * 2;
 
     return (
-      <div className="border p-4 h-64 overflow-auto">
-        <svg width={nodes.length * nodeDistance + 100} height="100">
+      <div className="min-h-[150px] border border-gray-700/50 bg-black/20 rounded p-4 overflow-x-auto relative flex items-center">
+        <svg width={Math.max(svgWidth, 300)} height={svgHeight} style={{ overflow: "visible" }}>
           <AnimatePresence>
-            {nodes.map((value, index) => {
-              const x = startX + index * nodeDistance;
-              const isReversed =
-                reversalStep >=
-                reversalExplanations[
-                  listType as keyof typeof reversalExplanations
-                ].length -
-                  1;
-              const isCurrentlyReversing = reversalStep === index + 1;
+            {nodes.map((node, index) => {
+              const x = startX + index * nodeSpacing;
+              const isHighlighted = index === highlightedIndex;
+              const isPrev = index === prevPointerIndex;
+              const isCurrent = index === currentPointerIndex;
+
+              let nodeFill = "fill-gray-800";
+              if (isHighlighted) nodeFill = "fill-red-800/50"; // Deletion highlight
+              if (isPrev) nodeFill = "fill-blue-800/50"; // Reversal pointers
+              if (isCurrent) nodeFill = "fill-yellow-800/50";
+
+              let nodeStroke = "stroke-gray-600";
+              if(isPrev || isCurrent) nodeStroke = "stroke-teal-400";
+
 
               return (
                 <motion.g
-                  key={`node-${value}`}
-                  initial={{ opacity: 1, y: 0 }}
-                  animate={{
-                    opacity: 1,
-                    y: isCurrentlyReversing ? [-20, 0] : 0,
-                    transition: { duration: 0.5 },
-                  }}
-                  exit={{ opacity: 0, scale: 0 }}
+                  key={node.id}
+                  initial={{ opacity: 0, x: x + 20 }}
+                  animate={{ opacity: 1, x: x }}
+                  exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.3 } }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  transform={`translate(${x}, ${startY})`}
                 >
-                  {/* Node circle */}
+                  {/* Node Circle */}
                   <motion.circle
-                    cx={x}
-                    cy={startY}
-                    r={nodeRadius}
-                    fill={
-                      isDeleting && index === deletionIndex
-                        ? "red"
-                        : isReversed
-                        ? "lightgreen"
-                        : isCurrentlyReversing
-                        ? "yellow"
-                        : "white"
-                    }
-                    stroke="black"
-                    strokeWidth="2"
-                    animate={{
-                      scale: isCurrentlyReversing ? [1, 1.2, 1] : 1,
-                      transition: { duration: 0.5 },
-                    }}
+                    cx={0} cy={0} r={nodeRadius}
+                    className={`${nodeFill} ${nodeStroke}`}
+                    strokeWidth="1.5"
                   />
-                  {/* Node value */}
-                  <motion.text
-                    x={x}
-                    y={startY}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize="12"
-                    animate={{
-                      scale: isCurrentlyReversing ? [1, 1.2, 1] : 1,
-                      transition: { duration: 0.5 },
-                    }}
-                  >
-                    {isReversed ? reversedNodes[index] : value}
-                  </motion.text>
-                  {/* Forward arrow */}
-                  {index < nodes.length - 1 && (
+                  {/* Node Value */}
+                  <text x={0} y={0} textAnchor="middle" dominantBaseline="central" fontSize="11" fontWeight="medium" className="fill-gray-200 select-none">
+                    {node.value}
+                  </text>
+
+                  {/* Pointers (prev/current for reversal) */}
+                   {isPrev && (
+                      <text x={0} y={nodeRadius + 14} textAnchor="middle" fontSize="10" className="fill-blue-400">P</text>
+                   )}
+                   {isCurrent && (
+                       <text x={0} y={-nodeRadius - 8} textAnchor="middle" fontSize="10" className="fill-yellow-400">C</text>
+                   )}
+
+                  {/* Forward Arrow */}
+                  {(listType === 'singly' || listType === 'doubly') && index < nodes.length - 1 && (
                     <motion.path
-                      d={`M${x + nodeRadius + 5},${startY} L${
-                        x + nodeDistance - nodeRadius - 5
-                      },${startY}`}
-                      stroke="black"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead)"
-                      initial={{ pathLength: 0 }}
-                      animate={{
-                        pathLength: 1,
-                        opacity: isReversed ? 0 : 1,
-                      }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      d={`M ${arrowOffset} 0 L ${arrowOffset + arrowLength} 0`}
+                      stroke="rgb(100 116 139)" strokeWidth="1.5" fill="none"
+                      markerEnd="url(#arrowhead-gray)"
+                      initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                     />
                   )}
-                  {/* Reversed arrow */}
-                  {index > 0 && (
-                    <motion.path
-                      d={`M${x - nodeRadius - 5},${startY} L${
-                        x - nodeDistance + nodeRadius + 5
-                      },${startY}`}
-                      stroke="blue"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead-blue)"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={{
-                        pathLength: isReversed ? 1 : 0,
-                        opacity: isReversed ? 1 : 0,
-                      }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                  {/* Doubly Backward Arrow */}
+                  {listType === 'doubly' && index > 0 && (
+                     <motion.path
+                      d={`M ${-arrowOffset} 5 L ${-arrowOffset - arrowLength} 5`} // Slightly offset vertically
+                      stroke="rgb(100 116 139)" strokeWidth="1.5" fill="none"
+                      markerEnd="url(#arrowhead-gray-backward)" // Needs a reversed marker
+                      initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                     />
                   )}
-                  {/* Circular list arrow */}
-                  {listType === "circular" && index === nodes.length - 1 && (
-                    <motion.path
-                      d={`M${x + nodeRadius},${startY} 
-                         C${x + nodeRadius + 50},${startY + 50} 
-                           ${startX - nodeRadius - 50},${startY + 50} 
-                           ${startX - nodeRadius},${startY}`}
-                      fill="none"
-                      stroke={isReversed ? "blue" : "black"}
-                      strokeWidth="2"
-                      markerEnd={
-                        isReversed ? "url(#arrowhead-blue)" : "url(#arrowhead)"
-                      }
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: nodes.length * 0.1 }}
-                    />
-                  )}
-                  {/* Doubly linked list backward arrow */}
-                  {listType === "doubly" && index > 0 && (
-                    <motion.path
-                      d={`M${x - nodeRadius - 5},${startY - 10} L${
-                        x - nodeDistance + nodeRadius + 5
-                      },${startY - 10}`}
-                      stroke={isReversed ? "blue" : "black"}
-                      strokeWidth="2"
-                      markerEnd={
-                        isReversed ? "url(#arrowhead-blue)" : "url(#arrowhead)"
-                      }
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                    />
-                  )}
+                   {/* Circular Arrow */}
+                   {listType === 'circular' && nodes.length > 0 && index === nodes.length - 1 && (
+                       <motion.path
+                         // Arc path from last node back to first node
+                         d={`M ${arrowOffset} 0 C ${arrowOffset + 40} ${-nodeSpacing/2}, ${-arrowOffset - arrowLength - 40} ${-nodeSpacing/2}, ${-arrowOffset - arrowLength} 0`}
+                         stroke="rgb(100 116 139)" strokeWidth="1.5" fill="none"
+                         markerEnd="url(#arrowhead-gray-backward)"
+                         initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
+                        />
+                   )}
                 </motion.g>
               );
             })}
           </AnimatePresence>
-          {/* Define arrowhead markers */}
+          {/* Arrowhead definitions */}
           <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="10"
-              markerHeight="7"
-              refX="0"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="black" />
+            <marker id="arrowhead-gray" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
+              <polygon points="0 0, 7 2.5, 0 5" fill="rgb(100 116 139)" />
             </marker>
-            <marker
-              id="arrowhead-blue"
-              markerWidth="10"
-              markerHeight="7"
-              refX="0"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="blue" />
-            </marker>
+             <marker id="arrowhead-gray-backward" markerWidth="7" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
+                 <polygon points="7 0, 0 2.5, 7 5" fill="rgb(100 116 139)" /> {/* Reversed points */}
+             </marker>
           </defs>
         </svg>
-        {isReversing && (
-          <motion.div
-            className="mt-4 p-2 bg-gray-100 rounded"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
-            <h3 className="font-bold">Step {reversalStep + 1}:</h3>
-            <p>{explanation}</p>
-          </motion.div>
-        )}
       </div>
     );
   };
 
-  const renderExplanation = () => {
+  const renderExplanationSection = () => {
     const explanations = {
-      singly: {
-        description:
-          "A singly linked list is a linear data structure where each element is a separate object called a node. Each node contains a data field and a reference (or link) to the next node in the sequence.",
-        timeComplexity: {
-          access: "O(n)",
-          search: "O(n)",
-          insertion: "O(1) at the beginning, O(n) at the end or middle",
-          deletion: "O(1) at the beginning, O(n) at the end or middle",
-        },
-        spaceComplexity: "O(n)",
-        algorithms: {
-          insert:
-            "To insert a new node:\n1. Create a new node\n2. Set the new node's next pointer to the current node\n3. Update the previous node's next pointer to the new node",
-          delete:
-            "To delete a node:\n1. Find the node to be deleted\n2. Update the previous node's next pointer to skip the node to be deleted\n3. Free the memory of the deleted node",
-          reverse:
-            "To reverse a singly linked list:\n1. Initialize three pointers: prev as NULL, current as head, and next as NULL\n2. Iterate through the list:\n   a. Store the next node\n   b. Change of current to prev\n   c. Move prev and current one step forward\n3. Change the head to point to the last node",
-        },
-      },
-      doubly: {
-        description:
-          "A doubly linked list is similar to a singly linked list, but each node has two links: one to the next node and another to the previous node. This allows for traversal in both directions.",
-        timeComplexity: {
-          access: "O(n)",
-          search: "O(n)",
-          insertion: "O(1) at the beginning or end, O(n) in the middle",
-          deletion: "O(1) at the beginning or end, O(n) in the middle",
-        },
-        spaceComplexity: "O(n)",
-        algorithms: {
-          insert:
-            "To insert a new node:\n1. Create a new node\n2. Update the new node's next and previous pointers\n3. Update the next and previous nodes' pointers to include the new node",
-          delete:
-            "To delete a node:\n1. Find the node to be deleted\n2. Update the previous node's next pointer and the next node's previous pointer\n3. Free the memory of the deleted node",
-          reverse:
-            "To reverse a doubly linked list:\n1. Swap the prev and next pointers for all nodes\n2. Change the head to point to the last node",
-        },
-      },
-      circular: {
-        description:
-          "A circular linked list is a variation of a linked list where the last node points back to the first node, creating a circle. It can be either singly or doubly linked.",
-        timeComplexity: {
-          access: "O(n)",
-          search: "O(n)",
-          insertion:
-            "O(1) if inserting at the end (with tail pointer), O(n) otherwise",
-          deletion: "O(1) if deleting the first node, O(n) otherwise",
-        },
-        spaceComplexity: "O(n)",
-        algorithms: {
-          insert:
-            "To insert a new node at the end:\n1. Create a new node\n2. Set the last node's next pointer to the new node\n3. Set the new node's next pointer to the first node\n4. Update the tail pointer (if maintained)",
-          delete:
-            "To delete a node:\n1. Find the node to be deleted and its previous node\n2. Update the previous node's next pointer to skip the node to be deleted\n3. If deleting the last node, update its next pointer to the first node\n4. Free the memory of the deleted node",
-          reverse:
-            "To reverse a circular linked list:\n1. Reverse the list as if it were a singly linked list\n2. Update the last node's next pointer to point to the new first node",
-        },
-      },
+      singly: { title: "Singly Linked List", description: "Nodes point only to the next node. Traversal is unidirectional." },
+      doubly: { title: "Doubly Linked List", description: "Nodes point to both the next and previous nodes. Allows bidirectional traversal." },
+      circular: { title: "Circular Linked List", description: "The last node points back to the first node, forming a loop. Can be singly or doubly linked." },
     };
-
-    const currentExplanation =
-      explanations[listType as keyof typeof explanations];
+     const currentInfo = explanations[listType];
 
     return (
-      <div className="mt-4 space-y-4">
-        <h3 className="text-xl font-bold">
-          {listType.charAt(0).toUpperCase() + listType.slice(1)} Linked List
-        </h3>
-        <p className="text-sm md:text-base">{currentExplanation.description}</p>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Time Complexity:</h4>
-          <ul className="list-disc list-inside text-sm md:text-base space-y-1">
-            {Object.entries(currentExplanation.timeComplexity).map(
-              ([operation, complexity]) => (
-                <li key={operation}>
-                  <span className="font-medium">
-                    {operation.charAt(0).toUpperCase() + operation.slice(1)}:
-                  </span>{" "}
-                  {complexity}
-                </li>
-              )
-            )}
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Space Complexity:</h4>
-          <p className="text-sm md:text-base">
-            {currentExplanation.spaceComplexity}
-          </p>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Algorithms:</h4>
-          <div className="space-y-2">
-            <div>
-              <h5 className="font-semibold">Insertion:</h5>
-              <pre className="bg-gray-100 p-2 rounded text-xs md:text-sm overflow-x-auto">
-                {currentExplanation.algorithms.insert}
-              </pre>
-            </div>
-            <div>
-              <h5 className="font-semibold">Deletion:</h5>
-              <pre className="bg-gray-100 p-2 rounded text-xs md:text-sm overflow-x-auto">
-                {currentExplanation.algorithms.delete}
-              </pre>
-            </div>
-            <div>
-              <h5 className="font-semibold">Reversal:</h5>
-              <pre className="bg-gray-100 p-2 rounded text-xs md:text-sm overflow-x-auto">
-                {currentExplanation.algorithms.reverse}
-              </pre>
-            </div>
+      <div className="mt-4 space-y-2 border-t border-gray-700/50 pt-4">
+         <h3 className="text-lg font-semibold text-gray-200">{currentInfo.title}</h3>
+         <p className="text-sm text-gray-400">{currentInfo.description}</p>
+          <div className="mt-3 p-3 bg-gray-800 border border-gray-700/50 rounded min-h-[60px]">
+             <h4 className="font-semibold text-gray-200 text-sm mb-1">Operation Status:</h4>
+             <p className="text-xs sm:text-sm text-gray-300 font-mono">{explanation}</p>
           </div>
-        </div>
       </div>
     );
   };
+
   return (
-    <div className="mx-auto px-4 py-8 w-screen">
-      <h1 className="text-3xl text-center font-bold mb-6">Linked List Visualizer</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Visualization</CardTitle>
+    // Dark theme page container
+    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300 flex items-center justify-center">
+       {/* Dark Card */}
+      <Card className="w-full max-w-4xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
+          <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
+             <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">Linked List Visualizer</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Select onValueChange={setListType} value={listType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select list type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="singly">Singly Linked List</SelectItem>
-                  <SelectItem value="doubly">Doubly Linked List</SelectItem>
-                  <SelectItem value="circular">Circular Linked List</SelectItem>
-                </SelectContent>
-              </Select>
+          <CardContent className="p-4 sm:p-6 space-y-5">
+            {/* Controls Row 1: List Type and Add Node */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+               <Select onValueChange={(value: "singly" | "doubly" | "circular") => setListType(value)} value={listType} disabled={operationStatus === 'running'}>
+                 <SelectTrigger className="w-full sm:w-[200px] bg-gray-800 border-gray-600 text-gray-300 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70">
+                   <SelectValue placeholder="Select list type" />
+                 </SelectTrigger>
+                 <SelectContent className="bg-gray-800 border-gray-700 text-gray-300">
+                   <SelectItem value="singly" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Singly Linked</SelectItem>
+                   <SelectItem value="doubly" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Doubly Linked</SelectItem>
+                   <SelectItem value="circular" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Circular Linked</SelectItem>
+                 </SelectContent>
+               </Select>
+
+               <div className="flex w-full sm:w-auto gap-2">
+                   <Input
+                     type="number"
+                     value={inputValue}
+                     onChange={(e) => { setInputValue(e.target.value); setInputError(null); }}
+                     placeholder="Value"
+                     className="h-9 flex-grow sm:w-24 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70"
+                     disabled={operationStatus === 'running'}
+                   />
+                   <Button onClick={handleAddNode} disabled={operationStatus === 'running' || inputValue === ""} className="h-9 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+                      <Plus size={16} className="mr-1" /> Add
+                   </Button>
+               </div>
             </div>
+             {inputError && <p className="text-xs text-red-400 text-center sm:text-left sm:pl-2">{inputError}</p>}
+
+            {/* Visualization */}
             {renderVisualization()}
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button onClick={() => setNodes([...nodes, nodes.length + 1])}>
-                Add Node
-              </Button>
-              <Button onClick={() => setNodes(nodes.slice(0, -1))}>
-                Remove Node
-              </Button>
-              <Button
-                onClick={() => setIsReversing(true)}
-                disabled={isReversing || reversalStep !== -1}
-              >
-                Reverse List
-              </Button>
-              <Input
-                type="number"
-                placeholder="Node index to delete"
-                onChange={(e) => setDeletionIndex(parseInt(e.target.value))}
-                className="w-32"
-              />
-              <Button
-                onClick={() => setIsDeleting(true)}
-                disabled={
-                  isDeleting ||
-                  deletionIndex < 0 ||
-                  deletionIndex >= nodes.length
-                }
-              >
-                Delete Node
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Explanation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-[calc(100vh-16rem)] overflow-y-auto">
-              {renderExplanation()}
+             {/* Controls Row 2: Operations */}
+            <div className="mt-4 flex flex-wrap justify-center gap-2 border-t border-gray-700/50 pt-4">
+               <Button onClick={handleRemoveLastNode} disabled={operationStatus === 'running' || nodes.length === 0} className="text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+                 <Minus size={16} className="mr-1" /> Remove Last
+               </Button>
+               <Button onClick={handleDeleteNodeByIndex} disabled={operationStatus === 'running' || inputValue === "" || nodes.length === 0} className="text-sm bg-red-700 hover:bg-red-600 text-white disabled:opacity-60">
+                  {operationStatus === 'running' && operationTarget !== null ? <Loader2 size={16} className="mr-1 animate-spin" /> : <Trash2 size={16} className="mr-1" />}
+                  Delete at Index
+               </Button>
+               <Button onClick={handleReverseList} disabled={operationStatus === 'running' || nodes.length < 2} className="text-sm bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60">
+                  {operationStatus === 'running' && currentStepIndex > -1 ? <Loader2 size={16} className="mr-1 animate-spin" /> : <RotateCw size={16} className="mr-1" />}
+                  Reverse List
+               </Button>
+                 <Button onClick={resetOperationState} disabled={operationStatus === 'idle'} className="text-sm bg-gray-500 hover:bg-gray-400 text-gray-900 disabled:opacity-60">
+                    Reset Op State
+                 </Button>
             </div>
+
+            {/* Explanation Section */}
+            {renderExplanationSection()}
+
           </CardContent>
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 };

@@ -7,12 +7,14 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   signInWithOAuth: (provider: "google") => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   createChatSession: () => Promise<any>;
   getChatSession: () => Promise<any>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Email/Password Sign-In
-  const signInWithEmail = async (email: string, password: string) => {
+  const signInWithPassword = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(`Email login failed: ${error.message}`);
     setSession(data.session);
@@ -122,17 +124,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data && data.length > 0 ? data[0] : null;
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.api.resetPasswordForEmail(email);
+    if (error) throw new Error(`Reset password failed: ${error.message}`);
+  };
 
   const value = {
     user,
     session,
     isLoading,
+    setIsLoading,
     signInWithOAuth,
-    signInWithEmail,
+    signInWithPassword,
     signUpWithEmail,
     signOut,
     createChatSession,
     getChatSession,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -143,3 +151,6 @@ export const useAuth = () => {
   if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
+
+export { AuthContext };
+export type { AuthContextType };
