@@ -18,9 +18,9 @@ import {
   Plus,
   Minus,
   ChevronRight,
-  ChevronLeft,
+
   ExternalLink,
-  Loader2,
+
 } from "lucide-react"; // Added Loader2
 
 interface Node {
@@ -98,7 +98,7 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
     return MAX_SPEED_MS + MIN_SPEED_MS - sliderValue;
   }
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  // const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const stepForwardAlgorithm = useCallback(async () => {
     if (tortoise === null || hare === null || nodes.length === 0) return;

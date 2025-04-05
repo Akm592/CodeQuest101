@@ -1,18 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import p5 from 'p5';
+
+
 import { Button } from "../../ui/button"; // Using shadcn Button
 import { Input } from "../../ui/input"; // Using shadcn Input
-import { AlertCircle, ArrowDownUp, RotateCcw, Plus, Shuffle, Settings, Loader2 } from 'lucide-react'; // Icons
-
-// Augment p5 instance type if needed
-declare module 'p5' {
-  interface p5 {
-    startInsertion: (value: number) => void;
-    toggleHeapType: () => void;
-    resetHeap: () => void;
-    buildHeapFromArray: (arr: number[]) => void;
-  }
-}
+import {  ArrowDownUp, RotateCcw, Plus, Settings, Loader2 } from 'lucide-react'; // Icons
 
 const HeapVisualization: React.FC = () => {
   const sketchRef = useRef<HTMLDivElement>(null);
@@ -286,11 +278,11 @@ const HeapVisualization: React.FC = () => {
     }
 
     // --- Exposing Functions to React ---
-    (p as p5).startInsertion = (newValue: number) => {
+    (p as any).startInsertion = (newValue: number) => {
       startInsertion(newValue);
     };
 
-    (p as p5).toggleHeapType = () => {
+    (p as any).toggleHeapType = () => {
       if (animationState !== "idle") return;
       currentIsMinHeap = !currentIsMinHeap;
       const elements = heap.slice(0, heapSize);
@@ -305,7 +297,7 @@ const HeapVisualization: React.FC = () => {
       setIsMinHeap(currentIsMinHeap);
     };
 
-    (p as p5).resetHeap = () => {
+    (p as any).resetHeap = () => {
       heap = [];
       heapSize = 0;
       animationState = "idle";
@@ -316,7 +308,7 @@ const HeapVisualization: React.FC = () => {
       explanationText = "Heap reset.";
     };
 
-    (p as p5).buildHeapFromArray = (arr: number[]) => {
+    (p as any).buildHeapFromArray = (arr: number[]) => {
       if (animationState !== "idle") return;
       if (arr.length > 31) {
         explanationText = "Array too large (max 31). Please use a smaller array.";
@@ -339,7 +331,7 @@ const HeapVisualization: React.FC = () => {
       p5InstanceRef.current = instance;
       // Build a default heap (adjust values as desired)
       setTimeout(() => {
-        instance.buildHeapFromArray([40, 20, 60, 10, 30, 50, 70]);
+        (instance as any).buildHeapFromArray([40, 20, 60, 10, 30, 50, 70]);
       }, 100);
       return () => {
         instance.remove();
@@ -356,16 +348,16 @@ const HeapVisualization: React.FC = () => {
       setInputError("Please enter a valid number.");
       return;
     }
-    p5InstanceRef.current?.startInsertion(num);
+    (p5InstanceRef.current as any)?.startInsertion(num);
     setInputValue("");
   };
 
   const handleToggleHeap = () => {
-    p5InstanceRef.current?.toggleHeapType();
+    (p5InstanceRef.current as any)?.toggleHeapType();
   };
 
   const handleResetHeap = () => {
-    p5InstanceRef.current?.resetHeap();
+    (p5InstanceRef.current as any)?.resetHeap();
     setInitialArrayInput("");
     setInputError(null);
   };
@@ -388,7 +380,7 @@ const HeapVisualization: React.FC = () => {
       setInputError("Max array size is 31 for visualization.");
       return;
     }
-    p5InstanceRef.current?.buildHeapFromArray(arr);
+    (p5InstanceRef.current as any)?.buildHeapFromArray(arr);
   };
 
   return (

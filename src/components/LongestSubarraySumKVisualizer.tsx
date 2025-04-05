@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust 
 import { Button } from "./ui/button"; // Adjust path
 import { Input } from "./ui/input"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
-import { PlayCircle, PauseCircle, RotateCcw, Loader2, CheckCircle, XCircle, Target } from "lucide-react"; // Added icons
+import { PlayCircle, PauseCircle, RotateCcw, CheckCircle, XCircle, Target } from "lucide-react"; // Added icons
 
 const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 2000;

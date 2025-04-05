@@ -34,7 +34,7 @@ const BinarySearchVisualizer: React.FC = () => {
     // Ensure uniqueness for better visualization, then sort
     const uniqueSortedArray = [...new Set(newArray)].sort((a, b) => a - b);
     setArray(uniqueSortedArray);
-    resetSearchState(uniqueSortedArray.length);
+    resetSearchState();
     setTarget(""); // Clear target when generating new array
     setTargetError(null);
     setArrayError(null);
@@ -45,7 +45,7 @@ const BinarySearchVisualizer: React.FC = () => {
     generateSortedArray();
   }, [generateSortedArray]);
 
-  const resetSearchState = (arrayLength = array.length) => {
+  const resetSearchState = () => {
     setLeft(-1);
     setRight(-1);
     setMid(-1);
@@ -123,7 +123,7 @@ const BinarySearchVisualizer: React.FC = () => {
     if (newArray.length > 0 && newArray.length <= 50) { // Add size limit
       const uniqueSortedArray = [...new Set(newArray)].sort((a, b) => a - b);
       setArray(uniqueSortedArray);
-      resetSearchState(uniqueSortedArray.length);
+      resetSearchState();
       setCustomArrayInput(""); // Clear input
       setArrayError(null);
     } else if (newArray.length > 50) {

@@ -58,6 +58,15 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+
+
+@layer base {
+  html {
+    /* Enable smooth scrolling for hash links */
+    scroll-behavior: smooth;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import HeapVisualization from "./HeapVisualization"; // Assuming this component exists and will be updated
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"; // Using Card for structure
 import { Eye, EyeOff } from 'lucide-react'; // Icons for toggle button
