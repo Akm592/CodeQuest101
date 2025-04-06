@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism'; // Modern themes
+
 import { Copy, Maximize2, Check } from "lucide-react";
 import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer"; // Adjust path if needed
 import VisualizationModal from "../Visualizer/VisualizationModal"; // Adjust path if needed
@@ -86,7 +86,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message}) => {
                 </button>
            </div>
           <SyntaxHighlighter
-            style={{ ... (resolvedTheme === 'dark' ? vscDarkPlus : vs) }} // Choose theme based on light/dark mode with spread operator
+            style={resolvedTheme === 'dark' ? { backgroundColor: '#2d2d2d', color: '#f8f8f2' } : { backgroundColor: '#fff', color: '#000' }} // Choose theme based on light/dark mode
             language={language}
             PreTag="div" // Use div instead of pre for better styling control
             customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }} // Remove default padding/bg
