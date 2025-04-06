@@ -200,3 +200,46 @@ textarea::-webkit-scrollbar-thumb:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 100, 100, 0.8);
 }
+
+
+
+.glassmorphic {
+  background-color: rgba(255, 255, 255, 0.2); /* Adjust transparency as needed */
+  backdrop-filter: blur(10px); /* Adjust blur amount as needed */
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Optional border for more definition */
+}
+
+.dark .glassmorphic {
+  background-color: rgba(25, 25, 25, 0.4); /* Dark theme glassmorphism */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling for webkit browsers (Chrome, Safari) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px; /* Thin scrollbar */
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent; /* Transparent track */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #a0aec0; /* Gray scrollbar thumb */
+  border-radius: 20px; /* Rounded corners */
+  border: transparent; /* No border */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #718096; /* Darker gray on hover */
+}
+
+/* Hide scrollbar in other browsers (Firefox, IE, Edge) - more generic approach */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
