@@ -22,7 +22,7 @@ interface MessageBubbleProps {
    isLastMessage?: boolean; // Optional prop
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isLastMessage }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message}) => {
   const [showModal, setShowModal] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   // Replace with your actual theme detection logic if not using next-themes
@@ -42,7 +42,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isLastMessage })
   const containerClassName = `flex flex-col ${isUserMessage ? "items-end" : "items-start"} mb-4`; // Added margin-bottom
 
   // --- Custom Code Block Component for Markdown ---
-  const CodeBlock: Components['code'] = ({ node, inline, className, children, ...props }) => {
+  const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : 'text'; // Default to plain text if no language detected
     const codeString = String(children).replace(/\n$/, ''); // Clean up the code string
@@ -86,7 +86,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isLastMessage })
                 </button>
            </div>
           <SyntaxHighlighter
-            style={resolvedTheme === 'dark' ? vscDarkPlus : vs} // Choose theme based on light/dark mode
+            style={{ ... (resolvedTheme === 'dark' ? vscDarkPlus : vs) }} // Choose theme based on light/dark mode with spread operator
             language={language}
             PreTag="div" // Use div instead of pre for better styling control
             customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }} // Remove default padding/bg
