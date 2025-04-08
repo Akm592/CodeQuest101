@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext"; // Assuming path is correct
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,10 +12,9 @@ const Header = () => {
   const navLinks = [
     { name: "Visualizations", href: "/" },
     { name: "AI Chatbot", href: "/chat" },
-    { name: "About", href: "/about" }, // Changed from #about to make it a route
+    { name: "About", href: "/about" },
   ];
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
@@ -26,90 +25,99 @@ const Header = () => {
       navigate("/");
     } catch (error) {
       console.error("Error signing out:", error);
+      // Optionally: Add user feedback for sign-out errors
     }
   };
 
-  // Function to check if link is active
   const isActiveLink = (href: string) => {
-    if (href === "/") {
-      return location.pathname === "/";
-    }
-    return location.pathname.startsWith(href);
+    // Handle exact match for home '/' and startsWith for others
+    return href === "/" ? location.pathname === "/" : location.pathname.startsWith(href);
   };
 
   return (
-    <header className="sticky top-0 z-auto bg-white shadow-sm">
+    // Sticky header with dark background and subtle bottom border
+    <header className="sticky top-0 z-50 bg-gray-950 border-b border-gray-800/70">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo with updated gradient for dark background */}
           <Link
             to="/"
-            className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
+            className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent hover:opacity-90 transition-opacity"
+            aria-label="CodeQuest101 Home"
           >
             CodeQuest101
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
+          <nav className="hidden md:flex md:items-center md:space-x-8" aria-label="Main navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.href}
-                className={`text-sm font-medium ${
+                className={`text-sm font-medium transition-colors duration-200 ${
                   isActiveLink(link.href)
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? "text-teal-400" // Active link color
+                    : "text-gray-400 hover:text-teal-400" // Inactive link color
                 }`}
+                aria-current={isActiveLink(link.href) ? "page" : undefined}
               >
                 {link.name}
               </Link>
             ))}
 
-            {isLoading ? (
-              <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
-            ) : user ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white overflow-hidden">
-                    {user.user_metadata?.avatar_url ? (
-                      <img
-                        src={user.user_metadata.avatar_url}
-                        alt={user.user_metadata?.full_name || "User"}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
+            {/* Auth Section */}
+            <div className="flex items-center space-x-4 pl-4">
+              {isLoading ? (
+                <div className="h-8 w-8 animate-pulse rounded-full bg-gray-700" />
+              ) : user ? (
+                <div className="flex items-center space-x-4">
+                  {/* User Info */}
+                  <div className="flex items-center space-x-2">
+                    <div className="h-8 w-8 rounded-full bg-teal-700 flex items-center justify-center text-white overflow-hidden ring-2 ring-gray-600">
+                      {user.user_metadata?.avatar_url ? (
+                        <img
+                          src={user.user_metadata.avatar_url}
+                          alt={user.user_metadata?.full_name || "User Avatar"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-gray-300 hidden lg:inline">
+                      {user.user_metadata?.full_name ||
+                        user.email?.split("@")[0] ||
+                        "User"}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user.user_metadata?.full_name ||
-                      user.email?.split("@")[0] ||
-                      "User"}
-                  </span>
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-1 text-sm text-gray-400 hover:text-red-500 transition-colors"
+                    aria-label="Sign out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">Logout</span>
+                  </button>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            ) : (
-              <Link to="/login">
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
-                  Sign In
-                </button>
-              </Link>
-            )}
-          </div>
+              ) : (
+                // Sign In Button
+                <Link to="/login">
+                  <button className="bg-teal-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-950">
+                    Sign In
+                  </button>
+                </Link>
+              )}
+            </div>
+          </nav>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-teal-400 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-controls="mobile-menu"
               aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
@@ -123,43 +131,49 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
-      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-100">
+      {/* Mobile menu */}
+      <div
+         className={`md:hidden absolute w-full bg-gray-900 shadow-lg border-t border-gray-800 ${isMenuOpen ? 'block' : 'hidden'}`}
+         id="mobile-menu"
+      >
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.href}
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                 isActiveLink(link.href)
-                  ? "text-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  ? "text-teal-300 bg-teal-900/30" // Active mobile link
+                  : "text-gray-300 hover:text-teal-300 hover:bg-gray-800" // Inactive mobile link
               }`}
               onClick={() => setIsMenuOpen(false)}
+              aria-current={isActiveLink(link.href) ? "page" : undefined}
             >
               {link.name}
             </Link>
           ))}
-
+        </div>
+        {/* Mobile Auth Section */}
+        <div className="px-3 pt-3 pb-3 border-t border-gray-800">
           {isLoading ? (
-            <div className="py-4 flex justify-center">
-              <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
-            </div>
+             <div className="flex justify-center py-2">
+                 <div className="h-8 w-8 animate-pulse rounded-full bg-gray-700" />
+             </div>
           ) : user ? (
-            <div className="px-3 py-3 border-t border-gray-100 mt-2">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white overflow-hidden">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="h-9 w-9 rounded-full bg-teal-700 flex items-center justify-center text-white overflow-hidden ring-2 ring-gray-600">
                   {user.user_metadata?.avatar_url ? (
                     <img
                       src={user.user_metadata.avatar_url}
-                      alt={user.user_metadata?.full_name || "User"}
+                      alt={user.user_metadata?.full_name || "User Avatar"}
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User className="h-4 w-4" />
+                    <User className="h-5 w-5" />
                   )}
                 </div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-300">
                   {user.user_metadata?.full_name ||
                     user.email?.split("@")[0] ||
                     "User"}
@@ -170,24 +184,23 @@ const Header = () => {
                   handleSignOut();
                   setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-center space-x-2 bg-gray-50 hover:bg-gray-100 py-2 rounded-md text-sm text-gray-600 hover:text-red-600 transition-colors"
+                className="w-full flex items-center justify-center space-x-2 bg-gray-800 hover:bg-gray-700 py-2 rounded-md text-sm text-gray-400 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                aria-label="Sign out"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
               </button>
             </div>
           ) : (
-            <div className="px-3 py-3 border-t border-gray-100 mt-2">
-              <Link 
-                to="/login" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block w-full"
-              >
-                <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
-                  Sign In
-                </button>
-              </Link>
-            </div>
+            <Link
+              to="/login"
+              onClick={() => setIsMenuOpen(false)}
+              className="block w-full"
+            >
+              <button className="w-full bg-teal-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                Sign In
+              </button>
+            </Link>
           )}
         </div>
       </div>

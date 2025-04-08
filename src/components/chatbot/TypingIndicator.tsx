@@ -1,42 +1,51 @@
-// src/components/chatbot/TypingIndicator.tsx
-
+// TypingIndicator.tsx
 import { motion } from "framer-motion";
 
 const TypingIndicator = () => {
+  const dotVariants = {
+    initial: { y: 0 },
+    animate: { y: -6 },
+  };
+
+  const dotTransition = (delay: number) => ({
+    duration: 0.4,
+    repeat: Infinity,
+    repeatType: "reverse" as const, // Use 'reverse' for up and down
+    ease: "easeInOut",
+    delay,
+  });
+
   return (
     <motion.div
-      className="flex items-center space-x-2 max-w-2xl"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      className="flex items-end space-x-2 max-w-lg lg:max-w-xl xl:max-w-2xl mr-auto mb-4" // Align left like bot message, add bottom margin
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10, transition: { duration: 0.15 } }}
+      transition={{ type: "spring", stiffness: 200, damping: 20 }}
     >
-      <div className="bg-gray-300 text-gray-800 rounded-xl p-3 rounded-br-none">
-        <div className="flex space-x-1">
+      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-white/10 dark:border-white/5
+                      text-gray-800 dark:text-gray-200 rounded-2xl p-3 rounded-bl-none shadow-md">
+        <div className="flex space-x-1.5 items-center h-4"> {/* Align dots vertically */}
           <motion.span
-            className="w-2 h-2 bg-gray-500 rounded-full"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop" }}
+            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            variants={dotVariants}
+            initial="initial"
+            animate="animate"
+            transition={dotTransition(0)}
           />
           <motion.span
-            className="w-2 h-2 bg-gray-500 rounded-full"
-            animate={{ y: [0, -5, 0] }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: 0.2,
-            }}
+            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            variants={dotVariants}
+            initial="initial"
+            animate="animate"
+            transition={dotTransition(0.15)}
           />
           <motion.span
-            className="w-2 h-2 bg-gray-500 rounded-full"
-            animate={{ y: [0, -5, 0] }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: 0.4,
-            }}
+            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            variants={dotVariants}
+            initial="initial"
+            animate="animate"
+            transition={dotTransition(0.3)}
           />
         </div>
       </div>

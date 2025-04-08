@@ -1,8 +1,7 @@
-// ./src/components/chatbot/ChatWindow.tsx
+// ChatWindow.tsx
 import { forwardRef } from "react";
 import MessageBubble from "./MessageBubble";
-
-
+import { AnimatePresence } from 'framer-motion'; // Import AnimatePresence
 
 interface Message {
     id: string;
@@ -11,21 +10,25 @@ interface Message {
     timestamp: string;
     isVisualization?: boolean;
     visualizationData?: any;
-  }
-  
-  // Import the Message interface
+}
 
 interface ChatWindowProps {
     messages: Message[];
 }
 
-const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({ messages }, ref) => {
+const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({ messages }) => {
     return (
-        <div ref={ref} className="space-y-4">
-            {messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
+        // Removed outer div, rely on parent's padding/spacing
+        // Apply AnimatePresence here to animate individual messages
+        <AnimatePresence initial={false}>
+             {messages.map((message, index) => (
+                <MessageBubble
+                    key={message.id} // Use message ID as key
+                    message={message}
+                    isLastMessage={index === messages.length - 1} // Pass if it's the last message for potential styling
+                />
             ))}
-        </div>
+        </AnimatePresence>
     );
 });
 

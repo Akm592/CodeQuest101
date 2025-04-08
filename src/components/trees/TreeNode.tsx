@@ -1,3 +1,4 @@
+// TreeNode.tsx - No changes needed, colors should work on dark theme.
 import React from "react";
 import { motion } from "framer-motion";
 import { TreeNodeType } from "./treeTypes";
@@ -28,6 +29,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         cx={x}
         cy={y}
         r="20"
+        // Green and Red should contrast well enough on dark backgrounds
         fill={isHighlighted ? "#FF6B6B" : "#4CAF50"}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -38,7 +40,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         y={y}
         textAnchor="middle"
         dy=".3em"
-        fill="white"
+        fill="white" // Already white text, perfect for dark theme
         fontSize="12"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
