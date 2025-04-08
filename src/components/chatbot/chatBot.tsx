@@ -417,11 +417,7 @@ const ChatInterface = () => {
     try {
       setIsTyping(true); // Set typing indicator active *before* the fetch call
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/chat`, {
-
-    try {
       const response = await fetch(`${apiLink}/chat`, {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",
