@@ -6,6 +6,7 @@ import * as d3 from "d3";
 
 // Define interfaces for clarity
 interface VisualizationStep {
+  hashmap?: any;
   array?: any[]; // Allow different types in array
   pointers?: { [key: string]: number };
   highlightedIndices?: number[];
@@ -97,14 +98,14 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     // const innerHeight = height - margin.top - margin.bottom; // Not always needed directly
 
     svg.attr("width", width)
-       .attr("height", height)
-       .attr("viewBox", `0 0 ${width} ${height}`) // Use viewBox for responsiveness
-       .style("overflow", "visible"); // Allow elements outside main bounds if needed
+      .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`) // Use viewBox for responsiveness
+      .style("overflow", "visible"); // Allow elements outside main bounds if needed
 
 
     // Main container group with margins
-     const mainGroup = svg.append("g")
-       .attr("transform", `translate(${margin.left},${margin.top})`);
+    const mainGroup = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Switch based on visualization type
     switch (visualizationData.visualizationType) {
@@ -153,8 +154,8 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     const steps: VisualizationStep[] = data.steps || [];
     const initialArray = data.array || steps[0]?.array || [];
     if (!initialArray.length) {
-       mainGroup.append("text").text("Empty array for sorting").attr("x", width/2).attr("y", 50).attr("text-anchor", "middle");
-       return;
+      mainGroup.append("text").text("Empty array for sorting").attr("x", width / 2).attr("y", 50).attr("text-anchor", "middle");
+      return;
     }
 
     const barWidth = Math.max(10, Math.min(50, width / initialArray.length * 0.6)); // Responsive width
@@ -170,12 +171,12 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // Add step message area (outside the loop)
     const messageText = mainGroup.append("text")
-        .attr("class", "step-message")
-        .attr("x", width / 2)
-        .attr("y", -20) // Position above the bars (within margin.top)
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .text(steps[0]?.message || "Initial State");
+      .attr("class", "step-message")
+      .attr("x", width / 2)
+      .attr("y", -20) // Position above the bars (within margin.top)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .text(steps[0]?.message || "Initial State");
 
     const updateBars = (step: VisualizationStep): void => {
       const arr: any[] = step.array || [];
@@ -207,10 +208,10 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         .attr("x", (_d, i) => startX + i * (barWidth + barPadding))
         .attr("y", (d) => height - yScale(d))
         .attr("height", (d) => Math.max(0, yScale(d))) // Ensure non-negative height
-        .attr("fill", (d, i) => {
-            if (step.swap?.includes(i)) return "red";
-            if (step.compare?.includes(i)) return "orange";
-            return "steelblue";
+        .attr("fill", (_d, i) => {
+          if (step.swap?.includes(i)) return "red";
+          if (step.compare?.includes(i)) return "orange";
+          return "steelblue";
         });
 
 
@@ -218,9 +219,9 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       const valueLabels = mainGroup.selectAll<SVGTextElement, number>(".value-label")
         .data(arr, (_d, i) => i);
 
-       valueLabels.exit().remove();
+      valueLabels.exit().remove();
 
-       const enterLabels = valueLabels.enter()
+      const enterLabels = valueLabels.enter()
         .append("text")
         .attr("class", "value-label")
         .attr("x", (_d, i) => startX + i * (barWidth + barPadding) + barWidth / 2)
@@ -229,7 +230,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         .attr("font-size", "12px")
         .attr("opacity", 0); // Start invisible
 
-       enterLabels.merge(valueLabels)
+      enterLabels.merge(valueLabels)
         .transition()
         .duration(500)
         .attr("x", (_d, i) => startX + i * (barWidth + barPadding) + barWidth / 2)
@@ -239,10 +240,10 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     };
 
     // Initial render
-    if(steps.length > 0) {
+    if (steps.length > 0) {
       updateBars(steps[0]);
     } else if (initialArray.length > 0) {
-       updateBars({ array: initialArray, message: "Initial State"}); // Render initial if no steps
+      updateBars({ array: initialArray, message: "Initial State" }); // Render initial if no steps
     }
 
     // Animation loop
@@ -251,7 +252,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       if (idx === 0 && initialArray.length > 0) return;
       const delay = (idx + (initialArray.length > 0 ? 0 : 1)) * 1000; // Adjust delay if rendering initial state separately
       const timeoutId = window.setTimeout(() => updateBars(step), delay);
-      timeoutsRef.current.push(timeoutId);
+      timeoutsRef.current.push(timeoutId as unknown as number);
     });
   };
 
@@ -262,7 +263,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     data: VisualizationData,
     width: number,
     height: number
-   ) => {
+  ) => {
     svg.selectAll("*").remove(); // Clear specific SVG area if needed
     svg.attr("viewBox", `0 0 ${width} ${height}`).style("overflow", "visible");
 
@@ -270,8 +271,8 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     let edges: GraphEdge[] = (data.edges || []).map((e: any) => ({ ...e })); // Clone edges
 
     if (!nodes.length) {
-        svg.append("text").attr("x", width/2).attr("y", height/2).text("No graph nodes provided").attr("text-anchor", "middle");
-        return;
+      svg.append("text").attr("x", width / 2).attr("y", height / 2).text("No graph nodes provided").attr("text-anchor", "middle");
+      return;
     }
 
     // Create a map for quick node lookup
@@ -283,8 +284,8 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       target: typeof link.target === 'string' ? nodeMap.get(link.target) || link.target : link.target,
       weight: link.weight
     })).filter(link =>
-        // Filter out links where source or target couldn't be resolved to an object
-        typeof link.source !== 'string' && typeof link.target !== 'string'
+      // Filter out links where source or target couldn't be resolved to an object
+      typeof link.source !== 'string' && typeof link.target !== 'string'
     ) as GraphEdge[]; // Type assertion after filtering
 
 
@@ -357,18 +358,18 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     linkGroup.lower();
 
     // Add step message area
-     const messageText = svg.append("text")
-        .attr("class", "graph-step-message")
-        .attr("x", width / 2)
-        .attr("y", 30)
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .text(data.steps?.[0]?.message || "Initial Graph State");
+    const messageText = svg.append("text")
+      .attr("class", "graph-step-message")
+      .attr("x", width / 2)
+      .attr("y", 30)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .text(data.steps?.[0]?.message || "Initial Graph State");
 
 
     simulation.on("tick", () => {
-       // Boundary checks
-       nodes.forEach((d) => {
+      // Boundary checks
+      nodes.forEach((d) => {
         const radius = 20;
         d.x = Math.max(radius, Math.min(width - radius, d.x ?? width / 2));
         d.y = Math.max(radius, Math.min(height - radius, d.y ?? height / 2));
@@ -385,31 +386,31 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // --- Animation Steps for Graph ---
     if (data.steps && data.steps.length > 0) {
-        const updateStepVisuals = (step: VisualizationStep) => {
-             messageText.text(step.message || "");
+      const updateStepVisuals = (step: VisualizationStep) => {
+        messageText.text(step.message || "");
 
-             node.select("circle")
-                .transition().duration(300)
-                .attr("fill", (d) => {
-                    if(step.currentNode === d.id) return "red"; // Highlight current node
-                    if(step.visitedNodes?.includes(d.id)) return "orange"; // Highlight visited nodes
-                    return "#69b3a2"; // Default color
-                })
-                .attr("r", (d) => step.currentNode === d.id ? 25 : 20); // Slightly larger current node
+        node.select("circle")
+          .transition().duration(300)
+          .attr("fill", (d) => {
+            if (step.currentNode === d.id) return "red"; // Highlight current node
+            if (step.visitedNodes?.includes(d.id)) return "orange"; // Highlight visited nodes
+            return "#69b3a2"; // Default color
+          })
+          .attr("r", (d) => step.currentNode === d.id ? 25 : 20); // Slightly larger current node
 
-             // Add more visual changes based on step data (e.g., link colors)
-        }
+        // Add more visual changes based on step data (e.g., link colors)
+      }
 
       // Initial state if first step has visuals
-      if(data.steps[0].visitedNodes || data.steps[0].currentNode){
-          updateStepVisuals(data.steps[0]);
+      if (data.steps?.[0]?.visitedNodes || data.steps?.[0]?.currentNode) {
+        updateStepVisuals(data.steps[0]);
       }
 
       data.steps.forEach((step, idx) => {
-        if(idx === 0 && (data.steps[0].visitedNodes || data.steps[0].currentNode)) return; // Skip if already rendered
+        if (idx === 0 && (data.steps?.[0]?.visitedNodes || data.steps?.[0]?.currentNode)) return; // Skip if already rendered
 
         const timeoutId = setTimeout(() => {
-            updateStepVisuals(step);
+          updateStepVisuals(step);
         }, (idx + 1) * 1500); // Longer delay for graph steps
 
         timeoutsRef.current.push(timeoutId as unknown as number);
@@ -426,8 +427,8 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
   ) => {
     const rawNodes: any[] = data.nodes || []; // Expecting nodes with id, value, children (ids)
     if (!rawNodes.length) {
-       mainGroup.append("text").text("No tree data provided").attr("x", width/2).attr("y", 50).attr("text-anchor", "middle");
-       return;
+      mainGroup.append("text").text("No tree data provided").attr("x", width / 2).attr("y", 50).attr("text-anchor", "middle");
+      return;
     }
 
     // Helper to build the hierarchy structure d3 needs
@@ -444,7 +445,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         }
         nodeMap.set(node.id, { id: node.id, value: node.value ?? node.id, children: [] });
         if (node.children) {
-           node.children.forEach((childId: string) => childIds.add(childId));
+          node.children.forEach((childId: string) => childIds.add(childId));
         }
       });
 
@@ -459,24 +460,24 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             if (childNode && parentNode) {
               parentNode.children?.push(childNode); // Add child object
             } else {
-                console.warn(`Could not link child ${childId} to parent ${node.id}`);
+              console.warn(`Could not link child ${childId} to parent ${node.id}`);
             }
           });
         }
-         // Potential root is one not listed as a child of any other node
-         if (!childIds.has(node.id)) {
-             // Basic root finding (might need improvement for multi-root forests)
-             if (rootId === null) {
-                 rootId = node.id;
-             } else {
-                 console.warn("Multiple potential root nodes found. Using the first one:", rootId);
-             }
-         }
+        // Potential root is one not listed as a child of any other node
+        if (!childIds.has(node.id)) {
+          // Basic root finding (might need improvement for multi-root forests)
+          if (rootId === null) {
+            rootId = node.id;
+          } else {
+            console.warn("Multiple potential root nodes found. Using the first one:", rootId);
+          }
+        }
       });
 
       if (rootId === null && nodes.length > 0) {
-          console.warn("Could not determine root node. Using first node as root.");
-          rootId = nodes[0]?.id; // Fallback: use the first node if no clear root
+        console.warn("Could not determine root node. Using first node as root.");
+        rootId = nodes[0]?.id; // Fallback: use the first node if no clear root
       }
 
 
@@ -500,71 +501,80 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // --- Draw Links ---
     mainGroup.append("g")
-      .attr("class", "tree-links")
-      .selectAll<SVGPathElement, d3.HierarchyPointLink<TreeNode>>("path")
-      .data(root.links()) // Get links from hierarchy
-      .join("path")
-      .attr("fill", "none")
-      .attr("stroke", "#ccc") // Lighter link color
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.linkVertical() // Use vertical links
-          .x(d => (d as any).x) // Access x/y properties set by layout
-          .y(d => (d as any).y)
-       );
-
+    .attr("class", "tree-links")
+    .selectAll<SVGPathElement, d3.HierarchyLink<TreeNode>>("path")
+    .data(root.links())
+    .join("path")
+    .attr("fill", "none")
+    .attr("stroke", "#ccc")
+    .attr("stroke-width", 1.5)
+    .attr("d", d => {
+      // Create a link generator
+      const linkGenerator = d3.linkVertical();
+      
+      // Ensure x and y coordinates exist with default values if undefined
+      const source = {x: d.source.x || 0, y: d.source.y || 0};
+      const target = {x: d.target.x || 0, y: d.target.y || 0};
+      
+      // Return the path with source and target as tuples [number, number]
+      return linkGenerator({source: [source.x, source.y], target: [target.x, target.y]});
+    });
+  
+    
+  
     // --- Draw Nodes ---
     const nodeGroup = mainGroup.append("g")
-        .attr("class", "tree-nodes")
-        .selectAll<SVGGElement, d3.HierarchyPointNode<TreeNode>>("g")
-        .data(root.descendants()) // Get all nodes in hierarchy
-        .join("g")
-        .attr("transform", d => `translate(${d.x},${d.y})`); // Position node group
+      .attr("class", "tree-nodes")
+      .selectAll<SVGGElement, d3.HierarchyPointNode<TreeNode>>("g")
+      .data(root.descendants()) // Get all nodes in hierarchy
+      .join("g")
+      .attr("transform", d => `translate(${d.x},${d.y})`); // Position node group
 
     nodeGroup.append("circle")
-        .attr("r", 20) // Smaller radius
-        .attr("fill", "#69b3a2")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5);
+      .attr("r", 20) // Smaller radius
+      .attr("fill", "#69b3a2")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5);
 
     nodeGroup.append("text")
-        .text(d => d.data.value) // Display node value
-        .attr("dy", "0.35em") // Vertical centering
-        .attr("text-anchor", "middle") // Horizontal centering
-        .attr("fill", "white")
-        .style("font-size", "12px")
-        .style("font-weight", "bold");
+      .text(d => d.data.value) // Display node value
+      .attr("dy", "0.35em") // Vertical centering
+      .attr("text-anchor", "middle") // Horizontal centering
+      .attr("fill", "white")
+      .style("font-size", "12px")
+      .style("font-weight", "bold");
 
-     // --- Tree Animation Steps (Placeholder - Adapt based on needed step data) ---
-     if (data.steps && data.steps.length > 0) {
-        const messageText = mainGroup.append("text")
-            .attr("class", "tree-step-message")
-            .attr("x", width / 2)
-            .attr("y", -20)
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px");
+    // --- Tree Animation Steps (Placeholder - Adapt based on needed step data) ---
+    if (data.steps && data.steps.length > 0) {
+      const messageText = mainGroup.append("text")
+        .attr("class", "tree-step-message")
+        .attr("x", width / 2)
+        .attr("y", -20)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px");
 
-        const updateTreeStep = (step: VisualizationStep) => {
-            messageText.text(step.message || "");
-            // Example: Highlight visited nodes
-            nodeGroup.select("circle")
-                .transition().duration(300)
-                .attr("fill", d => step.visitedNodes?.includes(d.data.id) ? "orange" : "#69b3a2");
-        }
+      const updateTreeStep = (step: VisualizationStep) => {
+        messageText.text(step.message || "");
+        // Example: Highlight visited nodes
+        nodeGroup.select("circle")
+          .transition().duration(300)
+          .attr("fill", d => step.visitedNodes?.includes(d.data.id) ? "orange" : "#69b3a2");
+      }
 
-         // Initial state
-        updateTreeStep(data.steps[0]);
+      // Initial state
+      updateTreeStep(data.steps[0]);
 
-        data.steps.forEach((step, idx) => {
-            if(idx === 0) return; // Skip initial
-            const timeoutId = setTimeout(() => updateTreeStep(step), (idx + 1) * 1000);
-            timeoutsRef.current.push(timeoutId);
-        });
-     }
+      data.steps.forEach((step, idx) => {
+        if (idx === 0) return; // Skip initial
+        const timeoutId = setTimeout(() => updateTreeStep(step), (idx + 1) * 1000);
+        timeoutsRef.current.push(timeoutId as unknown as number);
+      });
+    }
 
   };
 
   // #### 4. Stack Visualization
-   const renderStack = (
+  const renderStack = (
     mainGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
     data: VisualizationData,
     width: number,
@@ -591,63 +601,63 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // Function to draw the stack at a given state
     const drawStackState = (currentStack: any[], message?: string): void => {
-        messageText.text(message || "");
+      messageText.text(message || "");
 
-        const stackItems = mainGroup.selectAll("g.stack-item")
-            .data(currentStack, (d, i) => i); // Key by index
+      const stackItems = mainGroup.selectAll("g.stack-item")
+        .data(currentStack, (_d, i) => i); // Key by index
 
-        // Remove items that are popped
-        stackItems.exit()
-            .transition().duration(300)
-            .attr("transform", `translate(${stackCenterX}, ${stackBaseY + boxHeight})`) // Animate downwards
-            .style("opacity", 0)
-            .remove();
+      // Remove items that are popped
+      stackItems.exit()
+        .transition().duration(300)
+        .attr("transform", `translate(${stackCenterX}, ${stackBaseY + boxHeight})`) // Animate downwards
+        .style("opacity", 0)
+        .remove();
 
-        // Add new items (pushed)
-        const enterGroup = stackItems.enter()
-            .append("g")
-            .attr("class", "stack-item")
-            // Initial position below the view for animation
-            .attr("transform", `translate(${stackCenterX - boxWidth / 2}, ${stackBaseY + boxHeight})`)
-            .style("opacity", 0);
+      // Add new items (pushed)
+      const enterGroup = stackItems.enter()
+        .append("g")
+        .attr("class", "stack-item")
+        // Initial position below the view for animation
+        .attr("transform", `translate(${stackCenterX - boxWidth / 2}, ${stackBaseY + boxHeight})`)
+        .style("opacity", 0);
 
-        enterGroup.append("rect")
-            .attr("width", boxWidth)
-            .attr("height", boxHeight)
-            .attr("fill", "#69b3a2")
-            .attr("stroke", "#234d45")
-            .attr("rx", 5)
-            .attr("ry", 5);
+      enterGroup.append("rect")
+        .attr("width", boxWidth)
+        .attr("height", boxHeight)
+        .attr("fill", "#69b3a2")
+        .attr("stroke", "#234d45")
+        .attr("rx", 5)
+        .attr("ry", 5);
 
-        enterGroup.append("text")
-            .attr("class", "stack-text")
-            .attr("x", boxWidth / 2)
-            .attr("y", boxHeight / 2)
-            .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
-            .attr("fill", "white")
-            .text(d => d);
+      enterGroup.append("text")
+        .attr("class", "stack-text")
+        .attr("x", boxWidth / 2)
+        .attr("y", boxHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.35em")
+        .attr("fill", "white")
+        .text(d => d);
 
-        // Update existing and newly entered items to their correct position
-        const mergedGroup = enterGroup.merge(stackItems as any); // Merge enter and update selections
+      // Update existing and newly entered items to their correct position
+      const mergedGroup = enterGroup.merge(stackItems as any); // Merge enter and update selections
 
-        mergedGroup.select('text').text(d => d); // Update text in case value changed (unlikely for stack)
+      mergedGroup.select('text').text(d => d); // Update text in case value changed (unlikely for stack)
 
-        mergedGroup.transition().duration(500)
-            .attr("transform", (d, i) => `translate(${stackCenterX - boxWidth / 2}, ${stackBaseY - (i + 1) * (boxHeight + spacing)})`)
-            .style("opacity", 1);
+      mergedGroup.transition().duration(500)
+        .attr("transform", (_d, i) => `translate(${stackCenterX - boxWidth / 2}, ${stackBaseY - (i + 1) * (boxHeight + spacing)})`)
+        .style("opacity", 1);
 
-        // Update Top indicator
-        mainGroup.selectAll(".stack-top-indicator").remove();
-        if (currentStack.length > 0) {
-            mainGroup.append("text")
-                .attr("class", "stack-top-indicator")
-                .attr("x", stackCenterX + boxWidth / 2 + 10) // Position to the right of the top element
-                .attr("y", stackBaseY - (currentStack.length * (boxHeight + spacing)) + boxHeight / 2 )
-                .attr("text-anchor", "start")
-                .attr("dy", "0.35em")
-                .text("← Top");
-        }
+      // Update Top indicator
+      mainGroup.selectAll(".stack-top-indicator").remove();
+      if (currentStack.length > 0) {
+        mainGroup.append("text")
+          .attr("class", "stack-top-indicator")
+          .attr("x", stackCenterX + boxWidth / 2 + 10) // Position to the right of the top element
+          .attr("y", stackBaseY - (currentStack.length * (boxHeight + spacing)) + boxHeight / 2)
+          .attr("text-anchor", "start")
+          .attr("dy", "0.35em")
+          .text("← Top");
+      }
     };
 
 
@@ -657,15 +667,15 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // Animation loop for subsequent steps
     steps.forEach((step, idx) => {
-        if (idx === 0) return; // Already drew the first step/initial state
-        const timeoutId = window.setTimeout(() => {
-             // Use step.array if provided, otherwise assume no change (only message)
-             // In a real scenario, step should ALWAYS contain the state (`step.stack` or `step.array`)
-            drawStackState(step.array || initialState /* fallback might be wrong */, step.message);
-        }, idx * 1000); // Delay subsequent steps
-        timeoutsRef.current.push(timeoutId);
+      if (idx === 0) return; // Already drew the first step/initial state
+      const timeoutId = window.setTimeout(() => {
+        // Use step.array if provided, otherwise assume no change (only message)
+        // In a real scenario, step should ALWAYS contain the state (`step.stack` or `step.array`)
+        drawStackState(step.array || initialState /* fallback might be wrong */, step.message);
+      }, idx * 1000); // Delay subsequent steps
+      timeoutsRef.current.push(timeoutId);
     });
-};
+  };
 
 
   // #### 5. Queue Visualization
@@ -694,101 +704,101 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       .style("font-size", "16px")
       .text(steps[0]?.message || (queue.length ? "Initial Queue" : "Empty Queue"));
 
-     // Function to draw the queue at a given state
+    // Function to draw the queue at a given state
     const drawQueueState = (currentQueue: any[], message?: string): void => {
-        messageText.text(message || "");
+      messageText.text(message || "");
 
-        const queueItems = mainGroup.selectAll("g.queue-item")
-            .data(currentQueue, (d, i) => i); // Key by index or a unique ID if available
+      const queueItems = mainGroup.selectAll("g.queue-item")
+        .data(currentQueue, (_d, i) => i); // Key by index or a unique ID if available
 
-        // Items being removed (dequeued) - animate off to the left
-        queueItems.exit()
-            .transition().duration(500)
-            .attr("transform", `translate(${-boxWidth*2}, ${queueStartY})`)
-            .style("opacity", 0)
-            .remove();
+      // Items being removed (dequeued) - animate off to the left
+      queueItems.exit()
+        .transition().duration(500)
+        .attr("transform", `translate(${-boxWidth * 2}, ${queueStartY})`)
+        .style("opacity", 0)
+        .remove();
 
-        // Items being added (enqueued) - animate in from the right
-        const enterGroup = queueItems.enter()
-            .append("g")
-            .attr("class", "queue-item")
-            .attr("transform", `translate(${width + boxWidth}, ${queueStartY})`) // Start off-screen right
-            .style("opacity", 0);
+      // Items being added (enqueued) - animate in from the right
+      const enterGroup = queueItems.enter()
+        .append("g")
+        .attr("class", "queue-item")
+        .attr("transform", `translate(${width + boxWidth}, ${queueStartY})`) // Start off-screen right
+        .style("opacity", 0);
 
-        enterGroup.append("rect")
-            .attr("width", boxWidth)
-            .attr("height", boxHeight)
-            .attr("fill", "#69b3a2")
-            .attr("stroke", "#234d45")
-            .attr("rx", 3).attr("ry", 3);
+      enterGroup.append("rect")
+        .attr("width", boxWidth)
+        .attr("height", boxHeight)
+        .attr("fill", "#69b3a2")
+        .attr("stroke", "#234d45")
+        .attr("rx", 3).attr("ry", 3);
 
-        enterGroup.append("text")
-            .attr("class", "queue-text")
-            .attr("x", boxWidth / 2)
-            .attr("y", boxHeight / 2)
-            .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
-            .attr("fill", "white")
-            .text(d => d);
+      enterGroup.append("text")
+        .attr("class", "queue-text")
+        .attr("x", boxWidth / 2)
+        .attr("y", boxHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.35em")
+        .attr("fill", "white")
+        .text(d => d);
 
-        // Update existing and newly entered items to their correct position
-        const mergedGroup = enterGroup.merge(queueItems as any);
+      // Update existing and newly entered items to their correct position
+      const mergedGroup = enterGroup.merge(queueItems as any);
 
-        mergedGroup.select('text').text(d => d); // Update text if needed
+      mergedGroup.select('text').text(d => d); // Update text if needed
 
-        mergedGroup.transition().duration(500)
-            .attr("transform", (d, i) => `translate(${queueStartX + i * (boxWidth + spacing)}, ${queueStartY})`)
-            .style("opacity", 1);
+      mergedGroup.transition().duration(500)
+        .attr("transform", (_d, i) => `translate(${queueStartX + i * (boxWidth + spacing)}, ${queueStartY})`)
+        .style("opacity", 1);
 
-        // Update Front/Rear indicators
-        mainGroup.selectAll(".queue-indicator").remove();
-        if (currentQueue.length > 0) {
-            // Front indicator
-            mainGroup.append("text")
-                .attr("class", "queue-indicator")
-                .attr("x", queueStartX + boxWidth / 2)
-                .attr("y", queueStartY - 15) // Above the first element
-                .attr("text-anchor", "middle")
-                .text("Front ↓");
-            // Rear indicator
-             mainGroup.append("text")
-                .attr("class", "queue-indicator")
-                .attr("x", queueStartX + (currentQueue.length - 1) * (boxWidth + spacing) + boxWidth / 2)
-                .attr("y", queueStartY + boxHeight + 15) // Below the last element
-                .attr("text-anchor", "middle")
-                .text("↑ Rear");
-        }
+      // Update Front/Rear indicators
+      mainGroup.selectAll(".queue-indicator").remove();
+      if (currentQueue.length > 0) {
+        // Front indicator
+        mainGroup.append("text")
+          .attr("class", "queue-indicator")
+          .attr("x", queueStartX + boxWidth / 2)
+          .attr("y", queueStartY - 15) // Above the first element
+          .attr("text-anchor", "middle")
+          .text("Front ↓");
+        // Rear indicator
+        mainGroup.append("text")
+          .attr("class", "queue-indicator")
+          .attr("x", queueStartX + (currentQueue.length - 1) * (boxWidth + spacing) + boxWidth / 2)
+          .attr("y", queueStartY + boxHeight + 15) // Below the last element
+          .attr("text-anchor", "middle")
+          .text("↑ Rear");
+      }
     };
 
-     // Initial Draw or First Step
+    // Initial Draw or First Step
     const initialState = steps.length > 0 ? (steps[0].array || []) : queue;
     drawQueueState(initialState, steps[0]?.message || (initialState.length ? "Initial Queue" : "Empty Queue"));
 
     // Animation loop for subsequent steps
     steps.forEach((step, idx) => {
-        if (idx === 0) return;
-        const timeoutId = window.setTimeout(() => {
-             // Assume step.array or step.queue contains the state
-             const currentStepState = step.array || (step as any).queue || initialState;
-             drawQueueState(currentStepState, step.message);
-        }, idx * 1000);
-        timeoutsRef.current.push(timeoutId);
+      if (idx === 0) return;
+      const timeoutId = window.setTimeout(() => {
+        // Assume step.array or step.queue contains the state
+        const currentStepState = step.array || (step as any).queue || initialState;
+        drawQueueState(currentStepState, step.message);
+      }, idx * 1000);
+      timeoutsRef.current.push(timeoutId);
     });
-};
+  };
 
 
   // #### 6. HashMap Visualization
   const renderHashMap = (
-     mainGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
-     data: VisualizationData,
-     width: number
-   ): void => {
+    mainGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+    data: VisualizationData,
+    width: number
+  ): void => {
     // Use entries if provided, otherwise try to convert hashmap object
     let entries: { key: string; value: any }[] = [];
-    if(data.entries) {
-        entries = data.entries;
+    if (data.entries) {
+      entries = data.entries;
     } else if (data.hashmap && typeof data.hashmap === 'object') {
-        entries = Object.entries(data.hashmap).map(([key, value]) => ({ key, value }));
+      entries = Object.entries(data.hashmap).map(([key, value]) => ({ key, value }));
     }
     const steps: VisualizationStep[] = data.steps || [];
 
@@ -799,7 +809,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     const spacingX = 10; // Add X spacing for grid layout
     const itemsPerRow = Math.floor(width / (bucketWidth + spacingX));
 
-     // Add step message area
+    // Add step message area
     const messageText = mainGroup.append("text")
       .attr("class", "step-message")
       .attr("x", width / 2)
@@ -810,79 +820,79 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
 
     const drawHashMapState = (currentEntries: { key: string; value: any }[], message?: string) => {
-        messageText.text(message || "");
+      messageText.text(message || "");
 
-        const mapItems = mainGroup.selectAll("g.map-item")
-            .data(currentEntries, d => d.key); // Key by entry key
+      const mapItems = mainGroup.selectAll<SVGGElement, { key: string; value: any }>("g.map-item")
+        .data(currentEntries, d => d.key); // Key by entry key
 
-        mapItems.exit()
-            .transition().duration(300)
-            .style("opacity", 0)
-            .remove();
+      mapItems.exit()
+        .transition().duration(300)
+        .style("opacity", 0)
+        .remove();
 
-        const enterGroup = mapItems.enter()
-            .append("g")
-            .attr("class", "map-item")
-            .style("opacity", 0);
+      const enterGroup = mapItems.enter()
+        .append("g")
+        .attr("class", "map-item")
+        .style("opacity", 0);
 
-        enterGroup.append("rect")
-            .attr("width", bucketWidth)
-            .attr("height", bucketHeight)
-            .attr("fill", "#69b3a2")
-            .attr("stroke", "#234d45")
-            .attr("rx", 3).attr("ry", 3);
+      enterGroup.append("rect")
+        .attr("width", bucketWidth)
+        .attr("height", bucketHeight)
+        .attr("fill", "#69b3a2")
+        .attr("stroke", "#234d45")
+        .attr("rx", 3).attr("ry", 3);
 
-        enterGroup.append("text")
-            .attr("class", "map-text")
-            .attr("x", bucketWidth / 2)
-            .attr("y", bucketHeight / 2)
-            .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
-            .attr("fill", "white")
-            .style("font-size", "12px");
+      enterGroup.append("text")
+        .attr("class", "map-text")
+        .attr("x", bucketWidth / 2)
+        .attr("y", bucketHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.35em")
+        .attr("fill", "white")
+        .style("font-size", "12px");
 
 
-        const mergedGroup = enterGroup.merge(mapItems as any);
+      const mergedGroup = enterGroup.merge(mapItems as any);
 
-        // Update text content for existing/entering items
-         mergedGroup.select("text")
-            .text(d => `${d.key}: ${d.value}`);
+      // Update text content for existing/entering items
+      mergedGroup.select("text")
+        .text(d => `${d.key}: ${d.value}`);
 
-        // Update positions with transition
-        mergedGroup.transition().duration(500)
-            .attr("transform", (d, i) => {
-                const col = i % itemsPerRow;
-                const row = Math.floor(i / itemsPerRow);
-                return `translate(${col * (bucketWidth + spacingX)}, ${row * (bucketHeight + spacingY)})`;
-            })
-            .style("opacity", 1);
+      // Update positions with transition
+      mergedGroup.transition().duration(500)
+        .attr("transform", (_d, i) => {
+          const col = i % itemsPerRow;
+          const row = Math.floor(i / itemsPerRow);
+          return `translate(${col * (bucketWidth + spacingX)}, ${row * (bucketHeight + spacingY)})`;
+        })
+        .style("opacity", 1);
     }
 
     // Initial Draw or First Step
     let initialStateEntries: { key: string; value: any }[] = [];
     if (steps.length > 0 && steps[0].hashmap) {
-        initialStateEntries = Object.entries(steps[0].hashmap).map(([key, value]) => ({ key, value }));
+      initialStateEntries = Object.entries(steps[0].hashmap).map(([key, value]) => ({ key, value }));
     } else {
-        initialStateEntries = entries;
+      initialStateEntries = entries;
     }
     drawHashMapState(initialStateEntries, steps[0]?.message || (initialStateEntries.length ? "Initial HashMap" : "Empty HashMap"));
 
 
     // Animation loop for subsequent steps
     steps.forEach((step, idx) => {
-        if (idx === 0) return;
-        const timeoutId = window.setTimeout(() => {
-             let currentStepEntries: { key: string; value: any }[] = [];
-             if (step.hashmap) {
-                 currentStepEntries = Object.entries(step.hashmap).map(([key, value]) => ({ key, value }));
-             } else {
-                 currentStepEntries = initialStateEntries; // Fallback might be wrong
-             }
-             drawHashMapState(currentStepEntries, step.message);
-        }, idx * 1000);
-        timeoutsRef.current.push(timeoutId);
+      if (idx === 0) return;
+      const timeoutId = window.setTimeout(() => {
+        let currentStepEntries: { key: string; value: any }[] = [];
+        if (step.hashmap) {
+          currentStepEntries = Object.entries(step.hashmap).map(([key, value]) => ({ key, value }));
+        } else {
+          currentStepEntries = initialStateEntries; // Fallback might be wrong
+        }
+        drawHashMapState(currentStepEntries, step.message);
+      }, idx * 1000);
+      timeoutsRef.current.push(timeoutId);
     });
-};
+  };
 
 
   // #### 7. Table Visualization
@@ -908,17 +918,16 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
     // Calculate cell size based on available space
     const maxCellWidth = Math.max(40, Math.floor(width / columns) - 5);
-    const maxCellHeight = Math.max(30, Math.floor((height-30) / rows) - 5); // Leave space for message
+    const maxCellHeight = Math.max(30, Math.floor((height - 30) / rows) - 5); // Leave space for message
     const cellWidth = Math.min(maxCellWidth, maxCellHeight, 60); // Limit max size
     const cellHeight = cellWidth;
 
     const tableWidth = columns * cellWidth;
-    const tableHeight = rows * cellHeight;
     const startX = (width - tableWidth) / 2; // Center table
     const startY = 0; // Start drawing from top of group
 
     const tableGroup = mainGroup.append("g")
-        .attr("transform", `translate(${startX}, ${startY})`);
+      .attr("transform", `translate(${startX}, ${startY})`);
 
 
     // Flatten data for D3 join
@@ -930,7 +939,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     });
 
     const cellGroups = tableGroup
-      .selectAll("g.cell")
+      .selectAll<SVGGElement, { rowIndex: number; colIndex: number; value: any }>("g.cell")
       .data(cells, d => `${d.rowIndex}-${d.colIndex}`) // Key by row-col
       .join("g")
       .attr("class", "cell")
@@ -950,7 +959,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       .attr("dominant-baseline", "central")
       .style("font-size", `${Math.max(10, cellWidth * 0.3)}px`) // Adjust font size
       .text(d => d.value);
-      // Add styles for header rows/cols if needed
+    // Add styles for header rows/cols if needed
 
     // Add step message area
     const messageText = mainGroup.append("text")
@@ -962,31 +971,31 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       .text(steps[0]?.message || "Initial Table");
 
     // --- Animation Steps ---
-     const updateTableStep = (step: VisualizationStep) => {
-         messageText.text(step.message || "");
+    const updateTableStep = (step: VisualizationStep) => {
+      messageText.text(step.message || "");
 
-         // Reset highlights/colors first
-         tableGroup.selectAll("rect")
-            .transition().duration(200)
-            .attr("fill", "white");
-         tableGroup.selectAll("text")
-            .transition().duration(200)
-            .attr("fill", "black");
+      // Reset highlights/colors first
+      tableGroup.selectAll("rect")
+        .transition().duration(200)
+        .attr("fill", "white");
+      tableGroup.selectAll("text")
+        .transition().duration(200)
+        .attr("fill", "black");
 
 
-         // Apply updates
-         step.updatedCells?.forEach(([row, col, newValue]) => {
-             tableGroup.select(`.cell-text.row-${row}.col-${col}`)
-                .text(newValue); // Update text directly
-             // Optionally highlight the updated cell
-             tableGroup.select(`g.cell:has(.cell-text.row-${row}.col-${col}) rect`) // Find parent g and then rect
-                .transition().duration(300)
-                .attr("fill", "#a8dadc"); // Highlight color
-         });
+      // Apply updates
+      step.updatedCells?.forEach(([row, col, newValue]) => {
+        tableGroup.select(`.cell-text.row-${row}.col-${col}`)
+          .text(newValue); // Update text directly
+        // Optionally highlight the updated cell
+        tableGroup.select(`g.cell:has(.cell-text.row-${row}.col-${col}) rect`) // Find parent g and then rect
+          .transition().duration(300)
+          .attr("fill", "#a8dadc"); // Highlight color
+      });
 
-         // Add other highlights if provided (e.g., step.highlightedCells)
-         // step.highlightedCells?.forEach(([row, col]) => { ... });
-     }
+      // Add other highlights if provided (e.g., step.highlightedCells)
+      // step.highlightedCells?.forEach(([row, col]) => { ... });
+    }
 
     // Initial state (apply first step visuals if any)
     if (steps.length > 0) {
@@ -995,150 +1004,150 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
 
     steps.forEach((step, idx) => {
-        if (idx === 0) return; // Skip initial
-        const timeoutId: number = window.setTimeout(() => {
-            updateTableStep(step);
+      if (idx === 0) return; // Skip initial
+      const timeoutId: number = window.setTimeout(() => {
+        updateTableStep(step);
       }, idx * 1000);
       timeoutsRef.current.push(timeoutId);
     });
   };
 
   // #### 8. Array Visualization (NEW)
-    const renderArray = (
-        mainGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
-        data: VisualizationData,
-        width: number,
-        height: number
-    ): void => {
-        const array: any[] = data.array || [];
-        const steps: VisualizationStep[] = data.steps || [];
+  const renderArray = (
+    mainGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
+    data: VisualizationData,
+    width: number,
+    height: number
+  ): void => {
+    const array: any[] = data.array || [];
+    const steps: VisualizationStep[] = data.steps || [];
 
-        if (!array.length) {
-            mainGroup.append("text").text("Empty array").attr("x", width/2).attr("y", 50).attr("text-anchor", "middle");
-            return;
-        }
+    if (!array.length) {
+      mainGroup.append("text").text("Empty array").attr("x", width / 2).attr("y", 50).attr("text-anchor", "middle");
+      return;
+    }
 
-        const boxHeight = 50;
-        const boxWidth = Math.max(40, Math.min(80, width / array.length * 0.7)); // Responsive width
-        const spacing = 10;
-        const totalArrayWidth = array.length * (boxWidth + spacing) - spacing;
-        const startX = (width - totalArrayWidth) / 2; // Center the array
-        const arrayY = height / 2 - boxHeight / 2 - 20; // Position array vertically, leave space for pointers
+    const boxHeight = 50;
+    const boxWidth = Math.max(40, Math.min(80, width / array.length * 0.7)); // Responsive width
+    const spacing = 10;
+    const totalArrayWidth = array.length * (boxWidth + spacing) - spacing;
+    const startX = (width - totalArrayWidth) / 2; // Center the array
+    const arrayY = height / 2 - boxHeight / 2 - 20; // Position array vertically, leave space for pointers
 
-        // Add step message area
-        const messageText = mainGroup.append("text")
-            .attr("class", "step-message")
-            .attr("x", width / 2)
-            .attr("y", -20) // Position above
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .text(steps[0]?.message || "Initial Array State");
+    // Add step message area
+    const messageText = mainGroup.append("text")
+      .attr("class", "step-message")
+      .attr("x", width / 2)
+      .attr("y", -20) // Position above
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .text(steps[0]?.message || "Initial Array State");
 
-        // Draw Array Structure (Boxes, Values, Indices)
-        const arrayGroup = mainGroup.append("g").attr("class", "array-structure");
+    // Draw Array Structure (Boxes, Values, Indices)
+    const arrayGroup = mainGroup.append("g").attr("class", "array-structure");
 
-        const arrayBoxes = arrayGroup.selectAll("g.array-box")
-            .data(array)
-            .join("g")
-            .attr("class", "array-box")
-            .attr("transform", (d, i) => `translate(${startX + i * (boxWidth + spacing)}, ${arrayY})`);
+    const arrayBoxes = arrayGroup.selectAll("g.array-box")
+      .data(array)
+      .join("g")
+      .attr("class", "array-box")
+      .attr("transform", (_d, i) => `translate(${startX + i * (boxWidth + spacing)}, ${arrayY})`);
 
-        // Box rectangle
-        arrayBoxes.append("rect")
-            .attr("width", boxWidth)
-            .attr("height", boxHeight)
-            .attr("fill", "steelblue")
-            .attr("stroke", "#2c3e50")
-            .attr("rx", 3).attr("ry", 3);
+    // Box rectangle
+    arrayBoxes.append("rect")
+      .attr("width", boxWidth)
+      .attr("height", boxHeight)
+      .attr("fill", "steelblue")
+      .attr("stroke", "#2c3e50")
+      .attr("rx", 3).attr("ry", 3);
 
-        // Value text inside box
-        arrayBoxes.append("text")
-            .attr("class", "value-text")
-            .attr("x", boxWidth / 2)
-            .attr("y", boxHeight / 2)
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "central")
-            .attr("fill", "white")
-            .style("font-size", "14px")
-            .text(d => d);
+    // Value text inside box
+    arrayBoxes.append("text")
+      .attr("class", "value-text")
+      .attr("x", boxWidth / 2)
+      .attr("y", boxHeight / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("fill", "white")
+      .style("font-size", "14px")
+      .text(d => d);
 
-        // Index text below box
-        arrayBoxes.append("text")
-            .attr("class", "index-text")
-            .attr("x", boxWidth / 2)
-            .attr("y", boxHeight + 15) // Position below
-            .attr("text-anchor", "middle")
-            .style("font-size", "12px")
-            .text((d, i) => i); // Display index
-
-
-        // Pointer Group (for animating pointers)
-        const pointerGroup = mainGroup.append("g").attr("class", "pointers");
-
-        // Function to update visuals for a given step
-        const updateArrayStep = (step: VisualizationStep) => {
-            messageText.text(step.message || "");
-
-            const pointersData = step.pointers ? Object.entries(step.pointers) : []; // [key, index] pairs
-
-            const pointers = pointerGroup.selectAll<SVGTextElement, [string, number]>("text.pointer")
-                .data(pointersData, d => d[0]); // Key pointers by their name (e.g., "left")
-
-            // Remove old pointers
-            pointers.exit().transition().duration(300).style("opacity", 0).remove();
-
-            // Add new pointers
-            const enterPointers = pointers.enter()
-                .append("text")
-                .attr("class", "pointer")
-                .attr("y", arrayY - 15) // Position above the array boxes
-                .attr("text-anchor", "middle")
-                .style("font-size", "14px")
-                .style("font-weight", "bold")
-                .style("fill", "#e74c3c") // Pointer color
-                .style("opacity", 0); // Start invisible
-
-            // Update existing and new pointers
-            enterPointers.merge(pointers)
-                .text(d => d[0]) // Pointer name (e.g., "L", "R", "i")
-                .transition().duration(500)
-                .attr("x", d => {
-                    const index = d[1]; // Get the index the pointer points to
-                    // Calculate center x of the target box
-                    return startX + index * (boxWidth + spacing) + boxWidth / 2;
-                })
-                .style("opacity", 1);
+    // Index text below box
+    arrayBoxes.append("text")
+      .attr("class", "index-text")
+      .attr("x", boxWidth / 2)
+      .attr("y", boxHeight + 15) // Position below
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text((_d, i) => i); // Display index
 
 
-            // Handle Highlights
-            arrayBoxes.select("rect") // Select the rectangles within the boxes
-                .transition().duration(300)
-                .attr("fill", (d, i) => {
-                    if (step.highlightedIndices?.includes(i)) {
-                        return "orange"; // Highlight color
-                    }
-                    return "steelblue"; // Default color
-                });
-        };
+    // Pointer Group (for animating pointers)
+    const pointerGroup = mainGroup.append("g").attr("class", "pointers");
+
+    // Function to update visuals for a given step
+    const updateArrayStep = (step: VisualizationStep) => {
+      messageText.text(step.message || "");
+
+      const pointersData = step.pointers ? Object.entries(step.pointers) : []; // [key, index] pairs
+
+      const pointers = pointerGroup.selectAll<SVGTextElement, [string, number]>("text.pointer")
+        .data(pointersData, d => d[0]); // Key pointers by their name (e.g., "left")
+
+      // Remove old pointers
+      pointers.exit().transition().duration(300).style("opacity", 0).remove();
+
+      // Add new pointers
+      const enterPointers = pointers.enter()
+        .append("text")
+        .attr("class", "pointer")
+        .attr("y", arrayY - 15) // Position above the array boxes
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("fill", "#e74c3c") // Pointer color
+        .style("opacity", 0); // Start invisible
+
+      // Update existing and new pointers
+      enterPointers.merge(pointers)
+        .text(d => d[0]) // Pointer name (e.g., "L", "R", "i")
+        .transition().duration(500)
+        .attr("x", d => {
+          const index = d[1]; // Get the index the pointer points to
+          // Calculate center x of the target box
+          return startX + index * (boxWidth + spacing) + boxWidth / 2;
+        })
+        .style("opacity", 1);
 
 
-        // Initial State (apply first step visuals)
-        if (steps.length > 0) {
-            updateArrayStep(steps[0]);
-        } else {
-             // Draw pointers if initial state defined them (less common)
-             // updateArrayStep({ pointers: data.pointers || {}, message: "Initial Array" });
-        }
-
-        // Animate subsequent steps
-        steps.forEach((step, idx) => {
-            if (idx === 0) return; // Skip first step if already rendered
-            const timeoutId = window.setTimeout(() => {
-                updateArrayStep(step);
-            }, idx * 1000); // Adjust timing as needed
-            timeoutsRef.current.push(timeoutId);
+      // Handle Highlights
+      arrayBoxes.select("rect") // Select the rectangles within the boxes
+        .transition().duration(300)
+        .attr("fill", (_d, i) => {
+          if (step.highlightedIndices?.includes(i)) {
+            return "orange"; // Highlight color
+          }
+          return "steelblue"; // Default color
         });
     };
+
+
+    // Initial State (apply first step visuals)
+    if (steps.length > 0) {
+      updateArrayStep(steps[0]);
+    } else {
+      // Draw pointers if initial state defined them (less common)
+      // updateArrayStep({ pointers: data.pointers || {}, message: "Initial Array" });
+    }
+
+    // Animate subsequent steps
+    steps.forEach((step, idx) => {
+      if (idx === 0) return; // Skip first step if already rendered
+      const timeoutId = window.setTimeout(() => {
+        updateArrayStep(step);
+      }, idx * 1000); // Adjust timing as needed
+      timeoutsRef.current.push(timeoutId);
+    });
+  };
 
 
   // #### Fallback for Unsupported Types
@@ -1146,21 +1155,21 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
     width: number,
     height: number
-    ): void => {
-        svg.selectAll("*").remove(); // Clear first
-        svg
-        .append("text")
-        .attr("x", width / 2)
-        .attr("y", height / 2)
-        .attr("text-anchor", "middle")
-        .text("Unsupported or Invalid Visualization Data");
+  ): void => {
+    svg.selectAll("*").remove(); // Clear first
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .text("Unsupported or Invalid Visualization Data");
   };
 
 
   // --- Component Return ---
   return (
     <div className="w-full h-[450px] max-w-4xl mx-auto p-2 bg-gray-50 rounded-lg shadow-inner overflow-hidden">
-        {/* Increased height */}
+      {/* Increased height */}
       <svg ref={svgRef} className="w-full h-full"></svg>
     </div>
   );
