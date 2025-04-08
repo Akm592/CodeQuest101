@@ -3,7 +3,8 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+
 
 import { Copy, Maximize2, Check } from "lucide-react";
 import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer"; // Adjust path if needed
