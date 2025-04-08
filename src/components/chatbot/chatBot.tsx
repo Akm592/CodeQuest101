@@ -96,6 +96,7 @@ const ChatInterface = () => {
   const [theme, setTheme] = useState<string>("system");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const apiLink = import.meta.env.VITE_API_URL || "http://localhost:8000";
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   });
@@ -408,6 +409,7 @@ const ChatInterface = () => {
     // Prepare for bot response - No need to add an empty message immediately for streaming
     // setIsTyping(true); // Indicate bot is "thinking" / preparing response
 
+
     // --- Bot Response Handling ---
     const botMessageId = `bot-${Date.now()}-${Math.random()}`;
     let accumulatedBotText = ""; // Store text for the current bot message
@@ -416,6 +418,10 @@ const ChatInterface = () => {
       setIsTyping(true); // Set typing indicator active *before* the fetch call
 
       const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/chat`, {
+
+    try {
+      const response = await fetch(`${apiLink}/chat`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",
