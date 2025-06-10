@@ -66,20 +66,7 @@ interface AlgorithmVisualizerProps {
   visualizationData: VisualizationData | null;
 }
 
-interface GraphNode {
-  id: string;
-  label?: string;
-  x: number;
-  y: number;
-  vx?: number;
-  vy?: number;
-}
 
-interface GraphEdge {
-  source: string;
-  target: string;
-  weight?: number;
-}
 
 const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualizationData }) => {
   const canvasRef = useRef<HTMLDivElement>(null);

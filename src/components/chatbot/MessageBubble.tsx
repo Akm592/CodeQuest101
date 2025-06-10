@@ -118,6 +118,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  void isTypingComplete;
   
   const resolvedTheme = typeof window !== 'undefined' && 
     document.documentElement.classList.contains('dark') ? 'dark' : 'light';
