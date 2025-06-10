@@ -254,6 +254,7 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
                 <VirtualList
                     ref={virtualListRef}
                     height={containerRef.current?.clientHeight || 400}
+                    width={containerRef.current?.clientWidth || '100%'}
                     itemCount={messagesCount}
                     itemSize={120} // Approximate item height
                     itemData={virtualListData}
