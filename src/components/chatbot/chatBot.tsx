@@ -1,5 +1,5 @@
-// chatbot.tsx
-import { useState, useRef, useEffect, useCallback } from "react";
+// ChatInterface.tsx
+import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, Lightbulb, Trash2 } from "lucide-react";
@@ -7,10 +7,10 @@ import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
 import ChatSidebar from "./ChatSidebar";
-import SettingsModal from "./SettingsModal"; // Import the new modal
+import SettingsModal from "./SettingsModal";
 import { supabase } from "../../lib/supabaseClient";
 
-// --- Interfaces (Keep these as they are) ---
+// --- Interfaces ---
 interface Message {
   id: string;
   sender: "user" | "bot";
@@ -27,8 +27,139 @@ interface ChatSessionInfo {
   updated_at: string;
 }
 
-// --- SuggestionsScreen Component (Redesigned) ---
-const SuggestionsScreen = ({ onSuggestionClick }: { onSuggestionClick: (suggestion: string) => void }) => {
+// --- State Management with Reducers ---
+interface ChatState {
+  messages: Message[];
+  isTyping: boolean;
+  isLoading: boolean;
+  error: string | null;
+  inputValue: string;
+}
+
+type ChatAction =
+  | { type: 'SET_MESSAGES'; payload: Message[] }
+  | { type: 'ADD_MESSAGE'; payload: Message }
+  | { type: 'UPDATE_MESSAGE'; payload: { id: string; updates: Partial<Message> } }
+  | { type: 'SET_TYPING'; payload: boolean }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_INPUT_VALUE'; payload: string }
+  | { type: 'CLEAR_CHAT' };
+
+const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
+  switch (action.type) {
+    case 'SET_MESSAGES':
+      return { ...state, messages: action.payload };
+    case 'ADD_MESSAGE':
+      return { ...state, messages: [...state.messages, action.payload] };
+    case 'UPDATE_MESSAGE':
+      return {
+        ...state,
+        messages: state.messages.map(msg =>
+          msg.id === action.payload.id ? { ...msg, ...action.payload.updates } : msg
+        )
+      };
+    case 'SET_TYPING':
+      return { ...state, isTyping: action.payload };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'SET_INPUT_VALUE':
+      return { ...state, inputValue: action.payload };
+    case 'CLEAR_CHAT':
+      return { ...state, messages: [], error: null };
+    default:
+      return state;
+  }
+};
+
+interface SessionState {
+  sessions: ChatSessionInfo[];
+  selectedSessionId: string | null;
+  session: any;
+  isCreatingSession: boolean;
+}
+
+type SessionAction =
+  | { type: 'SET_SESSIONS'; payload: ChatSessionInfo[] }
+  | { type: 'ADD_SESSION'; payload: ChatSessionInfo }
+  | { type: 'DELETE_SESSION'; payload: string }
+  | { type: 'SET_SELECTED_SESSION'; payload: string | null }
+  | { type: 'SET_SESSION'; payload: any }
+  | { type: 'SET_CREATING_SESSION'; payload: boolean };
+
+const sessionReducer = (state: SessionState, action: SessionAction): SessionState => {
+  switch (action.type) {
+    case 'SET_SESSIONS':
+      return { ...state, sessions: action.payload };
+    case 'ADD_SESSION':
+      return { ...state, sessions: [action.payload, ...state.sessions] };
+    case 'DELETE_SESSION':
+      return { 
+        ...state, 
+        sessions: state.sessions.filter(s => s.id !== action.payload)
+      };
+    case 'SET_SELECTED_SESSION':
+      return { ...state, selectedSessionId: action.payload };
+    case 'SET_SESSION':
+      return { ...state, session: action.payload };
+    case 'SET_CREATING_SESSION':
+      return { ...state, isCreatingSession: action.payload };
+    default:
+      return state;
+  }
+};
+
+// --- Custom Hooks ---
+const useTheme = () => {
+  const [theme, setTheme] = useState<string>("system");
+
+  const applyTheme = useCallback((newTheme: string) => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    if (newTheme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(newTheme);
+    }
+  }, []);
+
+  const handleThemeChange = useCallback((newTheme: string) => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    applyTheme(newTheme);
+  }, [applyTheme]);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "system";
+    setTheme(savedTheme);
+    applyTheme(savedTheme);
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      if (savedTheme === "system") applyTheme("system");
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, [applyTheme]);
+
+  return { theme, handleThemeChange };
+};
+
+const useAPI = () => {
+  const api = useMemo(() => axios.create({
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+  }), []);
+
+  return api;
+};
+
+// --- SuggestionsScreen Component ---
+const SuggestionsScreen = React.memo(({ onSuggestionClick }: { onSuggestionClick: (suggestion: string) => void }) => {
   const suggestions = [
     "Explain quicksort with a step-by-step example.",
     "Visualize a BFS traversal on a sample graph.",
@@ -75,323 +206,65 @@ const SuggestionsScreen = ({ onSuggestionClick }: { onSuggestionClick: (suggesti
       </div>
     </div>
   );
-};
+});
 
+SuggestionsScreen.displayName = 'SuggestionsScreen';
 
-// --- ChatInterface Component (Main Logic - Unchanged State/Hooks, Modified JSX for Styling) ---
+// --- Main ChatInterface Component ---
 const ChatInterface = () => {
-  // --- Core State, Refs, and Hooks (DO NOT CHANGE) ---
+  // --- Hooks and Context ---
   const { user, getChatSession, createChatSession } = useAuth();
-  const [session, setSession] = useState<any>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const chatWindowRef = useRef<HTMLDivElement>(null);
-  const [chatSessions, setChatSessions] = useState<ChatSessionInfo[]>([]);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  // REMOVED: const [showThemeMenu, setShowThemeMenu] = useState(false);
-  const [theme, setTheme] = useState<string>("system");
+  const { theme, handleThemeChange } = useTheme();
+  const api = useAPI();
+
+  // --- State Management ---
+  const [chatState, chatDispatch] = useReducer(chatReducer, {
+    messages: [],
+    isTyping: false,
+    isLoading: false,
+    error: null,
+    inputValue: "",
+  });
+
+  const [sessionState, sessionDispatch] = useReducer(sessionReducer, {
+    sessions: [],
+    selectedSessionId: null,
+    session: null,
+    isCreatingSession: false,
+  });
+
+  // --- Local State ---
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-  const apiLink = import.meta.env.VITE_API_URL || "http://localhost:8000";
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
-  });
-  // --- End Core State ---
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
-  // --- NEW State for Settings Modal ---
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  // --- Refs ---
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // --- Core useEffects and Functions (DO NOT CHANGE LOGIC) ---
+  // --- Memoized Values ---
+  const apiLink = useMemo(() => import.meta.env.VITE_API_URL || "http://localhost:8000", []);
+  
+  const sortedSessions = useMemo(() => 
+    [...sessionState.sessions].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ),
+    [sessionState.sessions]
+  );
 
-  // Fetch chat sessions
-  useEffect(() => {
-    const fetchSessions = async () => {
-      if (user) {
-        try {
-          // Simulate loading
-          // await new Promise(resolve => setTimeout(resolve, 500));
-
-          const { data: fetchedSessions, error: fetchError } = await supabase
-            .from("chat_sessions")
-            .select("*")
-            .eq("user_id", user.id)
-            .order('created_at', { ascending: false }); // Fetch newest first
-
-          if (fetchError) {
-            console.error("Error fetching chat sessions:", fetchError);
-            setError("Failed to load chat sessions.");
-          } else {
-            setChatSessions(fetchedSessions || []); // Ensure it's an array
-          }
-        } catch (err) {
-          console.error("Error fetching chat sessions:", err);
-          setError("Failed to load chat sessions.");
-        }
-      } else {
-        setChatSessions([]);
-      }
-    };
-    fetchSessions();
-  }, [user]);
-
-
-  // Close sidebar on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (
-        sidebarOpen &&
-        !target.closest(".sidebar") &&
-        !target.closest(".sidebar-toggle-btn")
-      ) {
-        setSidebarOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [sidebarOpen]);
-
-  // Initialize chat session
-  const initChatSession = useCallback(async () => {
-    if (user) {
-      try {
-        setIsLoading(true);
-        let sessionRecord = await getChatSession();
-        if (!sessionRecord) {
-          // If no active session found, check if there are any sessions at all
-          const { data: existingSessions, error: fetchError } = await supabase
-            .from("chat_sessions")
-            .select("id")
-            .eq("user_id", user.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          if (fetchError) throw fetchError;
-
-          if (existingSessions && existingSessions.length > 0) {
-            // If sessions exist, load the latest one instead of creating new
-            sessionRecord = await getChatSession(); // getChatSession does not take any arguments
-            if (!sessionRecord) { // Fallback if getChatSession with ID fails
-              sessionRecord = await createNewChatSession();
-            }
-          } else {
-            // Only create a new session if none exist
-            sessionRecord = await createNewChatSession();
-          }
-        }
-        setSession(sessionRecord);
-        setSelectedSessionId(sessionRecord.id);
-        await loadMessageHistory(sessionRecord.id);
-      } catch (err) {
-        console.error("Error initializing chat session", err);
-        setError("Failed to initialize chat session.");
-        setMessages([]); // Clear messages on error
-        setSession(null);
-        setSelectedSessionId(null);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Handle logged out state
-      setSession(null);
-      setSelectedSessionId(null);
-      setMessages([]);
-      setIsLoading(false);
-    }
-  }, [user, getChatSession]); // Dependencies might need adjustment based on createNewChatSession implementation
-
-  useEffect(() => {
-    initChatSession();
-  }, [initChatSession]); // Run initChatSession when it changes (due to user change etc.)
-
-
-  // Load messages on session change
-  useEffect(() => {
-    if (selectedSessionId) {
-      loadMessageHistory(selectedSessionId);
-      // Close sidebar on mobile when a session is selected
-      if (window.innerWidth < 768 && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    } else if (!user) {
-      setMessages([]); // Clear messages if user logs out
-    }
-    // Do not clear messages if selectedSessionId is null but user exists (e.g., during initial load/creation)
-  }, [selectedSessionId, user]); // Add user dependency
-
-
-  // Apply and persist theme
-  const applyTheme = useCallback((newTheme: string) => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-
-    if (newTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(newTheme);
-    }
-  }, []);
-
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "system";
-    setTheme(savedTheme);
-    applyTheme(savedTheme);
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleSystemThemeChange = () => {
-      if (theme === "system") {
-        applyTheme("system");
-      }
-    };
-
-    // Use addEventListener for modern browsers
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    // Cleanup function to remove the listener
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, [theme, applyTheme]);
-
-
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
-    setShowSettingsModal(false); // Close modal after selection
-  };
-
-  // Load message history
-  const loadMessageHistory = async (sessionId: string) => {
-    if (!sessionId) return; // Prevent loading if sessionId is invalid
-    try {
-      setIsLoading(true);
-      setError(null); // Clear previous errors
-      const response = await api.get(`/sessions/${sessionId}/messages`);
-      // Map response carefully, handle potential nulls or different structures
-      const historyMessages: Message[] = (response.data || []).map((msg: any) => ({
-        id: msg.id || `fallback-${Math.random()}`, // Provide fallback id
-        sender: msg.sender_type === 'user' || msg.sender_type === 'bot' ? msg.sender_type : 'bot', // Validate sender
-        text: msg.content || "", // Ensure text is string
-        timestamp: msg.created_at
-          ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isVisualization: msg.visualization_data !== null && msg.visualization_data !== undefined,
-        visualizationData: msg.visualization_data,
-      }));
-      setMessages(historyMessages);
-    } catch (error: any) {
-      console.error("Error loading message history:", error);
-      if (error.response && error.response.status === 404) {
-        setError(`Chat session (${sessionId}) not found. It might have been deleted.`);
-        // Optionally reset state if session is invalid
-        setSelectedSessionId(null);
-        setSession(null);
-        setMessages([]);
-      } else {
-        setError("Failed to load message history. Please try again.");
-      }
-      setMessages([]); // Clear messages on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Create new chat session
-  const createNewChatSession = async () => {
-    if (!user) throw new Error("User not logged in"); // Guard clause
-
-    try {
-      setIsLoading(true);
-      // Call the function from AuthContext to create the session
-      const newSessionRecord = await createChatSession(); // This should handle Supabase interaction
-
-      if (!newSessionRecord || !newSessionRecord.id) {
-        throw new Error("Failed to create session record");
-      }
-
-      // Update local state immediately
-      setSession(newSessionRecord);
-      setSelectedSessionId(newSessionRecord.id);
-      setMessages([]); // Start with empty messages
-
-      // Fetch updated list of sessions to include the new one
-      const { data: updatedSessions, error: fetchError } = await supabase
-        .from("chat_sessions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        console.error("Error refetching sessions after creation:", fetchError);
-        // Don't necessarily set an error state here, as the session *was* created
-      } else {
-        setChatSessions(updatedSessions || []);
-      }
-
-
-      // No need to call api.get('/sessions') if Supabase is the source of truth
-      // and chatSessions state is updated directly or via fetchSessions effect
-
-      return newSessionRecord; // Return the newly created session info
-    } catch (error) {
-      console.error("Error creating new chat session:", error);
-      setError("Failed to create a new chat session. Please try again.");
-      throw error; // Re-throw to be caught by caller if needed
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle new chat button click
-  const handleNewChat = async () => {
-    try {
-      await createNewChatSession(); // This now handles loading state and updates
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false); // Close sidebar on mobile after creating new chat
-      }
-    } catch (error) {
-      // Error is already handled within createNewChatSession
-      console.log("Handling new chat creation failure (already logged).");
-    }
-  };
-
-
-  // Auto-scroll chat window
-  useEffect(() => {
-    if (chatWindowRef.current) {
-      // Use smooth scrolling for better UX
-      chatWindowRef.current.scrollTo({
-        top: chatWindowRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [messages, isTyping]); // Also scroll when typing indicator appears/disappears
-
-
-  // Handle sending message
-  const handleSendMessage = async (messageText?: string) => {
-    const textToSend = (messageText || inputValue).trim();
-    // Add check for session ID existence
-    if (!textToSend || isLoading || !session || !session.id) {
-      if (!session || !session.id) {
-        setError("No active chat session. Please start a new chat.");
-        console.error("Attempted to send message without a valid session ID.");
+  // --- Memoized Handlers ---
+  const handleSendMessage = useCallback(async (messageText?: string) => {
+    const textToSend = (messageText || chatState.inputValue).trim();
+    if (!textToSend || chatState.isLoading || !sessionState.session?.id) {
+      if (!sessionState.session?.id) {
+        chatDispatch({ type: 'SET_ERROR', payload: "No active chat session. Please start a new chat." });
       }
       return;
     }
 
-    setError(null);
-    // Keep setIsLoading(false) here - it should be false before sending
-    // setIsTyping(true) indicates the *bot* is about to type
+    chatDispatch({ type: 'SET_ERROR', payload: null });
+    
     const currentUserMessageId = `user-${Date.now()}-${Math.random()}`;
     const userMessage: Message = {
       id: currentUserMessageId,
@@ -400,32 +273,32 @@ const ChatInterface = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    // Optimistically update UI
-    setMessages((prev) => [...prev, userMessage]);
+    chatDispatch({ type: 'ADD_MESSAGE', payload: userMessage });
     if (!messageText) {
-      setInputValue(""); // Clear input only if it wasn't a suggestion click
+      chatDispatch({ type: 'SET_INPUT_VALUE', payload: "" });
     }
 
-    // Prepare for bot response - No need to add an empty message immediately for streaming
-    // setIsTyping(true); // Indicate bot is "thinking" / preparing response
-
-
-    // --- Bot Response Handling ---
     const botMessageId = `bot-${Date.now()}-${Math.random()}`;
-    let accumulatedBotText = ""; // Store text for the current bot message
+    let accumulatedBotText = "";
 
     try {
-      setIsTyping(true); // Set typing indicator active *before* the fetch call
+      chatDispatch({ type: 'SET_TYPING', payload: true });
+
+      // Abort previous request if it exists
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      abortControllerRef.current = new AbortController();
 
       const response = await fetch(`${apiLink}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Session-ID": session.id, // Ensure session.id is passed
-          // Add Authorization header if your API requires it
-          // 'Authorization': `Bearer ${your_auth_token}`
+          "X-Session-ID": sessionState.session.id,
         },
         body: JSON.stringify({ user_input: textToSend }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -444,34 +317,30 @@ const ChatInterface = () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          // Add final bot message state if needed (e.g., update timestamp)
-          setMessages(prev => prev.map(msg =>
-            msg.id === botMessageId
-              ? { ...msg, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
-              : msg
-          ));
-          break; // Exit loop when stream is finished
+          chatDispatch({
+            type: 'UPDATE_MESSAGE',
+            payload: {
+              id: botMessageId,
+              updates: { timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+            }
+          });
+          break;
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        // console.log("Raw Chunk:", chunk); // Debugging: Log raw chunks
-
-        // Process Server-Sent Events (SSE) data format "data: {...}\n\n"
         const lines = chunk.split('\n');
+        
         lines.forEach(line => {
           if (line.startsWith("data:")) {
             try {
-              const jsonString = line.substring(5).trim(); // Remove "data:" prefix and trim
-              if (jsonString) { // Ensure it's not empty
+              const jsonString = line.substring(5).trim();
+              if (jsonString) {
                 const data = JSON.parse(jsonString);
-                // console.log("Parsed Data:", data); // Debugging: Log parsed data
 
-                // Handle different data types (text, visualization, etc.)
                 if (data.type === "text") {
                   accumulatedBotText += data.content;
 
                   if (isFirstChunk) {
-                    // Add the bot message bubble on the first text chunk
                     const newBotMessage: Message = {
                       id: botMessageId,
                       sender: "bot",
@@ -479,164 +348,287 @@ const ChatInterface = () => {
                       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                       isVisualization: false,
                     };
-                    setMessages((prev) => [...prev, newBotMessage]);
+                    chatDispatch({ type: 'ADD_MESSAGE', payload: newBotMessage });
                     isFirstChunk = false;
                   } else {
-                    // Update the existing bot message bubble
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === botMessageId
-                          ? { ...msg, text: accumulatedBotText }
-                          : msg
-                      )
-                    );
+                    chatDispatch({
+                      type: 'UPDATE_MESSAGE',
+                      payload: { id: botMessageId, updates: { text: accumulatedBotText } }
+                    });
                   }
                 } else if (data.type === "visualization") {
-                  // If visualization comes, potentially replace or add a new message
                   const vizMessage: Message = {
-                    id: `bot-viz-${Date.now()}`, // Unique ID for viz message
+                    id: `bot-viz-${Date.now()}`,
                     sender: "bot",
-                    text: data.description || " ", // Optional description or placeholder
+                    text: data.description || " ",
                     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                     isVisualization: true,
                     visualizationData: data.data,
                   };
-                  // Decide whether to replace the text message or add a new one
-                  // For simplicity, let's add it as a new message
-                  setMessages(prev => [...prev, vizMessage]);
-                  // Reset accumulated text if needed, or adjust logic based on desired flow
+                  chatDispatch({ type: 'ADD_MESSAGE', payload: vizMessage });
                   accumulatedBotText = "";
-                  isFirstChunk = true; // Allow a new text message after viz
+                  isFirstChunk = true;
                 }
-                // Add handling for other potential types (e.g., 'error', 'info')
               }
             } catch (e) {
               console.error("Error parsing SSE data:", e, "Line:", line);
-              // Don't add error message to chat here, let the main catch handle API errors
             }
           }
         });
-      } // end while loop
-
-    } catch (error: any) {
-      console.error("API Error:", error);
-      setError(error.message || "Failed to get response from the server.");
-      // Remove the optimistic user message if the API call fails? (Optional, depends on desired UX)
-      // setMessages(prev => prev.filter(msg => msg.id !== currentUserMessageId));
-
-      // Add a specific error message from the bot
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        sender: "bot",
-        text: `Sorry, I encountered an error: ${error.message}. Please check the connection or try again later.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-
-    } finally {
-      setIsTyping(false); // Stop typing indicator regardless of success or failure
-      setIsLoading(false); // Ensure loading state is reset (though it wasn't set true in this func)
-    }
-  };
-
-  // Handle session selection
-  const handleSessionSelect = async (sessionId: string) => {
-    if (sessionId === selectedSessionId) return; // Avoid reloading same session
-    setSelectedSessionId(sessionId);
-    // Optimistically set session object, loadMessageHistory will fetch details
-    setSession({ id: sessionId });
-    // `loadMessageHistory` is triggered by the useEffect watching `selectedSessionId`
-  };
-
-  // Toggle sidebar
-  // const toggleSidebar = () => {
-  //   setSidebarOpen(!sidebarOpen);
-  // };
-
-  // Confirm delete
-  const confirmDelete = (sessionId: string) => {
-    setSessionToDelete(sessionId);
-    setShowDeleteConfirm(true);
-  }
-
-  // Handle deleting session
-  const handleDeleteSession = async () => {
-    if (!sessionToDelete || !user) return;
-
-    const sessionName = chatSessions.find(s => s.id === sessionToDelete)?.session_name || `Chat ${sessionToDelete.substring(0, 6)}`;
-
-    try {
-      // Optimistically remove from UI first for faster feedback
-      const originalSessions = [...chatSessions];
-      setChatSessions((prev) => prev.filter((s) => s.id !== sessionToDelete));
-      setShowDeleteConfirm(false);
-
-      // Determine the next session to select
-      let nextSessionId: string | null = null;
-      if (selectedSessionId === sessionToDelete) {
-        const remainingSessions = originalSessions.filter((s) => s.id !== sessionToDelete);
-        if (remainingSessions.length > 0) {
-          // Select the first remaining session (which should be the next newest)
-          nextSessionId = remainingSessions[0].id;
-        }
       }
 
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error("API Error:", error);
+        chatDispatch({ type: 'SET_ERROR', payload: error.message || "Failed to get response from the server." });
 
-      // Perform the actual deletion
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          sender: "bot",
+          text: `Sorry, I encountered an error: ${error.message}. Please check the connection or try again later.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        chatDispatch({ type: 'ADD_MESSAGE', payload: errorMessage });
+      }
+    } finally {
+      chatDispatch({ type: 'SET_TYPING', payload: false });
+      chatDispatch({ type: 'SET_LOADING', payload: false });
+      abortControllerRef.current = null;
+    }
+  }, [chatState.inputValue, chatState.isLoading, sessionState.session?.id, apiLink]);
+
+  const handleSessionSelect = useCallback(async (sessionId: string) => {
+    if (sessionId === sessionState.selectedSessionId) return;
+    
+    sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionId });
+    sessionDispatch({ type: 'SET_SESSION', payload: { id: sessionId } });
+    
+    try {
+      chatDispatch({ type: 'SET_LOADING', payload: true });
+      chatDispatch({ type: 'SET_ERROR', payload: null });
+      
+      const response = await api.get(`/sessions/${sessionId}/messages`);
+      const historyMessages: Message[] = (response.data || []).map((msg: any) => ({
+        id: msg.id || `fallback-${Math.random()}`,
+        sender: msg.sender_type === 'user' || msg.sender_type === 'bot' ? msg.sender_type : 'bot',
+        text: msg.content || "",
+        timestamp: msg.created_at
+          ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isVisualization: msg.visualization_data !== null && msg.visualization_data !== undefined,
+        visualizationData: msg.visualization_data,
+      }));
+      
+      chatDispatch({ type: 'SET_MESSAGES', payload: historyMessages });
+    } catch (error: any) {
+      console.error("Error loading message history:", error);
+      if (error.response?.status === 404) {
+        chatDispatch({ type: 'SET_ERROR', payload: `Chat session (${sessionId}) not found. It might have been deleted.` });
+        sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: null });
+        sessionDispatch({ type: 'SET_SESSION', payload: null });
+        chatDispatch({ type: 'SET_MESSAGES', payload: [] });
+      } else {
+        chatDispatch({ type: 'SET_ERROR', payload: "Failed to load message history. Please try again." });
+      }
+    } finally {
+      chatDispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [sessionState.selectedSessionId, api]);
+
+  const handleNewChat = useCallback(async () => {
+    if (sessionState.isCreatingSession) return;
+    
+    try {
+      sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
+      chatDispatch({ type: 'SET_LOADING', payload: true });
+      
+      const newSessionRecord = await createChatSession();
+      
+      if (!newSessionRecord?.id) {
+        throw new Error("Failed to create session record");
+      }
+
+      sessionDispatch({ type: 'SET_SESSION', payload: newSessionRecord });
+      sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: newSessionRecord.id });
+      chatDispatch({ type: 'CLEAR_CHAT' });
+
+      // Refresh sessions list
+      let updatedSessions, fetchError;
+      if (user) {
+        const result = await supabase
+          .from("chat_sessions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order('created_at', { ascending: false });
+        updatedSessions = result.data;
+        fetchError = result.error;
+      } else {
+        updatedSessions = [];
+        fetchError = null;
+      }
+
+      if (!fetchError) {
+        sessionDispatch({ type: 'SET_SESSIONS', payload: updatedSessions || [] });
+      }
+
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating new chat session:", error);
+      chatDispatch({ type: 'SET_ERROR', payload: "Failed to create a new chat session. Please try again." });
+    } finally {
+      sessionDispatch({ type: 'SET_CREATING_SESSION', payload: false });
+      chatDispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [sessionState.isCreatingSession, createChatSession, user]);
+
+  const handleDeleteSession = useCallback(async () => {
+    if (!sessionToDelete || !user) return;
+
+    try {
+      const originalSessions = [...sessionState.sessions];
+      sessionDispatch({ type: 'DELETE_SESSION', payload: sessionToDelete });
+      setShowDeleteConfirm(false);
+
       const { error: deleteError } = await supabase
         .from("chat_sessions")
         .delete()
         .eq("id", sessionToDelete);
 
       if (deleteError) {
-        // Revert optimistic update if deletion fails
-        setChatSessions(originalSessions);
-        console.error("Error deleting session:", deleteError);
-        setError(`Failed to delete session: ${sessionName}.`);
+        sessionDispatch({ type: 'SET_SESSIONS', payload: originalSessions });
+        chatDispatch({ type: 'SET_ERROR', payload: "Failed to delete session." });
       } else {
-        // Deletion successful
-        setError(null); // Clear any previous errors
-        console.log(`Session ${sessionName} deleted successfully.`);
-
-        // If the deleted session was selected, switch to the next session or create a new one
-        if (selectedSessionId === sessionToDelete) {
-          if (nextSessionId) {
-            setSelectedSessionId(nextSessionId);
-            setSession({ id: nextSessionId }); // Update session context
+        if (sessionState.selectedSessionId === sessionToDelete) {
+          const remainingSessions = originalSessions.filter(s => s.id !== sessionToDelete);
+          if (remainingSessions.length > 0) {
+            handleSessionSelect(remainingSessions[0].id);
           } else {
-            // If no sessions remain, create a new one
             await handleNewChat();
           }
         }
       }
-    } catch (error: any) {
-      // Catch unexpected errors during the process
-      console.error("Error during session deletion process:", error);
-      setError(`An unexpected error occurred while deleting session ${sessionName}.`);
-      // Potentially revert UI changes if needed, though optimistic update is tricky here
+    } catch (error) {
+      console.error("Error during session deletion:", error);
+      chatDispatch({ type: 'SET_ERROR', payload: "An unexpected error occurred while deleting session." });
     } finally {
-      // Ensure modal is closed and ID is cleared
       setShowDeleteConfirm(false);
       setSessionToDelete(null);
     }
-  };
+  }, [sessionToDelete, user, sessionState.sessions, sessionState.selectedSessionId, handleSessionSelect, handleNewChat]);
 
-  // --- JSX (Redesigned UI) ---
+  // --- Effects ---
+  useEffect(() => {
+    const fetchSessions = async () => {
+      if (user) {
+        try {
+          const { data: fetchedSessions, error: fetchError } = await supabase
+            .from("chat_sessions")
+            .select("*")
+            .eq("user_id", user.id)
+            .order('created_at', { ascending: false });
+
+          if (fetchError) {
+            console.error("Error fetching chat sessions:", fetchError);
+            chatDispatch({ type: 'SET_ERROR', payload: "Failed to load chat sessions." });
+          } else {
+            sessionDispatch({ type: 'SET_SESSIONS', payload: fetchedSessions || [] });
+          }
+        } catch (err) {
+          console.error("Error fetching chat sessions:", err);
+          chatDispatch({ type: 'SET_ERROR', payload: "Failed to load chat sessions." });
+        }
+      } else {
+        sessionDispatch({ type: 'SET_SESSIONS', payload: [] });
+      }
+    };
+    fetchSessions();
+  }, [user]);
+
+  useEffect(() => {
+    const initChatSession = async () => {
+      if (user) {
+        try {
+          chatDispatch({ type: 'SET_LOADING', payload: true });
+          let sessionRecord = await getChatSession();
+          
+          if (!sessionRecord) {
+            const { data: existingSessions } = await supabase
+              .from("chat_sessions")
+              .select("id")
+              .eq("user_id", user.id)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            if ((existingSessions ?? []).length > 0) {
+              sessionRecord = await getChatSession();
+              if (!sessionRecord) {
+                sessionRecord = await createChatSession();
+              }
+            } else {
+              sessionRecord = await createChatSession();
+            }
+          }
+          
+          sessionDispatch({ type: 'SET_SESSION', payload: sessionRecord });
+          sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionRecord.id });
+          await handleSessionSelect(sessionRecord.id);
+        } catch (err) {
+          console.error("Error initializing chat session", err);
+          chatDispatch({ type: 'SET_ERROR', payload: "Failed to initialize chat session." });
+        } finally {
+          chatDispatch({ type: 'SET_LOADING', payload: false });
+        }
+      } else {
+        sessionDispatch({ type: 'SET_SESSION', payload: null });
+        sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: null });
+        chatDispatch({ type: 'SET_MESSAGES', payload: [] });
+      }
+    };
+
+    initChatSession();
+  }, [user, getChatSession, createChatSession]);
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTo({
+        top: chatWindowRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [chatState.messages, chatState.isTyping]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // --- JSX ---
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gradient-to-br from-gray-100 via-blue-50 to-purple-100 dark:from-gray-900 dark:via-indigo-950 dark:to-gray-800">
-      {/* Sidebar with new collapsible functionality */}
+      {/* Sidebar */}
       <ChatSidebar
-        sessions={chatSessions}
+        sessions={sortedSessions}
         onSessionSelect={handleSessionSelect}
-        selectedSessionId={selectedSessionId}
+        selectedSessionId={sessionState.selectedSessionId}
         onCreateNewSession={handleNewChat}
-        onDeleteSession={confirmDelete}
-        initiallyExpanded={window.innerWidth > 768} // Collapse by default on mobile
+        onDeleteSession={(sessionId) => {
+          setSessionToDelete(sessionId);
+          setShowDeleteConfirm(true);
+        }}
+        initiallyExpanded={sidebarOpen}
+        isCreatingSession={sessionState.isCreatingSession}
       />
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Header - Styled to match sidebar aesthetic */}
+        {/* Header */}
         <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 m-2 mt-2 mb-0 rounded-t-2xl px-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
           <div className="flex items-center space-x-3">
             <h1 className="text-lg font-medium text-gray-800 dark:text-white flex items-center gap-2">
@@ -647,7 +639,7 @@ const ChatInterface = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={handleNewChat}
-              disabled={isLoading && !messages.length}
+              disabled={chatState.isLoading && !chatState.messages.length}
               className="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
                         text-white rounded-xl p-2 flex items-center justify-center space-x-1
                         hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700
@@ -656,7 +648,11 @@ const ChatInterface = () => {
               aria-label="New Chat"
               title="New Conversation"
             >
-              <MessageSquarePlus className="w-5 h-5" />
+              {sessionState.isCreatingSession ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <MessageSquarePlus className="w-5 h-5" />
+              )}
               <span className="hidden sm:inline font-medium text-sm">New Chat</span>
             </button>
             <button
@@ -679,7 +675,7 @@ const ChatInterface = () => {
               className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-gray-500/60 dark:hover:scrollbar-thumb-gray-500/60"
             >
               <AnimatePresence mode="wait">
-                {isLoading && messages.length === 0 ? (
+                {chatState.isLoading && chatState.messages.length === 0 ? (
                   <motion.div
                     key="loader"
                     initial={{ opacity: 0 }}
@@ -689,7 +685,7 @@ const ChatInterface = () => {
                   >
                     <Loader2 className="w-10 h-10 animate-spin text-blue-500 dark:text-blue-400" />
                   </motion.div>
-                ) : !isLoading && messages.length === 0 ? (
+                ) : !chatState.isLoading && chatState.messages.length === 0 ? (
                   <motion.div
                     key="suggestions"
                     initial={{ opacity: 0, y: 20 }}
@@ -705,15 +701,20 @@ const ChatInterface = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    <ChatWindow messages={messages} />
-                    {isTyping && <TypingIndicator />}
+                    <ChatWindow 
+                      messages={chatState.messages}
+                      isLoading={chatState.isTyping}
+                      error={chatState.error}
+                      onRetry={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
+                      enableVirtualization={chatState.messages.length > 100}
+                    />
+                    {chatState.isTyping && <TypingIndicator />}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-
-            {/* Input Area - Refined with more rounded design */}
+            {/* Input Area */}
             <div className="border-t border-white/10 dark:border-white/5 p-3 sm:p-4 mt-auto flex-shrink-0">
               <div className="w-full flex items-end space-x-2 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-full shadow-inner px-4 py-3">
                 <textarea
@@ -726,10 +727,10 @@ const ChatInterface = () => {
                       el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
                     }
                   }}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  value={chatState.inputValue}
+                  onChange={(e) => chatDispatch({ type: 'SET_INPUT_VALUE', payload: e.target.value })}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && !isTyping) {
+                    if (e.key === "Enter" && !e.shiftKey && !chatState.isTyping) {
                       e.preventDefault();
                       handleSendMessage();
                     }
@@ -737,25 +738,25 @@ const ChatInterface = () => {
                   placeholder="Send a message..."
                   rows={1}
                   className="flex-1 bg-transparent focus:outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 resize-none scrollbar-thin ml-1"
-                  disabled={isTyping || (!session || !session.id)}
+                  disabled={chatState.isTyping || (!sessionState.session?.id)}
                   style={{
                     maxHeight: "120px",
-                    border: "none",  // make the border transparent
-                    boxShadow: "none"  // remove any default browser box-shadow if needed
+                    border: "none",
+                    boxShadow: "none"
                   }}
                 />
 
                 <button
                   onClick={() => handleSendMessage()}
-                  disabled={isTyping || !inputValue.trim() || (!session || !session.id)}
+                  disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
                   className={`bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
                 text-white rounded-full p-2.5 hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 
                 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
                 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed 
-                transition-all duration-200 ${inputValue.trim() ? 'opacity-100' : 'opacity-50'}`}
+                transition-all duration-200 ${chatState.inputValue.trim() ? 'opacity-100' : 'opacity-50'}`}
                   aria-label="Send message"
                 >
-                  {isTyping ? (
+                  {chatState.isTyping ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <Send className="w-5 h-5" />
@@ -763,13 +764,12 @@ const ChatInterface = () => {
                 </button>
               </div>
             </div>
-
           </div>
         </main>
 
         {/* Error Message Toast */}
         <AnimatePresence>
-          {error && (
+          {chatState.error && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -777,9 +777,9 @@ const ChatInterface = () => {
               className="fixed top-5 left-1/2 -translate-x-1/2 w-auto max-w-md bg-red-100/80 dark:bg-red-900/80 backdrop-blur-sm text-red-700 dark:text-red-200 px-4 py-3 rounded-lg shadow-lg border border-red-300 dark:border-red-700 z-50 flex items-center justify-between space-x-4"
               role="alert"
             >
-              <span>{error}</span>
+              <span>{chatState.error}</span>
               <button
-                onClick={() => setError(null)}
+                onClick={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
                 className="text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-100 p-1 rounded-full hover:bg-red-200/50 dark:hover:bg-red-800/50"
                 aria-label="Close error message"
               >
@@ -848,7 +848,6 @@ const ChatInterface = () => {
       </div>
     </div>
   );
-
 };
 
-export default ChatInterface;
+export default React.memo(ChatInterface);
