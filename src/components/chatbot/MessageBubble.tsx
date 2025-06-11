@@ -95,7 +95,7 @@ const TypewriterMarkdown: React.FC<{
 
   return (
     <div className="relative">
-      <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-2 prose-ol:my-2 prose-li:my-1">
+      <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={components}
@@ -104,7 +104,7 @@ const TypewriterMarkdown: React.FC<{
         </ReactMarkdown>
       </div>
       {(showCursor && (isStreaming || displayedText !== content) && !skipTypewriter) && (
-        <span className="inline-block w-0.5 h-4 bg-current ml-0.5 animate-pulse" />
+        <span className="inline-block w-0.5 h-3 sm:h-4 bg-current ml-0.5 animate-pulse" />
       )}
     </div>
   );
@@ -131,7 +131,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isComplexContent = useMemo(() => {
     if (!currentText) return false;
 
-    const codeBlockCount = (currentText.match(/```/g) || []).length / 2; // Each code block has opening and closing ```
+    const codeBlockCount = (currentText.match(/```/g) || []).length;
     const headerCount = (currentText.match(/^#{1,6}\s/gm) || []).length;
     const listCount = (currentText.match(/^[\*\-\+]\s/gm) || []).length;
     const orderedListCount = (currentText.match(/^\d+\.\s/gm) || []).length;
@@ -140,7 +140,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const boldCount = (currentText.match(/\*\*.*?\*\*/g) || []).length;
     const tableCount = (currentText.match(/\|.*\|/g) || []).length;
 
-    // Consider content complex if it has multiple structural elements or is very long
     return codeBlockCount >= 1 ||
            headerCount > 2 ||
            listCount > 4 ||
@@ -151,7 +150,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
            tableCount > 0;
   }, [currentText]);
 
-  // Enhanced Code Block Component with proper syntax highlighting
+  // Enhanced Code Block Component with mobile responsiveness
   const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : 'text';
@@ -166,7 +165,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     if (inline) {
       return (
         <code
-          className={`px-2 py-1 rounded-md font-mono text-sm font-medium ${
+          className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-words ${
             isUserMessage
               ? 'bg-white/20 text-blue-100'
               : 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border border-blue-200/50 dark:border-blue-700/50'
@@ -179,38 +178,41 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
 
     return (
-      <div className="relative group my-4 text-sm rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-700/80 shadow-lg bg-white dark:bg-gray-900">
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50/80 dark:bg-gray-800/80 border-b border-gray-200/50 dark:border-gray-700/50">
-          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+      <div className="relative group my-3 sm:my-4 text-xs sm:text-sm rounded-xl overflow-hidden border border-gray-200/80 dark:border-gray-700/80 shadow-lg bg-white dark:bg-gray-900 w-full">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-gray-50/80 dark:bg-gray-800/80 border-b border-gray-200/50 dark:border-gray-700/50">
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide truncate">
             {language}
           </span>
           <button
             onClick={handleCopy}
-            className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 ${
+            className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${
               codeCopied
                 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
             aria-label={codeCopied ? "Copied" : "Copy code"}
           >
-            {codeCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {codeCopied ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
           </button>
         </div>
-        <div className="relative">
+        <div className="relative overflow-x-auto">
           <SyntaxHighlighter
             style={resolvedTheme === 'dark' ? atomOneDark : atomOneLight}
             language={language}
             PreTag="div"
             customStyle={{
               margin: 0,
-              padding: '1.25rem',
+              padding: '0.75rem 1rem',
               background: 'transparent',
-              fontSize: '0.875rem',
-              lineHeight: '1.5'
+              fontSize: '0.75rem',
+              lineHeight: '1.4',
+              minWidth: '100%'
             }}
             codeTagProps={{
               style: {
-                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                whiteSpace: 'pre',
+                overflowWrap: 'normal'
               }
             }}
             {...props}
@@ -222,42 +224,42 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     );
   };
 
-  // Enhanced markdown components with better styling
+  // Enhanced markdown components with mobile-responsive styling
   const memoizedComponents = useMemo((): Components => ({
     code: CodeBlock,
     h1: ({ node, ...props }) => (
-      <h1 className="text-2xl font-bold mt-6 mb-4 pb-2 border-b-2 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200" {...props} />
+      <h1 className="text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-3 sm:mb-4 pb-2 border-b-2 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200" {...props} />
     ),
     h2: ({ node, ...props }) => (
-      <h2 className="text-xl font-semibold mt-5 mb-3 text-blue-700 dark:text-blue-300" {...props} />
+      <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 mb-2 sm:mb-3 text-blue-700 dark:text-blue-300" {...props} />
     ),
     h3: ({ node, ...props }) => (
-      <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />
+      <h3 className="text-base sm:text-lg font-semibold mt-3 sm:mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />
     ),
     h4: ({ node, ...props }) => (
-      <h4 className="text-md font-semibold mt-3 mb-2 text-gray-700 dark:text-gray-300" {...props} />
+      <h4 className="text-sm sm:text-base font-semibold mt-3 mb-2 text-gray-700 dark:text-gray-300" {...props} />
     ),
     h5: ({ node, ...props }) => (
-      <h5 className="text-sm font-semibold mt-3 mb-2 text-gray-700 dark:text-gray-300" {...props} />
+      <h5 className="text-sm font-semibold mt-2 sm:mt-3 mb-2 text-gray-700 dark:text-gray-300" {...props} />
     ),
     h6: ({ node, ...props }) => (
-      <h6 className="text-xs font-semibold mt-2 mb-2 text-gray-600 dark:text-gray-400" {...props} />
+      <h6 className="text-xs sm:text-sm font-semibold mt-2 mb-2 text-gray-600 dark:text-gray-400" {...props} />
     ),
     p: ({ node, ...props }) => (
-      <p className="my-3 leading-7 text-gray-700 dark:text-gray-300" {...props} />
+      <p className="my-2 sm:my-3 leading-6 sm:leading-7 text-sm sm:text-base text-gray-700 dark:text-gray-300" {...props} />
     ),
     ul: ({ node, ...props }) => (
-      <ul className="list-disc list-outside pl-6 my-3 space-y-2 text-gray-700 dark:text-gray-300" {...props} />
+      <ul className="list-disc list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700 dark:text-gray-300" {...props} />
     ),
     ol: ({ node, ...props }) => (
-      <ol className="list-decimal list-outside pl-6 my-3 space-y-2 text-gray-700 dark:text-gray-300" {...props} />
+      <ol className="list-decimal list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-700 dark:text-gray-300" {...props} />
     ),
     li: ({ node, ...props }) => (
-      <li className="pl-1 leading-6" {...props} />
+      <li className="pl-1 leading-5 sm:leading-6" {...props} />
     ),
     a: ({ node, ...props }) => (
       <a 
-        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium transition-colors duration-200" 
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium transition-colors duration-200 break-words" 
         target="_blank" 
         rel="noopener noreferrer" 
         {...props} 
@@ -270,33 +272,35 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <em className="italic text-gray-600 dark:text-gray-400" {...props} />
     ),
     blockquote: ({ node, ...props }) => (
-      <blockquote className="border-l-4 border-blue-300 dark:border-blue-600 pl-6 py-3 my-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-r-lg italic text-gray-700 dark:text-gray-300" {...props} />
+      <blockquote className="border-l-4 border-blue-300 dark:border-blue-600 pl-4 sm:pl-6 py-2 sm:py-3 my-3 sm:my-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-r-lg italic text-sm sm:text-base text-gray-700 dark:text-gray-300" {...props} />
     ),
     hr: ({ node, ...props }) => (
-      <hr className="my-6 border-gray-300 dark:border-gray-600" {...props} />
+      <hr className="my-4 sm:my-6 border-gray-300 dark:border-gray-600" {...props} />
     ),
     table: ({ node, ...props }) => (
-      <div className="overflow-x-auto my-4">
-        <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" {...props} />
+      <div className="overflow-x-auto my-3 sm:my-4 -mx-2 sm:mx-0">
+        <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg text-xs sm:text-sm" {...props} />
       </div>
     ),
     thead: ({ node, ...props }) => (
       <thead className="bg-gray-50 dark:bg-gray-800" {...props} />
     ),
     th: ({ node, ...props }) => (
-      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700" {...props} />
+      <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700" {...props} />
     ),
     td: ({ node, ...props }) => (
-      <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" {...props} />
+      <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" {...props} />
     ),
   }), [resolvedTheme, isUserMessage]);
 
-  // Dynamic container sizing based on content complexity
+  // Mobile-responsive bubble sizing
   const bubbleClassName = useMemo(() => {
-    const baseStyle = `p-4 md:p-5 rounded-2xl shadow-lg border border-white/10 dark:border-white/5 backdrop-blur-lg transition-all duration-300`;
+    const baseStyle = `p-3 sm:p-4 md:p-5 rounded-2xl shadow-lg border border-white/10 dark:border-white/5 backdrop-blur-lg transition-all duration-300`;
+    
+    // More aggressive mobile sizing - uses viewport width with proper margins
     const sizeClass = isComplexContent 
-      ? 'max-w-3xl lg:max-w-4xl xl:max-w-5xl' 
-      : 'max-w-lg lg:max-w-xl xl:max-w-2xl';
+      ? 'max-w-[calc(100vw-2rem)] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl' 
+      : 'max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-xl lg:max-w-2xl';
     
     const styleClass = isUserMessage 
       ? 'bg-blue-500/50 text-white dark:bg-blue-600/60 dark:text-gray-50 ml-auto rounded-br-none'
@@ -305,7 +309,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     return `${baseStyle} ${sizeClass} ${styleClass}`;
   }, [isUserMessage, isComplexContent]);
 
-  const containerClassName = `flex flex-col ${isUserMessage ? "items-end" : "items-start"} mb-6`;
+  const containerClassName = `flex flex-col ${isUserMessage ? "items-end" : "items-start"} mb-4 sm:mb-6 px-2 sm:px-0`;
 
   // Handle typing completion
   const handleTypingComplete = () => {
@@ -319,12 +323,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const renderContent = () => {
     if (message.isVisualization && message.visualizationData) {
       return (
-        <div className="relative group cursor-pointer" onClick={() => setShowModal(true)}>
-          <div className="w-full h-64 sm:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
+        <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
+          <div className="w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
             <AlgorithmVisualizer visualizationData={message.visualizationData} />
           </div>
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
-            <Maximize2 className="w-8 h-8 text-white/80" />
+            <Maximize2 className="w-6 h-6 sm:w-8 sm:h-8 text-white/80" />
           </div>
         </div>
       );
@@ -334,7 +338,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       // Use immediate display for user messages or complex content
       if (isUserMessage || isComplexContent) {
         return (
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-2 prose-ol:my-2 prose-li:my-1">
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={memoizedComponents}
@@ -358,7 +362,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
     }
 
-    return <span className="italic text-gray-400 dark:text-gray-500">(Empty message)</span>;
+    return <span className="italic text-gray-400 dark:text-gray-500 text-sm">(Empty message)</span>;
   };
 
   return (
@@ -374,7 +378,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className={bubbleClassName}>
           {renderContent()}
         </div>
-        <span className={`text-gray-500 dark:text-gray-400 text-xs mt-2 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
+        <span className={`text-gray-500 dark:text-gray-400 text-xs mt-1 sm:mt-2 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
           {message.timestamp}
         </span>
       </motion.div>

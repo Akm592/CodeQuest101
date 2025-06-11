@@ -1,4 +1,3 @@
-// ChatInterface.tsx
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,8 +95,8 @@ const sessionReducer = (state: SessionState, action: SessionAction): SessionStat
     case 'ADD_SESSION':
       return { ...state, sessions: [action.payload, ...state.sessions] };
     case 'DELETE_SESSION':
-      return { 
-        ...state, 
+      return {
+        ...state,
         sessions: state.sessions.filter(s => s.id !== action.payload)
       };
     case 'SET_SELECTED_SESSION':
@@ -168,26 +167,26 @@ const SuggestionsScreen = React.memo(({ onSuggestionClick }: { onSuggestionClick
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center h-full text-gray-800 dark:text-gray-100 p-6">
+    <div className="flex flex-col items-center justify-center h-full text-gray-800 dark:text-gray-100 p-4 sm:p-6">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="text-center mb-10"
+        className="text-center mb-8 sm:mb-10"
       >
-        <Sparkles className="w-16 h-16 mx-auto text-blue-500 dark:text-blue-400 mb-4" />
-        <h2 className="text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
+        <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-blue-500 dark:text-blue-400 mb-4" />
+        <h2 className="text-3xl sm:text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
           Welcome to AI Assistant
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">How can I help you today?</p>
+        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">How can I help you today?</p>
       </motion.div>
 
       <div className="w-full max-w-3xl">
-        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-5 flex items-center justify-center gap-2">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-5 flex items-center justify-center gap-2">
           <Lightbulb className="w-5 h-5" />
           <span>Try these suggestions:</span>
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {suggestions.map((suggestion, index) => (
             <motion.button
               key={index}
@@ -195,7 +194,7 @@ const SuggestionsScreen = React.memo(({ onSuggestionClick }: { onSuggestionClick
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
               className="bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10
-                         text-gray-800 dark:text-gray-200 rounded-xl p-5 text-left shadow-lg hover:shadow-xl
+                         text-gray-800 dark:text-gray-200 rounded-xl p-4 sm:p-5 text-left shadow-lg hover:shadow-xl
                          hover:bg-white/40 dark:hover:bg-black/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               onClick={() => onSuggestionClick(suggestion)}
             >
@@ -237,7 +236,6 @@ const ChatInterface = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
   // --- Refs ---
   const chatWindowRef = useRef<HTMLDivElement>(null);
@@ -245,13 +243,6 @@ const ChatInterface = () => {
 
   // --- Memoized Values ---
   const apiLink = useMemo(() => import.meta.env.VITE_API_URL || "http://localhost:8000", []);
-  
-  const sortedSessions = useMemo(() => 
-    [...sessionState.sessions].sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ),
-    [sessionState.sessions]
-  );
 
   // --- Memoized Handlers ---
   const handleSendMessage = useCallback(async (messageText?: string) => {
@@ -264,7 +255,7 @@ const ChatInterface = () => {
     }
 
     chatDispatch({ type: 'SET_ERROR', payload: null });
-    
+
     const currentUserMessageId = `user-${Date.now()}-${Math.random()}`;
     const userMessage: Message = {
       id: currentUserMessageId,
@@ -284,7 +275,6 @@ const ChatInterface = () => {
     try {
       chatDispatch({ type: 'SET_TYPING', payload: true });
 
-      // Abort previous request if it exists
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -329,7 +319,7 @@ const ChatInterface = () => {
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split('\n');
-        
+
         lines.forEach(line => {
           if (line.startsWith("data:")) {
             try {
@@ -399,14 +389,14 @@ const ChatInterface = () => {
 
   const handleSessionSelect = useCallback(async (sessionId: string) => {
     if (sessionId === sessionState.selectedSessionId) return;
-    
+
     sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionId });
     sessionDispatch({ type: 'SET_SESSION', payload: { id: sessionId } });
-    
+
     try {
       chatDispatch({ type: 'SET_LOADING', payload: true });
       chatDispatch({ type: 'SET_ERROR', payload: null });
-      
+
       const response = await api.get(`/sessions/${sessionId}/messages`);
       const historyMessages: Message[] = (response.data || []).map((msg: any) => ({
         id: msg.id || `fallback-${Math.random()}`,
@@ -418,7 +408,7 @@ const ChatInterface = () => {
         isVisualization: msg.visualization_data !== null && msg.visualization_data !== undefined,
         visualizationData: msg.visualization_data,
       }));
-      
+
       chatDispatch({ type: 'SET_MESSAGES', payload: historyMessages });
     } catch (error: any) {
       console.error("Error loading message history:", error);
@@ -437,13 +427,13 @@ const ChatInterface = () => {
 
   const handleNewChat = useCallback(async () => {
     if (sessionState.isCreatingSession) return;
-    
+
     try {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
       chatDispatch({ type: 'SET_LOADING', payload: true });
-      
+
       const newSessionRecord = await createChatSession();
-      
+
       if (!newSessionRecord?.id) {
         throw new Error("Failed to create session record");
       }
@@ -453,27 +443,18 @@ const ChatInterface = () => {
       chatDispatch({ type: 'CLEAR_CHAT' });
 
       // Refresh sessions list
-      let updatedSessions, fetchError;
       if (user) {
-        const result = await supabase
+        const { data: updatedSessions, error: fetchError } = await supabase
           .from("chat_sessions")
           .select("*")
           .eq("user_id", user.id)
           .order('created_at', { ascending: false });
-        updatedSessions = result.data;
-        fetchError = result.error;
-      } else {
-        updatedSessions = [];
-        fetchError = null;
+
+        if (!fetchError) {
+          sessionDispatch({ type: 'SET_SESSIONS', payload: updatedSessions || [] });
+        }
       }
 
-      if (!fetchError) {
-        sessionDispatch({ type: 'SET_SESSIONS', payload: updatedSessions || [] });
-      }
-
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      }
     } catch (error) {
       console.error("Error creating new chat session:", error);
       chatDispatch({ type: 'SET_ERROR', payload: "Failed to create a new chat session. Please try again." });
@@ -552,7 +533,7 @@ const ChatInterface = () => {
         try {
           chatDispatch({ type: 'SET_LOADING', payload: true });
           let sessionRecord = await getChatSession();
-          
+
           if (!sessionRecord) {
             const { data: existingSessions } = await supabase
               .from("chat_sessions")
@@ -561,19 +542,17 @@ const ChatInterface = () => {
               .order('created_at', { ascending: false })
               .limit(1);
 
-            if ((existingSessions ?? []).length > 0) {
-              sessionRecord = await getChatSession();
-              if (!sessionRecord) {
-                sessionRecord = await createChatSession();
-              }
-            } else {
-              sessionRecord = await createChatSession();
-            }
+            sessionRecord = (existingSessions?.[0]) ? await getChatSession() : await createChatSession();
           }
-          
-          sessionDispatch({ type: 'SET_SESSION', payload: sessionRecord });
-          sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionRecord.id });
-          await handleSessionSelect(sessionRecord.id);
+
+          if (sessionRecord) {
+            sessionDispatch({ type: 'SET_SESSION', payload: sessionRecord });
+            sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionRecord.id });
+            await handleSessionSelect(sessionRecord.id);
+          } else {
+            throw new Error("Failed to get or create a session.");
+          }
+
         } catch (err) {
           console.error("Error initializing chat session", err);
           chatDispatch({ type: 'SET_ERROR', payload: "Failed to initialize chat session." });
@@ -588,9 +567,9 @@ const ChatInterface = () => {
     };
 
     initChatSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, getChatSession, createChatSession]);
 
-  // Auto-scroll effect
   useEffect(() => {
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTo({
@@ -600,7 +579,6 @@ const ChatInterface = () => {
     }
   }, [chatState.messages, chatState.isTyping]);
 
-  // Cleanup effect
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -609,12 +587,10 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // --- JSX ---
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-gradient-to-br from-gray-100 via-blue-50 to-purple-100 dark:from-gray-900 dark:via-indigo-950 dark:to-gray-800">
-      {/* Sidebar */}
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-gradient-to-br from-gray-100 via-blue-50 to-purple-100 dark:from-gray-900 dark:via-indigo-950 dark:to-gray-800">
       <ChatSidebar
-        sessions={sortedSessions}
+        sessions={sessionState.sessions}
         onSessionSelect={handleSessionSelect}
         selectedSessionId={sessionState.selectedSessionId}
         onCreateNewSession={handleNewChat}
@@ -622,26 +598,23 @@ const ChatInterface = () => {
           setSessionToDelete(sessionId);
           setShowDeleteConfirm(true);
         }}
-        initiallyExpanded={sidebarOpen}
         isCreatingSession={sessionState.isCreatingSession}
       />
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Header */}
-        <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 m-2 mt-2 mb-0 rounded-t-2xl px-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden p-2 sm:p-3">
+        <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 rounded-t-2xl px-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
           <div className="flex items-center space-x-3">
             <h1 className="text-lg font-medium text-gray-800 dark:text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               AI Assistant
             </h1>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={handleNewChat}
-              disabled={chatState.isLoading && !chatState.messages.length}
+              disabled={sessionState.isCreatingSession}
               className="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
-                        text-white rounded-xl p-2 flex items-center justify-center space-x-1
+                        text-white rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 flex items-center justify-center space-x-1
                         hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700
                         focus:outline-none focus:ring-2 focus:ring-blue-400/50 dark:focus:ring-blue-500/50
                         shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -657,7 +630,7 @@ const ChatInterface = () => {
             </button>
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="p-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-white/20 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200"
+              className="p-2 rounded-lg sm:rounded-xl text-gray-600 dark:text-gray-400 hover:bg-white/20 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200"
               aria-label="Settings"
               title="Settings"
             >
@@ -666,10 +639,8 @@ const ChatInterface = () => {
           </div>
         </header>
 
-        {/* Chat Content */}
-        <main className="flex-1 overflow-hidden flex justify-center items-center p-2">
-          <div className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border border-white/10 dark:border-white/5 rounded-2xl shadow-xl flex flex-col h-full w-full max-w-5xl mx-auto min-h-0">
-            {/* Chat Window Area */}
+        <main className="flex-1 overflow-hidden flex justify-center items-center">
+          <div className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-x border-b border-white/10 dark:border-white/5 rounded-b-2xl shadow-xl flex flex-col h-full w-full min-h-0">
             <div
               ref={chatWindowRef}
               className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-gray-500/60 dark:hover:scrollbar-thumb-gray-500/60"
@@ -700,8 +671,9 @@ const ChatInterface = () => {
                     key="chat"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="h-full"
                   >
-                    <ChatWindow 
+                    <ChatWindow
                       messages={chatState.messages}
                       isLoading={chatState.isTyping}
                       error={chatState.error}
@@ -714,9 +686,8 @@ const ChatInterface = () => {
               </AnimatePresence>
             </div>
 
-            {/* Input Area */}
             <div className="border-t border-white/10 dark:border-white/5 p-3 sm:p-4 mt-auto flex-shrink-0">
-              <div className="w-full flex items-end space-x-2 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-full shadow-inner px-4 py-3">
+              <div className="w-full flex items-end space-x-2 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-full shadow-inner px-2 sm:px-4 py-2 sm:py-3">
                 <textarea
                   ref={(el) => {
                     if (el) {
@@ -745,15 +716,14 @@ const ChatInterface = () => {
                     boxShadow: "none"
                   }}
                 />
-
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
                   className={`bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
-                text-white rounded-full p-2.5 hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 
-                focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
-                dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed 
-                transition-all duration-200 ${chatState.inputValue.trim() ? 'opacity-100' : 'opacity-50'}`}
+                                text-white rounded-full p-2 sm:p-2.5 hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 
+                                focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
+                                dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed 
+                                transition-all duration-200 ${chatState.inputValue.trim() ? 'opacity-100' : 'opacity-50'}`}
                   aria-label="Send message"
                 >
                   {chatState.isTyping ? (
@@ -767,7 +737,6 @@ const ChatInterface = () => {
           </div>
         </main>
 
-        {/* Error Message Toast */}
         <AnimatePresence>
           {chatState.error && (
             <motion.div
@@ -789,7 +758,6 @@ const ChatInterface = () => {
           )}
         </AnimatePresence>
 
-        {/* Delete Confirmation Modal */}
         <AnimatePresence>
           {showDeleteConfirm && (
             <motion.div
@@ -835,7 +803,6 @@ const ChatInterface = () => {
           )}
         </AnimatePresence>
 
-        {/* Settings Modal */}
         <AnimatePresence>
           {showSettingsModal && (
             <SettingsModal
