@@ -243,3 +243,11 @@ textarea::-webkit-scrollbar-thumb:hover {
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+body {
+  background-image: linear-gradient(to top right, #3b82f6, #8b5cf6, #ec4899);
+  /* Or a background image: */
+  /* background-image: url('/path/to/your/background.jpg'); */
+  background-size: cover;
+  background-attachment: fixed;
+}

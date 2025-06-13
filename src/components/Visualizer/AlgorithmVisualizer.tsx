@@ -1,6 +1,6 @@
 // src/components/Visualizer/AlgorithmVisualizer.tsx
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import p5 from "p5";
 
 // Enhanced interfaces for array visualizations
@@ -66,11 +66,49 @@ interface AlgorithmVisualizerProps {
   visualizationData: VisualizationData | null;
 }
 
-
-
 const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualizationData }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const p5InstanceRef = useRef<p5 | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
+
+  useEffect(() => {
+    // Update dimensions on mount and resize
+    const updateDimensions = () => {
+      if (canvasRef.current) {
+        const parent = canvasRef.current.parentElement;
+        const parentWidth = parent?.clientWidth || window.innerWidth;
+        const parentHeight = parent?.clientHeight || window.innerHeight;
+        
+        // Calculate responsive dimensions
+        const maxWidth = Math.min(parentWidth * 0.95, window.innerWidth * 0.9);
+        const maxHeight = Math.min(parentHeight * 0.8, window.innerHeight * 0.7);
+        
+        // Maintain aspect ratio while being flexible
+        let canvasWidth = maxWidth;
+        let canvasHeight = maxWidth * 0.625; // 16:10 ratio
+        
+        if (canvasHeight > maxHeight) {
+          canvasHeight = maxHeight;
+          canvasWidth = maxHeight * 1.6;
+        }
+        
+        // Set minimum dimensions
+        canvasWidth = Math.max(canvasWidth, 320);
+        canvasHeight = Math.max(canvasHeight, 200);
+        
+        // Set maximum dimensions
+        canvasWidth = Math.min(canvasWidth, 1200);
+        canvasHeight = Math.min(canvasHeight, 750);
+        
+        setDimensions({ width: canvasWidth, height: canvasHeight });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -80,18 +118,22 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       p5InstanceRef.current.remove();
     }
 
-    // Create new p5 instance
+    // Create new p5 instance with responsive dimensions
     const sketch = (p: p5) => {
       let currentStep = 0;
-      let animationSpeed = 60; // frames per step
+      let animationSpeed = 60;
       let frameCounter = 0;
       let isAnimating = false;
       
-      // Canvas dimensions
-      const canvasWidth = 800;
-      const canvasHeight = 500;
+      // Responsive canvas dimensions
+      let canvasWidth = dimensions.width;
+      let canvasHeight = dimensions.height;
       
-      // Colors
+      // Responsive scaling function
+      const getScaleFactor = () => Math.min(canvasWidth / 800, canvasHeight / 500);
+      const scale = (value: number) => value * getScaleFactor();
+      
+      // Responsive colors
       const colors = {
         background: p.color(255),
         primary: p.color(70, 130, 180),
@@ -104,7 +146,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         border: p.color(52, 73, 94)
       };
 
-      // Pointer colors
+      // Responsive pointer colors
       const pointerColors: { [key: string]: p5.Color } = {
         left: p.color(231, 76, 60),
         right: p.color(52, 152, 219),
@@ -121,7 +163,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
       p.setup = () => {
         p.createCanvas(canvasWidth, canvasHeight);
         p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(14);
+        p.textSize(scale(14));
         
         if (visualizationData?.steps && visualizationData.steps.length > 0) {
           isAnimating = true;
@@ -133,6 +175,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         
         if (!visualizationData) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("No visualization data provided", canvasWidth / 2, canvasHeight / 2);
           return;
         }
@@ -180,12 +223,13 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             break;
           default:
             p.fill(colors.text);
+            p.textSize(scale(16));
             p.text(`Unsupported visualization: ${visualizationData.visualizationType}`, 
                    canvasWidth / 2, canvasHeight / 2);
         }
       };
 
-      // Enhanced Array Visualization
+      // Enhanced Responsive Array Visualization
       const renderArray = () => {
         const data = visualizationData!;
         const array = data.array || [];
@@ -194,27 +238,32 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         
         if (!array.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("Empty array", canvasWidth / 2, canvasHeight / 2);
           return;
         }
 
-        const boxHeight = 50;
-        const boxWidth = Math.max(40, Math.min(80, (canvasWidth - 100) / array.length));
-        const spacing = 10;
+        // Responsive dimensions
+        const boxHeight = scale(50);
+        const minBoxWidth = scale(30);
+        const maxBoxWidth = scale(80);
+        const availableWidth = canvasWidth - scale(100);
+        const boxWidth = Math.max(minBoxWidth, Math.min(maxBoxWidth, availableWidth / array.length));
+        const spacing = scale(10);
         const totalWidth = array.length * (boxWidth + spacing) - spacing;
         const startX = (canvasWidth - totalWidth) / 2;
         const arrayY = canvasHeight / 2 - boxHeight / 2;
 
         // Draw algorithm indicator
         p.fill(colors.text);
-        p.textSize(14);
+        p.textSize(scale(14));
         p.textStyle(p.BOLD);
         p.text(`Algorithm: ${(data.algorithm || 'array').replace('_', ' ').toUpperCase()}`, 
-               canvasWidth / 2, 50);
+               canvasWidth / 2, scale(50));
 
         // Draw step message
-        p.textSize(16);
-        p.text(currentStepData.message || "Array Visualization", canvasWidth / 2, 80);
+        p.textSize(scale(16));
+        p.text(currentStepData.message || "Array Visualization", canvasWidth / 2, scale(80));
 
         // Get current array state
         let currentArray = array;
@@ -227,7 +276,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         }
 
         // Draw array boxes
-        p.textSize(14);
+        p.textSize(scale(14));
         p.textStyle(p.BOLD);
         for (let i = 0; i < currentArray.length; i++) {
           const x = startX + i * (boxWidth + spacing);
@@ -251,7 +300,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
                     i <= currentStepData.windowEnd) {
             boxColor = p.color(232, 245, 232);
             p.stroke(colors.success);
-            p.strokeWeight(3);
+            p.strokeWeight(scale(3));
           }
 
           // Handle highlighted ranges
@@ -270,21 +319,22 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
                 i >= currentStepData.windowStart && 
                 i <= currentStepData.windowEnd)) {
             p.stroke(colors.border);
-            p.strokeWeight(2);
+            p.strokeWeight(scale(2));
           }
-          p.rect(x, arrayY, boxWidth, boxHeight, 4);
+          p.rect(x, arrayY, boxWidth, boxHeight, scale(4));
 
           // Draw value
           p.fill(255);
           p.noStroke();
+          p.textSize(Math.max(scale(10), boxWidth * 0.25));
           p.text(currentArray[i], x + boxWidth / 2, arrayY + boxHeight / 2);
 
           // Draw index
           p.fill(colors.text);
-          p.textSize(12);
+          p.textSize(scale(12));
           p.textStyle(p.NORMAL);
-          p.text(i, x + boxWidth / 2, arrayY + boxHeight + 20);
-          p.textSize(14);
+          p.text(i, x + boxWidth / 2, arrayY + boxHeight + scale(20));
+          p.textSize(scale(14));
           p.textStyle(p.BOLD);
         }
 
@@ -293,11 +343,11 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           Object.entries(currentStepData.pointers).forEach(([name, index]) => {
             if (index >= 0 && index < currentArray.length) {
               const x = startX + index * (boxWidth + spacing) + boxWidth / 2;
-              const y = arrayY - 20;
+              const y = arrayY - scale(20);
               
               p.fill(pointerColors[name] || colors.danger);
               p.noStroke();
-              p.textSize(14);
+              p.textSize(scale(14));
               p.textStyle(p.BOLD);
               p.text(name.toUpperCase(), x, y);
             }
@@ -309,10 +359,10 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           currentStepData.annotations.forEach(annotation => {
             if (annotation.index >= 0 && annotation.index < currentArray.length) {
               const x = startX + annotation.index * (boxWidth + spacing) + boxWidth / 2;
-              const y = annotation.position === "above" ? arrayY - 50 : arrayY + boxHeight + 50;
+              const y = annotation.position === "above" ? arrayY - scale(50) : arrayY + boxHeight + scale(50);
               
               p.fill(colors.text);
-              p.textSize(12);
+              p.textSize(scale(12));
               p.textStyle(p.BOLD);
               p.text(annotation.text, x, y);
             }
@@ -321,15 +371,15 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Draw computed values
         if (currentStepData.computedValues) {
-          let yOffset = arrayY + boxHeight + 80;
+          let yOffset = arrayY + boxHeight + scale(80);
           p.fill(colors.text);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.textStyle(p.NORMAL);
           p.textAlign(p.LEFT, p.CENTER);
           
           Object.entries(currentStepData.computedValues).forEach(([key, value], index) => {
             const displayValue = Array.isArray(value) ? `[${value.join(', ')}]` : value;
-            p.text(`${key}: ${displayValue}`, 20, yOffset + index * 25);
+            p.text(`${key}: ${displayValue}`, scale(20), yOffset + index * scale(25));
           });
           p.textAlign(p.CENTER, p.CENTER);
         }
@@ -337,34 +387,34 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         // Draw window sum
         if (currentStepData.windowSum !== undefined) {
           p.fill(colors.success);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.textStyle(p.BOLD);
           p.textAlign(p.RIGHT, p.CENTER);
-          p.text(`Window Sum: ${currentStepData.windowSum}`, canvasWidth - 20, arrayY - 20);
+          p.text(`Window Sum: ${currentStepData.windowSum}`, canvasWidth - scale(20), arrayY - scale(20));
           p.textAlign(p.CENTER, p.CENTER);
         }
 
         // Draw target value
         if (currentStepData.targetValue !== undefined) {
           p.fill(colors.danger);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.textStyle(p.BOLD);
           p.textAlign(p.LEFT, p.CENTER);
-          p.text(`Target: ${currentStepData.targetValue}`, 20, arrayY - 20);
+          p.text(`Target: ${currentStepData.targetValue}`, scale(20), arrayY - scale(20));
           p.textAlign(p.CENTER, p.CENTER);
         }
 
         // Draw comparison
         if (currentStepData.comparison) {
           p.fill(p.color(142, 68, 173));
-          p.textSize(14);
+          p.textSize(scale(14));
           p.textStyle(p.BOLD);
           p.text(`${currentStepData.comparison.operation}: ${currentStepData.comparison.result}`, 
-                 canvasWidth / 2, arrayY + boxHeight + 50);
+                 canvasWidth / 2, arrayY + boxHeight + scale(50));
         }
       };
 
-      // Sorting Visualization
+      // Responsive Sorting Visualization
       const renderSorting = () => {
         const data = visualizationData!;
         const steps = data.steps || [];
@@ -373,30 +423,34 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         
         if (!initialArray.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("Empty array for sorting", canvasWidth / 2, canvasHeight / 2);
           return;
         }
 
         const currentArray = currentStepData.array || initialArray;
-        const barWidth = Math.max(10, Math.min(50, (canvasWidth - 100) / currentArray.length));
+        const minBarWidth = scale(8);
+        const maxBarWidth = scale(50);
+        const availableWidth = canvasWidth - scale(100);
+        const barWidth = Math.max(minBarWidth, Math.min(maxBarWidth, availableWidth / currentArray.length));
         const barSpacing = barWidth * 0.1;
         const totalWidth = currentArray.length * (barWidth + barSpacing) - barSpacing;
         const startX = (canvasWidth - totalWidth) / 2;
         const maxValue = Math.max(...currentArray);
-        const maxHeight = canvasHeight - 150;
+        const maxHeight = canvasHeight - scale(150);
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Sorting Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Sorting Visualization", canvasWidth / 2, scale(30));
 
         // Draw bars
-        p.textSize(12);
+        p.textSize(scale(12));
         for (let i = 0; i < currentArray.length; i++) {
           const x = startX + i * (barWidth + barSpacing);
           const barHeight = (currentArray[i] / maxValue) * maxHeight;
-          const y = canvasHeight - 50 - barHeight;
+          const y = canvasHeight - scale(50) - barHeight;
           
           // Determine bar color
           let barColor = colors.primary;
@@ -409,17 +463,18 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           // Draw bar
           p.fill(barColor);
           p.stroke(colors.border);
-          p.strokeWeight(1);
-          p.rect(x, y, barWidth, barHeight, 3);
+          p.strokeWeight(scale(1));
+          p.rect(x, y, barWidth, barHeight, scale(3));
 
           // Draw value on top of bar
           p.fill(colors.text);
           p.noStroke();
-          p.text(currentArray[i], x + barWidth / 2, y - 10);
+          p.textSize(Math.max(scale(8), barWidth * 0.25));
+          p.text(currentArray[i], x + barWidth / 2, y - scale(10));
         }
       };
 
-      // Graph Visualization
+      // Responsive Graph Visualization
       const renderGraph = () => {
         const data = visualizationData!;
         const nodes = data.nodes || [];
@@ -429,6 +484,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         if (!nodes.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("No graph nodes provided", canvasWidth / 2, canvasHeight / 2);
           return;
         }
@@ -440,7 +496,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         nodes.forEach((node, index) => {
           if (!nodePositions[node.id]) {
             const angle = (index / nodes.length) * p.TWO_PI;
-            const radius = Math.min(canvasWidth, canvasHeight) * 0.3;
+            const radius = Math.min(canvasWidth, canvasHeight) * 0.25;
             nodePositions[node.id] = {
               x: canvasWidth / 2 + Math.cos(angle) * radius,
               y: canvasHeight / 2 + Math.sin(angle) * radius
@@ -450,13 +506,13 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Graph Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Graph Visualization", canvasWidth / 2, scale(30));
 
         // Draw edges
         p.stroke(colors.border);
-        p.strokeWeight(2);
+        p.strokeWeight(scale(2));
         edges.forEach(edge => {
           const sourcePos = nodePositions[edge.source];
           const targetPos = nodePositions[edge.target];
@@ -469,13 +525,14 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
               const midY = (sourcePos.y + targetPos.y) / 2;
               p.fill(colors.text);
               p.noStroke();
-              p.textSize(12);
+              p.textSize(scale(12));
               p.text(edge.weight, midX, midY);
             }
           }
         });
 
         // Draw nodes
+        const nodeRadius = scale(20);
         nodes.forEach(node => {
           const pos = nodePositions[node.id];
           if (pos) {
@@ -490,20 +547,20 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             // Draw node
             p.fill(nodeColor);
             p.stroke(255);
-            p.strokeWeight(2);
-            p.circle(pos.x, pos.y, 40);
+            p.strokeWeight(scale(2));
+            p.circle(pos.x, pos.y, nodeRadius * 2);
 
             // Draw label
             p.fill(255);
             p.noStroke();
-            p.textSize(14);
+            p.textSize(scale(14));
             p.textStyle(p.BOLD);
             p.text(node.label || node.id, pos.x, pos.y);
           }
         });
       };
 
-      // Stack Visualization
+      // Responsive Stack Visualization
       const renderStack = () => {
         const data = visualizationData!;
         const steps = data.steps || [];
@@ -511,17 +568,17 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         const currentStepData = steps[currentStep] || { stack: initialStack };
         const currentStack = currentStepData.stack || currentStepData.array || initialStack;
 
-        const boxWidth = 120;
-        const boxHeight = 40;
-        const spacing = 5;
+        const boxWidth = scale(120);
+        const boxHeight = scale(40);
+        const spacing = scale(5);
         const startX = canvasWidth / 2 - boxWidth / 2;
-        const startY = canvasHeight - 50;
+        const startY = canvasHeight - scale(50);
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Stack Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Stack Visualization", canvasWidth / 2, scale(30));
 
         // Draw stack elements
         currentStack.forEach((item, index) => {
@@ -529,31 +586,31 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           
           p.fill(colors.primary);
           p.stroke(colors.border);
-          p.strokeWeight(2);
-          p.rect(startX, y, boxWidth, boxHeight, 5);
+          p.strokeWeight(scale(2));
+          p.rect(startX, y, boxWidth, boxHeight, scale(5));
 
           p.fill(255);
           p.noStroke();
-          p.textSize(14);
+          p.textSize(scale(14));
           p.text(item, startX + boxWidth / 2, y + boxHeight / 2);
         });
 
         // Draw "Top" indicator
         if (currentStack.length > 0) {
           p.fill(colors.text);
-          p.textSize(12);
-          p.text("← Top", startX + boxWidth + 20, startY - currentStack.length * (boxHeight + spacing) + boxHeight / 2);
+          p.textSize(scale(12));
+          p.text("← Top", startX + boxWidth + scale(20), startY - currentStack.length * (boxHeight + spacing) + boxHeight / 2);
         }
 
         // Draw empty stack message
         if (currentStack.length === 0) {
           p.fill(colors.text);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.text("Empty Stack", canvasWidth / 2, canvasHeight / 2);
         }
       };
 
-      // Queue Visualization
+      // Responsive Queue Visualization
       const renderQueue = () => {
         const data = visualizationData!;
         const steps = data.steps || [];
@@ -561,18 +618,18 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         const currentStepData = steps[currentStep] || { queue: initialQueue };
         const currentQueue = currentStepData.queue || currentStepData.array || initialQueue;
 
-        const boxWidth = 80;
-        const boxHeight = 40;
-        const spacing = 10;
+        const boxWidth = scale(80);
+        const boxHeight = scale(40);
+        const spacing = scale(10);
         const totalWidth = currentQueue.length * (boxWidth + spacing) - spacing;
         const startX = (canvasWidth - totalWidth) / 2;
         const queueY = canvasHeight / 2 - boxHeight / 2;
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Queue Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Queue Visualization", canvasWidth / 2, scale(30));
 
         // Draw queue elements
         currentQueue.forEach((item, index) => {
@@ -580,32 +637,32 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           
           p.fill(colors.primary);
           p.stroke(colors.border);
-          p.strokeWeight(2);
-          p.rect(x, queueY, boxWidth, boxHeight, 3);
+          p.strokeWeight(scale(2));
+          p.rect(x, queueY, boxWidth, boxHeight, scale(3));
 
           p.fill(255);
           p.noStroke();
-          p.textSize(14);
+          p.textSize(scale(14));
           p.text(item, x + boxWidth / 2, queueY + boxHeight / 2);
         });
 
         // Draw Front/Rear indicators
         if (currentQueue.length > 0) {
           p.fill(colors.text);
-          p.textSize(12);
-          p.text("Front ↓", startX + boxWidth / 2, queueY - 20);
-          p.text("↑ Rear", startX + (currentQueue.length - 1) * (boxWidth + spacing) + boxWidth / 2, queueY + boxHeight + 20);
+          p.textSize(scale(12));
+          p.text("Front ↓", startX + boxWidth / 2, queueY - scale(20));
+          p.text("↑ Rear", startX + (currentQueue.length - 1) * (boxWidth + spacing) + boxWidth / 2, queueY + boxHeight + scale(20));
         }
 
         // Draw empty queue message
         if (currentQueue.length === 0) {
           p.fill(colors.text);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.text("Empty Queue", canvasWidth / 2, canvasHeight / 2);
         }
       };
 
-      // HashMap Visualization
+      // Responsive HashMap Visualization
       const renderHashMap = () => {
         const data = visualizationData!;
         const steps = data.steps || [];
@@ -623,44 +680,44 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           currentEntries = Object.entries(currentStepData.hashmap).map(([key, value]) => ({ key, value }));
         }
 
-        const bucketWidth = 150;
-        const bucketHeight = 40;
-        const spacing = 10;
-        const itemsPerRow = Math.floor((canvasWidth - 40) / (bucketWidth + spacing));
+        const bucketWidth = scale(150);
+        const bucketHeight = scale(40);
+        const spacing = scale(10);
+        const itemsPerRow = Math.max(1, Math.floor((canvasWidth - scale(40)) / (bucketWidth + spacing)));
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "HashMap Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "HashMap Visualization", canvasWidth / 2, scale(30));
 
         // Draw hashmap entries
         currentEntries.forEach((entry, index) => {
           const row = Math.floor(index / itemsPerRow);
           const col = index % itemsPerRow;
-          const x = 20 + col * (bucketWidth + spacing);
-          const y = 80 + row * (bucketHeight + spacing);
+          const x = scale(20) + col * (bucketWidth + spacing);
+          const y = scale(80) + row * (bucketHeight + spacing);
 
           p.fill(colors.primary);
           p.stroke(colors.border);
-          p.strokeWeight(2);
-          p.rect(x, y, bucketWidth, bucketHeight, 3);
+          p.strokeWeight(scale(2));
+          p.rect(x, y, bucketWidth, bucketHeight, scale(3));
 
           p.fill(255);
           p.noStroke();
-          p.textSize(12);
+          p.textSize(scale(12));
           p.text(`${entry.key}: ${entry.value}`, x + bucketWidth / 2, y + bucketHeight / 2);
         });
 
         // Draw empty hashmap message
         if (currentEntries.length === 0) {
           p.fill(colors.text);
-          p.textSize(14);
+          p.textSize(scale(14));
           p.text("Empty HashMap", canvasWidth / 2, canvasHeight / 2);
         }
       };
 
-      // Tree Visualization
+      // Responsive Tree Visualization
       const renderTree = () => {
         const data = visualizationData!;
         const nodes = data.nodes || [];
@@ -669,6 +726,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         if (!nodes.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("No tree data provided", canvasWidth / 2, canvasHeight / 2);
           return;
         }
@@ -710,27 +768,27 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Position nodes
         const maxLevel = Math.max(...Object.values(levels));
-        const levelHeight = (canvasHeight - 150) / (maxLevel + 1);
+        const levelHeight = (canvasHeight - scale(150)) / (maxLevel + 1);
         
         Object.entries(levels).forEach(([nodeId, level]) => {
           const nodesAtLevel = Object.entries(levels).filter(([_, l]) => l === level);
           const indexAtLevel = nodesAtLevel.findIndex(([id, _]) => id === nodeId);
-          const levelWidth = canvasWidth - 100;
-          const x = 50 + (indexAtLevel + 1) * levelWidth / (nodesAtLevel.length + 1);
-          const y = 80 + level * levelHeight;
+          const levelWidth = canvasWidth - scale(100);
+          const x = scale(50) + (indexAtLevel + 1) * levelWidth / (nodesAtLevel.length + 1);
+          const y = scale(80) + level * levelHeight;
           
           nodePositions[nodeId] = { x, y };
         });
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Tree Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Tree Visualization", canvasWidth / 2, scale(30));
 
         // Draw edges
         p.stroke(colors.border);
-        p.strokeWeight(2);
+        p.strokeWeight(scale(2));
         nodes.forEach(node => {
           if (node.children && nodePositions[node.id]) {
             const parentPos = nodePositions[node.id];
@@ -744,6 +802,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         });
 
         // Draw nodes
+        const nodeRadius = scale(20);
         nodes.forEach(node => {
           const pos = nodePositions[node.id];
           if (pos) {
@@ -756,20 +815,20 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             // Draw node
             p.fill(nodeColor);
             p.stroke(255);
-            p.strokeWeight(2);
-            p.circle(pos.x, pos.y, 40);
+            p.strokeWeight(scale(2));
+            p.circle(pos.x, pos.y, nodeRadius * 2);
 
             // Draw value
             p.fill(255);
             p.noStroke();
-            p.textSize(12);
+            p.textSize(scale(12));
             p.textStyle(p.BOLD);
             p.text(node.value || node.id, pos.x, pos.y);
           }
         });
       };
 
-      // Table Visualization
+      // Responsive Table Visualization
       const renderTable = () => {
         const data = visualizationData!;
         const rows = data.rows || 0;
@@ -780,11 +839,15 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         if (!rows || !columns || !tableData.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("Invalid table data", canvasWidth / 2, canvasHeight / 2);
           return;
         }
 
-        const cellSize = Math.min((canvasWidth - 100) / columns, (canvasHeight - 150) / rows, 60);
+        const maxCellSize = scale(60);
+        const minCellSize = scale(25);
+        const cellSize = Math.max(minCellSize, Math.min(maxCellSize, 
+          Math.min((canvasWidth - scale(100)) / columns, (canvasHeight - scale(150)) / rows)));
         const tableWidth = columns * cellSize;
         const tableHeight = rows * cellSize;
         const startX = (canvasWidth - tableWidth) / 2;
@@ -792,9 +855,9 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Table Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Table Visualization", canvasWidth / 2, scale(30));
 
         // Draw table cells
         for (let row = 0; row < rows; row++) {
@@ -814,19 +877,19 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             // Draw cell
             p.fill(cellColor);
             p.stroke(colors.border);
-            p.strokeWeight(1);
+            p.strokeWeight(scale(1));
             p.rect(x, y, cellSize, cellSize);
 
             // Draw value
             p.fill(colors.text);
             p.noStroke();
-            p.textSize(Math.max(10, cellSize * 0.3));
+            p.textSize(Math.max(scale(8), cellSize * 0.25));
             p.text(tableData[row][col], x + cellSize / 2, y + cellSize / 2);
           }
         }
       };
 
-      // Matrix Visualization
+      // Responsive Matrix Visualization
       const renderMatrix = () => {
         const data = visualizationData!;
         const matrix = data.matrix || [];
@@ -835,13 +898,17 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         if (!matrix.length || !matrix[0].length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("Empty matrix", canvasWidth / 2, canvasHeight / 2);
           return;
         }
 
         const rows = matrix.length;
         const cols = matrix[0].length;
-        const cellSize = Math.min((canvasWidth - 100) / cols, (canvasHeight - 150) / rows, 60);
+        const maxCellSize = scale(60);
+        const minCellSize = scale(20);
+        const cellSize = Math.max(minCellSize, Math.min(maxCellSize,
+          Math.min((canvasWidth - scale(100)) / cols, (canvasHeight - scale(150)) / rows)));
         const matrixWidth = cols * cellSize;
         const matrixHeight = rows * cellSize;
         const startX = (canvasWidth - matrixWidth) / 2;
@@ -849,9 +916,9 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Matrix Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Matrix Visualization", canvasWidth / 2, scale(30));
 
         // Draw matrix cells
         for (let row = 0; row < rows; row++) {
@@ -871,19 +938,19 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             // Draw cell
             p.fill(cellColor);
             p.stroke(colors.border);
-            p.strokeWeight(1);
+            p.strokeWeight(scale(1));
             p.rect(x, y, cellSize, cellSize);
 
             // Draw value
             p.fill(colors.text);
             p.noStroke();
-            p.textSize(Math.max(10, cellSize * 0.3));
+            p.textSize(Math.max(scale(8), cellSize * 0.25));
             p.text(matrix[row][col], x + cellSize / 2, y + cellSize / 2);
           }
         }
       };
 
-      // Linked List Visualization
+      // Responsive Linked List Visualization
       const renderLinkedList = () => {
         const data = visualizationData!;
         const nodes = data.nodes || [];
@@ -892,22 +959,23 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         if (!nodes.length) {
           p.fill(colors.text);
+          p.textSize(scale(16));
           p.text("Empty linked list", canvasWidth / 2, canvasHeight / 2);
           return;
         }
 
-        const nodeWidth = 60;
-        const nodeHeight = 40;
-        const spacing = 80;
+        const nodeWidth = scale(60);
+        const nodeHeight = scale(40);
+        const spacing = scale(80);
         const totalWidth = nodes.length * nodeWidth + (nodes.length - 1) * spacing;
         const startX = (canvasWidth - totalWidth) / 2;
         const nodeY = canvasHeight / 2 - nodeHeight / 2;
 
         // Draw message
         p.fill(colors.text);
-        p.textSize(16);
+        p.textSize(scale(16));
         p.textStyle(p.BOLD);
-        p.text(currentStepData.message || "Linked List Visualization", canvasWidth / 2, 30);
+        p.text(currentStepData.message || "Linked List Visualization", canvasWidth / 2, scale(30));
 
         // Draw nodes and arrows
         nodes.forEach((node, index) => {
@@ -922,22 +990,22 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
           // Draw node
           p.fill(nodeColor);
           p.stroke(colors.border);
-          p.strokeWeight(2);
-          p.rect(x, nodeY, nodeWidth, nodeHeight, 5);
+          p.strokeWeight(scale(2));
+          p.rect(x, nodeY, nodeWidth, nodeHeight, scale(5));
 
           // Draw value
           p.fill(255);
           p.noStroke();
-          p.textSize(14);
+          p.textSize(scale(14));
           p.textStyle(p.BOLD);
           p.text(node.value, x + nodeWidth / 2, nodeY + nodeHeight / 2);
 
           // Draw arrow to next node
           if (node.next && index < nodes.length - 1) {
             p.stroke(colors.border);
-            p.strokeWeight(2);
+            p.strokeWeight(scale(2));
             const arrowStartX = x + nodeWidth;
-            const arrowEndX = x + nodeWidth + spacing - 10;
+            const arrowEndX = x + nodeWidth + spacing - scale(10);
             const arrowY = nodeY + nodeHeight / 2;
             
             // Draw line
@@ -946,7 +1014,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
             // Draw arrowhead
             p.fill(colors.border);
             p.noStroke();
-            p.triangle(arrowEndX, arrowY, arrowEndX - 8, arrowY - 4, arrowEndX - 8, arrowY + 4);
+            p.triangle(arrowEndX, arrowY, arrowEndX - scale(8), arrowY - scale(4), arrowEndX - scale(8), arrowY + scale(4));
           }
         });
       };
@@ -979,23 +1047,54 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
         p5InstanceRef.current.remove();
       }
     };
-  }, [visualizationData]);
+  }, [visualizationData, dimensions]);
 
-  return (
-    <div className="algorithm-visualizer">
-      <div 
-        ref={canvasRef} 
-        style={{ 
-          border: "1px solid #ddd", 
-          borderRadius: "8px",
-          display: "inline-block"
-        }} 
-      />
-      <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+return (
+  <div className="algorithm-visualizer w-full h-full flex flex-col">
+    <div 
+      ref={canvasRef} 
+      className="
+        flex-1
+        w-full 
+        min-h-[250px] 
+        sm:min-h-[300px] 
+        md:min-h-[400px] 
+        lg:min-h-[500px]
+        max-w-full
+        border 
+        border-gray-300 
+        rounded-lg
+        flex 
+        justify-center 
+        items-center
+        overflow-hidden
+        bg-white
+        shadow-sm
+        hover:shadow-md
+        transition-shadow
+        duration-200
+      " 
+    />
+    <div className="
+      mt-2 
+      sm:mt-3 
+      px-2 
+      sm:px-4 
+      text-xs 
+      sm:text-sm 
+      md:text-base
+      text-gray-600 
+      text-center 
+      break-words
+      leading-relaxed
+      max-w-full
+    ">
+      <span className="inline-block">
         Controls: Click to pause/resume • Arrow keys or Space to step • R to reset
-      </div>
+      </span>
     </div>
-  );
-};
+  </div>
+);
+}
 
 export default AlgorithmVisualizer;
