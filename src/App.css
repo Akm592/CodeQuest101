@@ -1,3 +1,6 @@
+/* In your global styles (e.g., src/index.css) */
+/* @import '@digitalocean/do-markdownit/dist/do-markdownit.css'; */
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -39,4 +42,12 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.main-app-content.hidden {
+  display: none;
+}
+
+.main-app-content.visible {
+  display: block;
 }

@@ -34,24 +34,36 @@ const useTypewriter = (
 ) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
+  // Handle streaming or skip typewriter cases
   useEffect(() => {
     if (isStreaming || skipTypewriter) {
-      // Display immediately for streaming or complex content
       setDisplayedText(text);
       setCurrentIndex(text.length);
-      if (onComplete && text.length > 0) {
+      setIsComplete(true);
+      if (onComplete && !isComplete && text.length > 0) {
         onComplete();
       }
-    } else if (currentIndex < text.length) {
-      // Use typewriter effect for simple content
+      return;
+    }
+  }, [text, isStreaming, skipTypewriter, onComplete, isComplete]);
+
+  // Handle typewriter effect for non-streaming content
+  useEffect(() => {
+    if (isStreaming || skipTypewriter || isComplete) return;
+
+    if (currentIndex < text.length) {
       timeoutRef.current = setTimeout(() => {
         setDisplayedText(text.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
+        setCurrentIndex(prev => prev + 1);
       }, speed);
-    } else if (currentIndex >= text.length && onComplete) {
-      onComplete();
+    } else if (currentIndex >= text.length && text.length > 0) {
+      setIsComplete(true);
+      if (onComplete) {
+        onComplete();
+      }
     }
 
     return () => {
@@ -59,13 +71,14 @@ const useTypewriter = (
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [text, currentIndex, speed, isStreaming, onComplete, skipTypewriter]);
+  }, [currentIndex, speed, isStreaming, skipTypewriter, text.length, onComplete, isComplete]);
 
-  // Reset when text changes
+  // Reset state when text changes (only for non-streaming)
   useEffect(() => {
     if (!isStreaming && !skipTypewriter) {
       setCurrentIndex(0);
       setDisplayedText('');
+      setIsComplete(false);
     }
   }, [text, isStreaming, skipTypewriter]);
 
@@ -85,13 +98,17 @@ const TypewriterMarkdown: React.FC<{
   const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
-    if (displayedText === content && !isStreaming) {
-      const timer = setTimeout(() => setShowCursor(false), 1000);
-      return () => clearTimeout(timer);
+    if (!isStreaming && !skipTypewriter) {
+      if (displayedText === content && content.length > 0) {
+        const timer = setTimeout(() => setShowCursor(false), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        setShowCursor(true);
+      }
     } else {
-      setShowCursor(true);
+      setShowCursor(false); // Don't show cursor during streaming
     }
-  }, [displayedText, content, isStreaming]);
+  }, [displayedText, content, isStreaming, skipTypewriter]);
 
   return (
     <div className="relative">
@@ -103,12 +120,13 @@ const TypewriterMarkdown: React.FC<{
           {displayedText}
         </ReactMarkdown>
       </div>
-      {(showCursor && (isStreaming || displayedText !== content) && !skipTypewriter) && (
+      {showCursor && !isStreaming && (
         <span className="inline-block w-0.5 h-3 sm:h-4 bg-current ml-0.5 animate-pulse" />
       )}
     </div>
   );
 };
+
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ 
   message, 
@@ -320,50 +338,67 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   // Content rendering logic
-  const renderContent = () => {
-    if (message.isVisualization && message.visualizationData) {
+const renderContent = () => {
+  if (message.isVisualization && message.visualizationData) {
+    return (
+      <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
+        <div className="w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
+          <AlgorithmVisualizer visualizationData={message.visualizationData} />
+        </div>
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
+          <Maximize2 className="w-6 h-6 sm:w-8 sm:h-8 text-white/80" />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentText) {
+    // For streaming messages, always display immediately
+    if (isStreaming) {
       return (
-        <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
-          <div className="w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
-            <AlgorithmVisualizer visualizationData={message.visualizationData} />
-          </div>
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
-            <Maximize2 className="w-6 h-6 sm:w-8 sm:h-8 text-white/80" />
-          </div>
+        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={memoizedComponents}
+          >
+            {currentText}
+          </ReactMarkdown>
+          {/* Show typing cursor during streaming */}
+          <span className="inline-block w-0.5 h-3 sm:h-4 bg-current ml-0.5 animate-pulse" />
         </div>
       );
     }
-
-    if (currentText) {
-      // Use immediate display for user messages or complex content
-      if (isUserMessage || isComplexContent) {
-        return (
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={memoizedComponents}
-            >
-              {currentText}
-            </ReactMarkdown>
-          </div>
-        );
-      } else {
-        // Use typewriter effect for simple bot messages
-        return (
-          <TypewriterMarkdown
-            content={currentText}
+    
+    // For user messages or complex content, display immediately
+    if (isUserMessage || isComplexContent) {
+      return (
+        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={memoizedComponents}
-            isStreaming={isStreaming}
-            speed={15}
-            onComplete={handleTypingComplete}
-            skipTypewriter={isComplexContent}
-          />
-        );
-      }
+          >
+            {currentText}
+          </ReactMarkdown>
+        </div>
+      );
+    } else {
+      // Use typewriter effect only for simple, non-streaming bot messages
+      return (
+        <TypewriterMarkdown
+          content={currentText}
+          components={memoizedComponents}
+          isStreaming={false}
+          speed={15}
+          onComplete={handleTypingComplete}
+          skipTypewriter={false}
+        />
+      );
     }
+  }
 
-    return <span className="italic text-gray-400 dark:text-gray-500 text-sm">(Empty message)</span>;
-  };
+  return <span className="italic text-gray-400 dark:text-gray-500 text-sm">(Empty message)</span>;
+};
+
 
   return (
     <>
