@@ -244,9 +244,9 @@ const SuggestionsScreen = React.memo(({
                   </div>
                 </div>
                 {expandedCategory === category.title ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                  <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                  <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 )}
               </button>
 
@@ -295,7 +295,7 @@ const SuggestionsScreen = React.memo(({
                             
                             {isLoading && (
                               <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-lg">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 dark:border-blue-400"></div>
                               </div>
                             )}
                           </motion.button>
