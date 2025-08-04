@@ -24,6 +24,7 @@ export const HeroSection: React.FC = () => {
               size="lg"
               className="group flex items-center gap-2 bg-teal-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:bg-teal-700 hover:gap-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900"
               aria-label="Get Started for Free"
+              onClick={() => window.location.href = '/chat'}
             >
               Get Started for Free
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
