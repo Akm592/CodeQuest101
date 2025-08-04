@@ -22,25 +22,25 @@ const TypingIndicator = () => {
       exit={{ opacity: 0, y: 10, transition: { duration: 0.15 } }}
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
     >
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-white/10 dark:border-white/5
-                      text-gray-800 dark:text-gray-200 rounded-2xl px-4 py-3 rounded-bl-none shadow-md">
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg border border-white/10 dark:border-white/5
+                      text-gray-800 dark:text-gray-100 rounded-2xl px-4 py-3 rounded-bl-none shadow-md">
         <div className="flex space-x-1.5 items-center h-4">
           <motion.span
-            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full"
             variants={dotVariants}
             initial="initial"
             animate="animate"
             transition={dotTransition(0)}
           />
           <motion.span
-            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full"
             variants={dotVariants}
             initial="initial"
             animate="animate"
             transition={dotTransition(0.15)}
           />
           <motion.span
-            className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"
+            className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full"
             variants={dotVariants}
             initial="initial"
             animate="animate"

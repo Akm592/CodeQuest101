@@ -185,7 +185,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <code
           className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-words ${
             isUserMessage
-              ? 'bg-white/20 text-blue-100'
+              ? 'bg-white/20 text-blue-100 dark:bg-white/10 dark:text-blue-200'
               : 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border border-blue-200/50 dark:border-blue-700/50'
           }`}
           {...props}
