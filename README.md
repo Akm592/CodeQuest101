@@ -24,7 +24,7 @@ CodeQuest is an innovative platform designed to help developers master complex a
 
 ## 🛠️ Getting Started
 
-1. Visit [CodeQuest Website](https://akm592.github.io/CodeQuest/)
+1. Visit [CodeQuest Website](https://codequest101.vercel.app/)
 2. Browse through our collection of algorithm visualizations
 3. Select a problem to start your interactive learning experience
 4. Use the step-by-step controls to understand the algorithm's flow
@@ -56,3 +56,4 @@ Have questions or suggestions? Reach out to us:
 ---
 
 Happy Coding with CodeQuest! 🚀👨‍💻👩‍💻
+
