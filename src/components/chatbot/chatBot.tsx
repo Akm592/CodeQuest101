@@ -158,6 +158,8 @@ const useAPI = () => {
   return api;
 };
 
+// Guest sessions are ephemeral - no localStorage persistence
+
 // --- SuggestionsScreen Component ---
 
 SuggestionsScreen.displayName = 'SuggestionsScreen';
@@ -385,7 +387,22 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
       chatDispatch({ type: 'SET_LOADING', payload: true });
 
-      const newSessionRecord = await createChatSession();
+      let newSessionRecord;
+
+      if (user) {
+        newSessionRecord = await createChatSession();
+      } else {
+        // Guest mode: Generate UUID locally (ephemeral, no DB persistence)
+        const sessionId = crypto.randomUUID();
+        newSessionRecord = {
+          id: sessionId,
+          session_name: "Guest Chat",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        // For guests, just keep the single active session in state (ephemeral)
+        sessionDispatch({ type: 'SET_SESSIONS', payload: [newSessionRecord] });
+      }
 
       if (!newSessionRecord?.id) {
         throw new Error("Failed to create session record");
@@ -395,7 +412,7 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: newSessionRecord.id });
       chatDispatch({ type: 'CLEAR_CHAT' });
 
-      // Refresh sessions list
+      // Refresh sessions list (User only)
       if (user) {
         const { data: updatedSessions, error: fetchError } = await supabase
           .from("chat_sessions")
@@ -474,6 +491,8 @@ const ChatInterface = () => {
           chatDispatch({ type: 'SET_ERROR', payload: "Failed to load chat sessions." });
         }
       } else {
+        // Guest mode: Sessions are ephemeral, start with empty list
+        // A session will be created when user initiates chat
         sessionDispatch({ type: 'SET_SESSIONS', payload: [] });
       }
     };
@@ -482,6 +501,7 @@ const ChatInterface = () => {
 
   useEffect(() => {
     const initChatSession = async () => {
+      // Logic for User
       if (user) {
         try {
           chatDispatch({ type: 'SET_LOADING', payload: true });
@@ -503,7 +523,8 @@ const ChatInterface = () => {
             sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionRecord.id });
             await handleSessionSelect(sessionRecord.id);
           } else {
-            throw new Error("Failed to get or create a session.");
+            // Fallback if truly failed
+            throw new Error("Failed to get session");
           }
 
         } catch (err) {
@@ -512,10 +533,18 @@ const ChatInterface = () => {
         } finally {
           chatDispatch({ type: 'SET_LOADING', payload: false });
         }
-      } else {
-        sessionDispatch({ type: 'SET_SESSION', payload: null });
-        sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: null });
-        chatDispatch({ type: 'SET_MESSAGES', payload: [] });
+      }
+      // Logic for Guest
+      else {
+        try {
+          chatDispatch({ type: 'SET_LOADING', payload: true });
+          // Guest sessions are ephemeral - auto-create one for smoother UX
+          await handleNewChat();
+        } catch (err) {
+          console.error("Guest init error", err);
+        } finally {
+          chatDispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     };
 
