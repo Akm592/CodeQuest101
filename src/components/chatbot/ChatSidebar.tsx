@@ -201,10 +201,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         className={`fixed inset-0 bg-black/30 z-30 transition-opacity lg:hidden ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={handleToggleExpanded}
       />
-      
+
       <button
         onClick={handleToggleExpanded}
-        className={`fixed left-3 top-4 z-40 rounded-full p-2 shadow-lg transition-all duration-300 ease-out
+        className={`fixed left-2 top-3 z-40 rounded-full p-2.5 shadow-lg transition-all duration-300 ease-out
           bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 active:scale-95
           focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
           lg:hidden ${isExpanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
@@ -227,73 +227,73 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         aria-expanded={isExpanded}
       >
         <div className="flex-1 flex flex-col min-h-0">
-            <header className="p-5 flex-shrink-0 flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
-                <span>Conversations</span>
-                {sessions.length > 0 && (
-                  <span className="ml-2 px-2 py-1 text-xs bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full font-medium">
-                    {sessions.length}
-                  </span>
-                )}
-              </h2>
-              <button
-                onClick={handleToggleExpanded}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 
+          <header className="p-5 flex-shrink-0 flex justify-between items-center">
+            <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
+              <span>Conversations</span>
+              {sessions.length > 0 && (
+                <span className="ml-2 px-2 py-1 text-xs bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full font-medium">
+                  {sessions.length}
+                </span>
+              )}
+            </h2>
+            <button
+              onClick={handleToggleExpanded}
+              className="rounded-full p-2 text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 
                          transition-all duration-200 hover:scale-110 active:scale-95 lg:hidden
                          focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                aria-label="Hide sidebar"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            </header>
+              aria-label="Hide sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </header>
 
-            <div className="flex-grow px-3 pb-3 pt-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent">
-              {sortedSessions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-4 text-gray-500 dark:text-gray-400 animate-fade-in">
-                  <div className="mb-4 p-3 rounded-full bg-gray-100 dark:bg-gray-800/50">
-                    <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">No Conversations Yet</p>
-                  <p className="text-xs opacity-75">Start a new conversation below</p>
+          <div className="flex-grow px-3 pb-3 pt-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent">
+            {sortedSessions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center p-4 text-gray-500 dark:text-gray-400 animate-fade-in">
+                <div className="mb-4 p-3 rounded-full bg-gray-100 dark:bg-gray-800/50">
+                  <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600" />
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {sortedSessions.map((session, index) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                      index={index}
-                      isSelected={selectedSessionId === session.id}
-                      onSelect={handleSessionSelect}
-                      onDelete={handleDeleteSession}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+                <p className="text-sm font-medium mb-1">No Conversations Yet</p>
+                <p className="text-xs opacity-75">Start a new conversation below</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sortedSessions.map((session, index) => (
+                  <SessionItem
+                    key={session.id}
+                    session={session}
+                    index={index}
+                    isSelected={selectedSessionId === session.id}
+                    onSelect={handleSessionSelect}
+                    onDelete={handleDeleteSession}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-            <footer className="p-3 mt-auto flex-shrink-0">
-              <button
-                onClick={handleCreateSession}
-                disabled={isCreatingSession}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
+          <footer className="p-3 mt-auto flex-shrink-0">
+            <button
+              onClick={handleCreateSession}
+              disabled={isCreatingSession}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
                          text-white rounded-xl p-3 flex items-center justify-center space-x-2
                          hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700
                          focus:outline-none focus:ring-2 focus:ring-blue-400/50 dark:focus:ring-blue-500/50
                          shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]
                          disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-                aria-label="Create new conversation"
-              >
-                {isCreatingSession ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                <span className="font-medium">
-                  {isCreatingSession ? "Creating..." : "New Conversation"}
-                </span>
-              </button>
-            </footer>
+              aria-label="Create new conversation"
+            >
+              {isCreatingSession ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              <span className="font-medium">
+                {isCreatingSession ? "Creating..." : "New Conversation"}
+              </span>
+            </button>
+          </footer>
         </div>
       </aside>
     </>

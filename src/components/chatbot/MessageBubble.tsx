@@ -26,8 +26,8 @@ interface MessageBubbleProps {
 
 // Enhanced typewriter hook with complex content detection
 const useTypewriter = (
-  text: string, 
-  speed: number = 20, 
+  text: string,
+  speed: number = 20,
   isStreaming: boolean = false,
   onComplete?: () => void,
   skipTypewriter: boolean = false
@@ -128,17 +128,17 @@ const TypewriterMarkdown: React.FC<{
 };
 
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ 
-  message, 
+const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
   streamingText,
-  onStreamComplete 
+  onStreamComplete
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   void isTypingComplete;
-  
-  const resolvedTheme = typeof window !== 'undefined' && 
+
+  const resolvedTheme = typeof window !== 'undefined' &&
     document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
   const isUserMessage = message.sender === "user";
@@ -159,13 +159,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const tableCount = (currentText.match(/\|.*\|/g) || []).length;
 
     return codeBlockCount >= 1 ||
-           headerCount > 2 ||
-           listCount > 4 ||
-           orderedListCount > 3 ||
-           wordCount > 300 ||
-           lineCount > 15 ||
-           boldCount > 3 ||
-           tableCount > 0;
+      headerCount > 2 ||
+      listCount > 4 ||
+      orderedListCount > 3 ||
+      wordCount > 300 ||
+      lineCount > 15 ||
+      boldCount > 3 ||
+      tableCount > 0;
   }, [currentText]);
 
   // Enhanced Code Block Component with mobile responsiveness
@@ -183,11 +183,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     if (inline) {
       return (
         <code
-          className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-words ${
-            isUserMessage
+          className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-all ${isUserMessage
               ? 'bg-white/20 text-blue-100 dark:bg-white/10 dark:text-blue-200'
               : 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border border-blue-200/50 dark:border-blue-700/50'
-          }`}
+            }`}
           {...props}
         >
           {children}
@@ -203,11 +202,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </span>
           <button
             onClick={handleCopy}
-            className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${
-              codeCopied
+            className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${codeCopied
                 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
-            }`}
+              }`}
             aria-label={codeCopied ? "Copied" : "Copy code"}
           >
             {codeCopied ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
@@ -220,9 +218,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             PreTag="div"
             customStyle={{
               margin: 0,
-              padding: '0.75rem 1rem',
+              padding: '0.75rem 0.75rem',
               background: 'transparent',
-              fontSize: '0.75rem',
+              fontSize: '0.7rem',
               lineHeight: '1.4',
               minWidth: '100%'
             }}
@@ -276,11 +274,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <li className="pl-1 leading-5 sm:leading-6" {...props} />
     ),
     a: ({ node, ...props }) => (
-      <a 
-        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium transition-colors duration-200 break-words" 
-        target="_blank" 
-        rel="noopener noreferrer" 
-        {...props} 
+      <a
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium transition-colors duration-200 break-words"
+        target="_blank"
+        rel="noopener noreferrer"
+        {...props}
       />
     ),
     strong: ({ node, ...props }) => (
@@ -313,17 +311,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   // Mobile-responsive bubble sizing
   const bubbleClassName = useMemo(() => {
-    const baseStyle = `p-3 sm:p-4 md:p-5 rounded-2xl shadow-lg border border-white/10 dark:border-white/5 backdrop-blur-lg transition-all duration-300`;
-    
+    const baseStyle = `p-3 sm:p-4 md:p-5 rounded-2xl shadow-lg border border-white/10 dark:border-white/5 backdrop-blur-lg transition-all duration-300 break-words`;
+
     // More aggressive mobile sizing - uses viewport width with proper margins
-    const sizeClass = isComplexContent 
-      ? 'max-w-[calc(100vw-2rem)] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl' 
+    const sizeClass = isComplexContent
+      ? 'max-w-[calc(100vw-2rem)] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl'
       : 'max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-xl lg:max-w-2xl';
-    
-    const styleClass = isUserMessage 
+
+    const styleClass = isUserMessage
       ? 'bg-blue-500/50 text-white dark:bg-blue-600/60 dark:text-gray-50 ml-auto rounded-br-none'
       : 'bg-white/70 text-gray-800 dark:bg-gray-800/70 dark:text-gray-100 mr-auto rounded-bl-none';
-    
+
     return `${baseStyle} ${sizeClass} ${styleClass}`;
   }, [isUserMessage, isComplexContent]);
 
@@ -338,66 +336,66 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   // Content rendering logic
-const renderContent = () => {
-  if (message.isVisualization && message.visualizationData) {
-    return (
-      <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
-        <div className="w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
-          <AlgorithmVisualizer visualizationData={message.visualizationData} />
-        </div>
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
-          <Maximize2 className="w-6 h-6 sm:w-8 sm:h-8 text-white/80" />
-        </div>
-      </div>
-    );
-  }
-
-  if (currentText) {
-    // For streaming messages, always display immediately
-    if (isStreaming) {
+  const renderContent = () => {
+    if (message.isVisualization && message.visualizationData) {
       return (
-        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={memoizedComponents}
-          >
-            {currentText}
-          </ReactMarkdown>
-          {/* Show typing cursor during streaming */}
-          <span className="inline-block w-0.5 h-3 sm:h-4 bg-current ml-0.5 animate-pulse" />
+        <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
+          <div className="w-full h-40 sm:h-56 md:h-72 lg:h-80 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
+            <AlgorithmVisualizer visualizationData={message.visualizationData} />
+          </div>
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
+            <Maximize2 className="w-6 h-6 sm:w-8 sm:h-8 text-white/80" />
+          </div>
         </div>
       );
     }
-    
-    // For user messages or complex content, display immediately
-    if (isUserMessage || isComplexContent) {
-      return (
-        <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={memoizedComponents}
-          >
-            {currentText}
-          </ReactMarkdown>
-        </div>
-      );
-    } else {
-      // Use typewriter effect only for simple, non-streaming bot messages
-      return (
-        <TypewriterMarkdown
-          content={currentText}
-          components={memoizedComponents}
-          isStreaming={false}
-          speed={15}
-          onComplete={handleTypingComplete}
-          skipTypewriter={false}
-        />
-      );
-    }
-  }
 
-  return <span className="italic text-gray-400 dark:text-gray-500 text-sm">(Empty message)</span>;
-};
+    if (currentText) {
+      // For streaming messages, always display immediately
+      if (isStreaming) {
+        return (
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={memoizedComponents}
+            >
+              {currentText}
+            </ReactMarkdown>
+            {/* Show typing cursor during streaming */}
+            <span className="inline-block w-0.5 h-3 sm:h-4 bg-current ml-0.5 animate-pulse" />
+          </div>
+        );
+      }
+
+      // For user messages or complex content, display immediately
+      if (isUserMessage || isComplexContent) {
+        return (
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={memoizedComponents}
+            >
+              {currentText}
+            </ReactMarkdown>
+          </div>
+        );
+      } else {
+        // Use typewriter effect only for simple, non-streaming bot messages
+        return (
+          <TypewriterMarkdown
+            content={currentText}
+            components={memoizedComponents}
+            isStreaming={false}
+            speed={15}
+            onComplete={handleTypingComplete}
+            skipTypewriter={false}
+          />
+        );
+      }
+    }
+
+    return <span className="italic text-gray-400 dark:text-gray-500 text-sm">(Empty message)</span>;
+  };
 
 
   return (

@@ -584,7 +584,7 @@ const ChatInterface = () => {
       />
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden p-2 sm:p-3">
-        <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 rounded-t-2xl px-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
+        <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 rounded-t-2xl pl-12 lg:pl-4 pr-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
           <div className="flex items-center space-x-3">
             <h1 className="text-lg font-medium text-gray-800 dark:text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-blue-500 dark:text-blue-400" />
@@ -669,7 +669,7 @@ const ChatInterface = () => {
             </div>
 
             <div className="border-t border-white/10 dark:border-white/5 p-3 sm:p-4 mt-auto flex-shrink-0">
-              <div className="w-full flex items-end space-x-2 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-full shadow-inner px-2 sm:px-4 py-2 sm:py-3">
+              <div className="w-full flex items-end space-x-2 sm:space-x-3 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-2xl sm:rounded-full shadow-inner px-3 sm:px-4 py-2.5 sm:py-3">
                 <textarea
                   ref={(el) => {
                     if (el) {
