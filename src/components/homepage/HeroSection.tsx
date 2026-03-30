@@ -8,9 +8,9 @@ export const HeroSection: React.FC = () => {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] animate-pulse delay-1000" />
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-secondary/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.05]" />
       </div>
 
       <div className="container mx-auto px-4 z-10 relative">
@@ -19,20 +19,20 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-teal-400 mb-8 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-primary mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.1)]"
           >
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">The Future of Coding Education</span>
+            <Sparkles className="w-4 h-4 animate-spin-slow" />
+            <span className="text-xs font-bold uppercase tracking-widest">The Future of Coding Education</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-5xl sm:text-7xl font-bold tracking-tight mb-8"
+            className="text-6xl sm:text-8xl font-black tracking-tighter mb-8 leading-tight"
           >
             Visualize Code, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-blue-400 to-purple-400 text-glow">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-secondary text-glow drop-shadow-[0_0_30px_rgba(6,182,212,0.3)]">
               Master Concepts
             </span>
           </motion.h1>
@@ -41,34 +41,34 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed font-medium"
           >
-            CodeQuest101 transforms abstract algorithms into immersive visualizations.
-            Watch your code come to life in real-time.
+            CodeQuest101 transforms abstract algorithms into immersive, high-fidelity visualizations.
+            Accelerate your learning path with our interactive playground.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
             <Button
               size="lg"
-              className="w-full sm:w-auto bg-teal-500 hover:bg-teal-400 text-black font-semibold h-12 px-8 rounded-full shadow-[0_0_20px_rgba(45,212,191,0.3)] hover:shadow-[0_0_30px_rgba(45,212,191,0.5)] transition-all duration-300 group"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-black font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-all duration-500 group"
               onClick={() => window.location.href = '/chat'}
             >
               Start Learning Now
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="lg"
-              className="w-full sm:w-auto h-12 px-8 rounded-full border border-white/10 hover:bg-white/5 hover:text-white transition-all duration-300"
+              className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 hover:bg-white/5 hover:border-primary/50 text-white transition-all duration-300 backdrop-blur-sm"
               onClick={() => document.getElementById('visualizations')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              <Code className="w-4 h-4 mr-2" />
+              <Code className="w-5 h-5 mr-2" />
               Explore Library
             </Button>
           </motion.div>

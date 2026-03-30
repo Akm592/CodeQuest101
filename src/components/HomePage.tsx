@@ -1,5 +1,5 @@
-// pages/HomePage.tsx (or wherever your original file is)
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 // Import the section components
 import { HeroSection } from '../components/homepage/HeroSection';
@@ -12,13 +12,13 @@ import { CallToActionSection } from '../components/homepage/CallToActionSection'
 import Header from "../components/Header"; // Adjust path if needed
 import Footer from "../components/Footer"; // Adjust path if needed
 
-interface HomePageProps {
-  // This prop likely needs to be passed down from a higher-level component
-  // that handles routing or main application state.
-  onSelectVisualization: (key: string) => void;
-}
+const HomePage: React.FC = () => {
+  const navigate = useNavigate();
 
-const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
+  const handleSelectVisualization = (key: string) => {
+    navigate(`/visualize/${key}`);
+  };
+
   return (
     // Apply base dark theme styles to the root container
     <div className="min-h-screen flex flex-col w-screen bg-gray-950">
@@ -29,7 +29,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectVisualization }) => {
         <HeroSection />
         <AiTutorSection />
         {/* Pass the handler down to the Visualization section */}
-        <VisualizationSection onSelectVisualization={onSelectVisualization} />
+        <VisualizationSection onSelectVisualization={handleSelectVisualization} />
         <AboutSection />
         <CallToActionSection />
         {/* Removed Contributors section as it was commented out */}

@@ -49,7 +49,7 @@ const NODE_RADIUS = 18;
 const VERTICAL_GAP = 75;
 const HORIZONTAL_FACTOR = 1.8; // Controls horizontal spread
 
-const BinaryTreeTraversalVisualizer = () => {
+const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
   const [traversalType, setTraversalType] = useState<TraversalType>("in-order");
   const [traversalSteps, setTraversalSteps] = useState<number[]>([]); // Stores node values in order
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);

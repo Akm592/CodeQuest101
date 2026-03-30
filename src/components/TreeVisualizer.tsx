@@ -19,7 +19,7 @@ import {
 
 type TraversalType = "in-order" | "pre-order" | "post-order";
 
-const TreeVisualizer: React.FC = () => {
+const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
   const [treeType, setTreeType] = useState<TreeType>("binary");
   const [root, setRoot] = useState<TreeNodeType | null>(null);
   const [highlightedNode, setHighlightedNode] = useState<number | null>(null);

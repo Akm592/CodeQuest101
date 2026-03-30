@@ -15,7 +15,7 @@ const MAX_OUTPUTS = 8;
 const NODE_RADIUS = 8; // Smaller radius for potentially more nodes
 const ANIMATION_DURATION = 400; // Faster animation
 
-const NeuralNetworkVisualizer: React.FC = () => {
+const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoverExplanation, setHoverExplanation] = useState("");
     const [isAnimating, setIsAnimating] = useState(false);

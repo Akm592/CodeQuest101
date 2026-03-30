@@ -5,7 +5,7 @@ import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
 import { PlayCircle, PauseCircle, RotateCcw, ArrowRight } from "lucide-react";
 
-const RotateImageVisualizer = () => {
+const RotateImageVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
   const [matrix, setMatrix] = useState([
     [1, 2, 3],
     [4, 5, 6],

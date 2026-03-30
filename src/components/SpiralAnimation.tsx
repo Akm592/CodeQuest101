@@ -11,7 +11,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 1500;
 const DEFAULT_SPEED_MS = 500;
 
-const SpiralMatrixAnimation = () => {
+const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => {
   // Convert the default flat matrix into a square matrix
   const defaultDimension = Math.sqrt(DEFAULT_FLAT_MATRIX.length);
   const DEFAULT_MATRIX = [];

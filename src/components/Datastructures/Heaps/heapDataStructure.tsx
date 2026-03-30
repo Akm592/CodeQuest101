@@ -3,7 +3,7 @@ import HeapVisualization from "./HeapVisualization"; // Assuming this component 
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"; // Using Card for structure
 import { Eye, EyeOff } from 'lucide-react'; // Icons for toggle button
 
-const HeapDataStructure = () => {
+const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
   const [showExplanations, setShowExplanations] = useState(true);
   const [activeTab, setActiveTab] = useState('insertion');
 
