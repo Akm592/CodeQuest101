@@ -50,7 +50,7 @@ const calculateNodePositions = (nodes: NodeId[], svgWidth: number, svgHeight: nu
 
 
 // --- Main Component ---
-const GraphTraversalVisualizer: React.FC = () => {
+const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
     const [isClient, setIsClient] = useState(false);
     const [graph, setGraph] = useState<Graph>(initialGraph);
     const [algorithmType, setAlgorithmType] = useState<AlgorithmType>("bfs");

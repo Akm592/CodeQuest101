@@ -33,7 +33,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 1500;
 const DEFAULT_SPEED_MS = 750;
 
-const FloydsAlgorithmVisualizer: React.FC = () => {
+const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [tortoise, setTortoise] = useState<number | null>(null); // Index of tortoise
   const [hare, setHare] = useState<number | null>(null);       // Index of hare

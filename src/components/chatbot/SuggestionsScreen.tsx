@@ -1,23 +1,22 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Sparkles, 
-
-  ChevronDown, 
-  ChevronUp, 
+import {
+  Sparkles,
   Info,
   Code,
   BarChart3,
   GitBranch,
   Layers,
   Hash,
-  Grid3X3
+  Grid3X3,
+  ArrowRight
 } from "lucide-react";
 
 interface SuggestionCategory {
   title: string;
   icon: React.ReactNode;
   color: string;
+  gradient: string;
   suggestions: SuggestionItem[];
 }
 
@@ -28,21 +27,21 @@ interface SuggestionItem {
   complexity?: string;
 }
 
-const SuggestionsScreen = React.memo(({ 
+const SuggestionsScreen = React.memo(({
   onSuggestionClick,
-  isLoading = false 
-}: { 
+  isLoading = false
+}: {
   onSuggestionClick: (suggestion: string) => void;
   isLoading?: boolean;
 }) => {
-  const [expandedCategory, setExpandedCategory] = useState<string | null>("Array Algorithms");
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const suggestionCategories: SuggestionCategory[] = [
     {
       title: "Array Algorithms",
-      icon: <BarChart3 className="w-5 h-5" />,
-      color: "from-blue-500 to-cyan-500",
+      icon: <BarChart3 className="w-6 h-6" />,
+      color: "text-blue-400",
+      gradient: "from-blue-500/20 to-cyan-500/20",
       suggestions: [
         {
           text: "Two Sum problem with array [2, 7, 11, 15] and target 9",
@@ -72,8 +71,9 @@ const SuggestionsScreen = React.memo(({
     },
     {
       title: "Sorting Algorithms",
-      icon: <Layers className="w-5 h-5" />,
-      color: "from-purple-500 to-pink-500",
+      icon: <Layers className="w-6 h-6" />,
+      color: "text-purple-400",
+      gradient: "from-purple-500/20 to-pink-500/20",
       suggestions: [
         {
           text: "Bubble sort visualization with array [64, 34, 25, 12, 22, 11, 90]",
@@ -94,8 +94,9 @@ const SuggestionsScreen = React.memo(({
     },
     {
       title: "Graph Algorithms",
-      icon: <GitBranch className="w-5 h-5" />,
-      color: "from-green-500 to-emerald-500",
+      icon: <GitBranch className="w-6 h-6" />,
+      color: "text-green-400",
+      gradient: "from-green-500/20 to-emerald-500/20",
       suggestions: [
         {
           text: "BFS traversal starting from node A in graph with edges [(A,B), (A,C), (B,D), (C,D)]",
@@ -116,8 +117,9 @@ const SuggestionsScreen = React.memo(({
     },
     {
       title: "Tree Algorithms",
-      icon: <Code className="w-5 h-5" />,
-      color: "from-orange-500 to-red-500",
+      icon: <Code className="w-6 h-6" />,
+      color: "text-orange-400",
+      gradient: "from-orange-500/20 to-red-500/20",
       suggestions: [
         {
           text: "Binary tree inorder traversal on tree [1, null, 2, 3]",
@@ -134,8 +136,9 @@ const SuggestionsScreen = React.memo(({
     },
     {
       title: "Data Structures",
-      icon: <Hash className="w-5 h-5" />,
-      color: "from-teal-500 to-blue-500",
+      icon: <Hash className="w-6 h-6" />,
+      color: "text-teal-400",
+      gradient: "from-teal-500/20 to-blue-500/20",
       suggestions: [
         {
           text: "Stack operations: push(10), push(20), push(30), pop(), pop()",
@@ -156,8 +159,9 @@ const SuggestionsScreen = React.memo(({
     },
     {
       title: "Matrix Algorithms",
-      icon: <Grid3X3 className="w-5 h-5" />,
-      color: "from-indigo-500 to-purple-500",
+      icon: <Grid3X3 className="w-6 h-6" />,
+      color: "text-indigo-400",
+      gradient: "from-indigo-500/20 to-purple-500/20",
       suggestions: [
         {
           text: "Search target 8 in sorted matrix [[1,4,7,11],[2,5,8,12],[3,6,9,16]]",
@@ -174,167 +178,131 @@ const SuggestionsScreen = React.memo(({
     }
   ];
 
-  const handleSuggestionClick = (suggestion: SuggestionItem) => {
-    if (!isLoading) {
-      onSuggestionClick(suggestion.text);
-    }
-  };
-
-  const toggleCategory = (categoryTitle: string) => {
-    setExpandedCategory(expandedCategory === categoryTitle ? null : categoryTitle);
-  };
+  const categories = React.useMemo(() => suggestionCategories, []);
+  const activeCategory = React.useMemo(() =>
+    categories.find(c => c.title === selectedCategory),
+    [selectedCategory, categories]);
 
   return (
-    <div className="flex flex-col items-center justify-start h-full text-gray-800 dark:text-gray-100 p-4 sm:p-6 overflow-y-auto">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="text-center mb-6 sm:mb-8"
-      >
-        <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-blue-500 dark:text-blue-400 mb-4" />
-        <h2 className="text-3xl sm:text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
-          Algorithm Visualizer
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-          Select an algorithm to see step-by-step visualization
-        </p>
-      </motion.div>
-
-      <div className="w-full max-w-4xl">
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-700 dark:text-blue-300">
-              <p className="font-medium mb-1">💡 Tips for best results:</p>
-              <ul className="space-y-1 text-xs">
-                <li>• Click any suggestion to see step-by-step algorithm execution</li>
-                <li>• Examples use real LeetCode problem data for educational value</li>
-                <li>• Hover over suggestions to see complexity analysis</li>
-                <li>• Each visualization shows decision-making process at every step</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {suggestionCategories.map((category, categoryIndex) => (
-            <motion.div
-              key={category.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: categoryIndex * 0.1 }}
-              className="bg-white/50 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-xl overflow-hidden"
-            >
-              <button
-                onClick={() => toggleCategory(category.title)}
-                className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-white/20 dark:hover:bg-black/20 transition-colors duration-200"
+    <div className="flex flex-col items-center justify-center h-full w-full p-6 text-gray-900 dark:text-white overflow-y-auto">
+      <AnimatePresence mode="wait">
+        {!selectedCategory ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-5xl"
+          >
+            <div className="text-center mb-10">
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="inline-flex items-center justify-center p-3 bg-teal-500/10 rounded-full mb-4 border border-teal-500/20 shadow-[0_0_20px_rgba(20,184,166,0.2)]"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-gradient-to-r ${category.color} text-white`}>
-                    {category.icon}
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300">
+                <Sparkles className="w-8 h-8 text-teal-500 dark:text-teal-400" />
+              </motion.div>
+              <h2 className="text-4xl font-bold mb-3 tracking-tight text-gray-900 dark:text-white">
+                Algorithm <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-600 dark:from-teal-400 dark:to-blue-500">Visualizer</span>
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto text-lg">
+                Choose a category to explore interactive visualizations and master complex concepts.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {categories.map((category, index) => (
+                <motion.button
+                  key={category.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedCategory(category.title)}
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F1117] border border-gray-200 dark:border-white/5 hover:border-teal-500/50 p-6 text-left transition-all duration-300 hover:shadow-[0_0_20px_rgba(20,184,166,0.15)] hover:-translate-y-1"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+
+                  <div className="relative z-10">
+                    <div className={`p-3 rounded-xl bg-gray-100 dark:bg-white/5 w-fit mb-4 ${category.color} group-hover:scale-110 transition-transform duration-300`}>
+                      {category.icon}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-50 transition-colors">
                       {category.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {category.suggestions.length} algorithm{category.suggestions.length !== 1 ? 's' : ''}
+                    <p className="text-sm text-gray-500 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 mb-4 transition-colors">
+                      {category.suggestions.length} Visualizations
                     </p>
-                  </div>
-                </div>
-                {expandedCategory === category.title ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                )}
-              </button>
 
-              <AnimatePresence>
-                {expandedCategory === category.title && (
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-4 sm:p-5 pt-0 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-                      {category.suggestions.map((suggestion, index) => (
-                        <motion.div
-                          key={index}
-                          className="relative"
-                          onMouseEnter={() => setShowTooltip(`${category.title}-${index}`)}
-                          onMouseLeave={() => setShowTooltip(null)}
-                        >
-                          <motion.button
-                            whileHover={{ scale: 1.02, y: -1 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                            className={`w-full bg-white/60 dark:bg-black/40 backdrop-blur-md border border-white/30 dark:border-white/20
-                                     text-gray-800 dark:text-gray-200 rounded-lg p-4 text-left shadow-md hover:shadow-lg
-                                     hover:bg-white/70 dark:hover:bg-black/50 transition-all duration-200 
-                                     focus:outline-none focus:ring-2 focus:ring-blue-400/50 relative
-                                     ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            disabled={isLoading}
-                          >
-                            <div className="space-y-2">
-                              <p className="font-medium text-sm sm:text-base leading-snug">
-                                {suggestion.text}
-                              </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                {suggestion.description}
-                              </p>
-                              {suggestion.example && (
-                                <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                  📝 {suggestion.example}
-                                </div>
-                              )}
-                            </div>
-                            
-                            {isLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-lg">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 dark:border-blue-400"></div>
-                              </div>
-                            )}
-                          </motion.button>
-
-                          {/* Tooltip */}
-                          <AnimatePresence>
-                            {showTooltip === `${category.title}-${index}` && suggestion.complexity && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                transition={{ duration: 0.2 }}
-                                className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-lg whitespace-nowrap"
-                              >
-                                <div className="font-medium">⚡ Complexity</div>
-                                <div>{suggestion.complexity}</div>
-                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      ))}
+                    <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-600 group-hover:text-teal-500 dark:group-hover:text-teal-400 uppercase tracking-wider transition-colors">
+                      Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="w-full max-w-4xl"
+          >
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="mb-8 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group"
+            >
+              <div className="p-1 rounded-full bg-gray-200 dark:bg-white/5 group-hover:bg-gray-300 dark:group-hover:bg-white/10 mr-2 border border-gray-200 dark:border-white/5 group-hover:border-gray-300 dark:group-hover:border-white/20 transition-all">
+                <ArrowRight className="w-4 h-4 rotate-180" />
+              </div>
+              Back to Categories
+            </button>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400"
-        >
-          <p>💡 Each suggestion uses real example data for authentic algorithm visualization</p>
-        </motion.div>
-      </div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className={`p-3 rounded-xl bg-gradient-to-br ${activeCategory?.gradient} border border-gray-200 dark:border-white/10`}>
+                {activeCategory?.icon}
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{activeCategory?.title}</h2>
+                <p className="text-gray-600 dark:text-gray-400">Select a visualization to begin</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeCategory?.suggestions.map((suggestion, index) => (
+                <motion.button
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => !isLoading && onSuggestionClick(suggestion.text)}
+                  disabled={isLoading}
+                  className="text-left p-5 rounded-xl bg-white dark:bg-[#0F1117]/80 border border-gray-200 dark:border-white/5 hover:border-teal-500/30 hover:bg-gray-50 dark:hover:bg-[#13161f] transition-all group relative overflow-hidden shadow-sm hover:shadow-md"
+                >
+                  <div className="relative z-10">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 mb-2 transition-colors pr-6">
+                      {suggestion.text}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-500 group-hover:text-gray-800 dark:group-hover:text-gray-400 transition-colors mb-3 line-clamp-2">
+                      {suggestion.description}
+                    </p>
+
+                    {suggestion.complexity && (
+                      <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-xs text-gray-500 dark:text-gray-400 group-hover:border-teal-500/20 group-hover:text-teal-600 dark:group-hover:text-teal-500/80 transition-colors">
+                        <Info className="w-3 h-3 mr-1.5" />
+                        {suggestion.complexity}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
+                    <ArrowRight className="w-5 h-5 text-teal-500" />
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });

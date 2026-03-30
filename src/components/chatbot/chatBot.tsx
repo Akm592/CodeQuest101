@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, Trash2 } from "lucide-react";
+import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
 import ChatSidebar from "./ChatSidebar";
 import SettingsModal from "./SettingsModal";
+import DeleteSessionModal from "./DeleteSessionModal";
 import { supabase } from "../../lib/supabaseClient";
 import SuggestionsScreen from "./SuggestionsScreen";
 
@@ -157,6 +158,8 @@ const useAPI = () => {
 
   return api;
 };
+
+// Guest sessions are ephemeral - no localStorage persistence
 
 // --- SuggestionsScreen Component ---
 
@@ -385,7 +388,22 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
       chatDispatch({ type: 'SET_LOADING', payload: true });
 
-      const newSessionRecord = await createChatSession();
+      let newSessionRecord;
+
+      if (user) {
+        newSessionRecord = await createChatSession();
+      } else {
+        // Guest mode: Generate UUID locally (ephemeral, no DB persistence)
+        const sessionId = crypto.randomUUID();
+        newSessionRecord = {
+          id: sessionId,
+          session_name: "Guest Chat",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        // For guests, just keep the single active session in state (ephemeral)
+        sessionDispatch({ type: 'SET_SESSIONS', payload: [newSessionRecord] });
+      }
 
       if (!newSessionRecord?.id) {
         throw new Error("Failed to create session record");
@@ -395,7 +413,7 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: newSessionRecord.id });
       chatDispatch({ type: 'CLEAR_CHAT' });
 
-      // Refresh sessions list
+      // Refresh sessions list (User only)
       if (user) {
         const { data: updatedSessions, error: fetchError } = await supabase
           .from("chat_sessions")
@@ -474,6 +492,8 @@ const ChatInterface = () => {
           chatDispatch({ type: 'SET_ERROR', payload: "Failed to load chat sessions." });
         }
       } else {
+        // Guest mode: Sessions are ephemeral, start with empty list
+        // A session will be created when user initiates chat
         sessionDispatch({ type: 'SET_SESSIONS', payload: [] });
       }
     };
@@ -482,6 +502,7 @@ const ChatInterface = () => {
 
   useEffect(() => {
     const initChatSession = async () => {
+      // Logic for User
       if (user) {
         try {
           chatDispatch({ type: 'SET_LOADING', payload: true });
@@ -503,7 +524,8 @@ const ChatInterface = () => {
             sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionRecord.id });
             await handleSessionSelect(sessionRecord.id);
           } else {
-            throw new Error("Failed to get or create a session.");
+            // Fallback if truly failed
+            throw new Error("Failed to get session");
           }
 
         } catch (err) {
@@ -512,10 +534,18 @@ const ChatInterface = () => {
         } finally {
           chatDispatch({ type: 'SET_LOADING', payload: false });
         }
-      } else {
-        sessionDispatch({ type: 'SET_SESSION', payload: null });
-        sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: null });
-        chatDispatch({ type: 'SET_MESSAGES', payload: [] });
+      }
+      // Logic for Guest
+      else {
+        try {
+          chatDispatch({ type: 'SET_LOADING', payload: true });
+          // Guest sessions are ephemeral - auto-create one for smoother UX
+          await handleNewChat();
+        } catch (err) {
+          console.error("Guest init error", err);
+        } finally {
+          chatDispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     };
 
@@ -541,7 +571,11 @@ const ChatInterface = () => {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden bg-gradient-to-br from-gray-100 via-blue-50 to-purple-100 dark:from-gray-900 dark:via-indigo-950 dark:to-gray-800">
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-gray-50 dark:bg-[#050a14] relative transition-colors duration-300">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-500/10 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
       <ChatSidebar
         sessions={sessionState.sessions}
         onSessionSelect={handleSessionSelect}
@@ -554,49 +588,51 @@ const ChatInterface = () => {
         isCreatingSession={sessionState.isCreatingSession}
       />
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden p-2 sm:p-3">
-        <header className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/10 dark:border-white/5 rounded-t-2xl px-4 py-3 shadow-md flex justify-between items-center flex-shrink-0">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+
+        {/* Floating Header */}
+        <header className="absolute top-4 left-4 right-4 z-20 mx-auto max-w-5xl bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex justify-between items-center shadow-lg">
           <div className="flex items-center space-x-3">
-            <h1 className="text-lg font-medium text-gray-800 dark:text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-              AI Assistant
+            <div className="p-2 rounded-full bg-teal-500/10 border border-teal-500/20">
+              <Sparkles className="w-4 h-4 text-teal-400" />
+            </div>
+            <h1 className="text-sm font-semibold text-white tracking-wide">
+              AI ARCHITECT <span className="text-white/40 font-normal ml-2">| v2.0</span>
             </h1>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-gray-400">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span>System Online</span>
+            </div>
+
             <button
               onClick={handleNewChat}
               disabled={sessionState.isCreatingSession}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
-                        text-white rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 flex items-center justify-center space-x-1
-                        hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700
-                        focus:outline-none focus:ring-2 focus:ring-blue-400/50 dark:focus:ring-blue-500/50
-                        shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-              aria-label="New Chat"
-              title="New Conversation"
+              className="group p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-all disabled:opacity-50"
+              title="New Chat"
             >
               {sessionState.isCreatingSession ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <MessageSquarePlus className="w-5 h-5" />
+                <MessageSquarePlus className="w-5 h-5 group-hover:text-teal-400 transition-colors" />
               )}
-              <span className="hidden sm:inline font-medium text-sm">New Chat</span>
             </button>
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="p-2 rounded-lg sm:rounded-xl text-gray-600 dark:text-gray-400 hover:bg-white/20 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-colors duration-200"
-              aria-label="Settings"
+              className="group p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-all"
               title="Settings"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5 group-hover:text-teal-400 transition-colors" />
             </button>
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden flex justify-center items-center">
-          <div className="bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border-x border-b border-white/10 dark:border-white/5 rounded-b-2xl shadow-xl flex flex-col h-full w-full min-h-0">
+        <main className="flex-1 overflow-hidden flex justify-center items-center pt-20 pb-4 px-4">
+          <div className="flex flex-col h-full w-full max-w-5xl mx-auto">
             <div
               ref={chatWindowRef}
-              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-gray-500/60 dark:hover:scrollbar-thumb-gray-500/60"
+              className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-teal-500/50"
             >
               <AnimatePresence mode="wait">
                 {chatState.isLoading && chatState.messages.length === 0 ? (
@@ -607,7 +643,12 @@ const ChatInterface = () => {
                     exit={{ opacity: 0 }}
                     className="flex items-center justify-center h-full"
                   >
-                    <Loader2 className="w-10 h-10 animate-spin text-blue-500 dark:text-blue-400" />
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-full border-4 border-teal-500/20 border-t-teal-500 animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-teal-500 animate-pulse" />
+                      </div>
+                    </div>
                   </motion.div>
                 ) : !chatState.isLoading && chatState.messages.length === 0 ? (
                   <motion.div
@@ -615,7 +656,7 @@ const ChatInterface = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="h-full"
+                    className="h-full flex items-center justify-center"
                   >
                     <SuggestionsScreen onSuggestionClick={handleSendMessage} />
                   </motion.div>
@@ -624,7 +665,7 @@ const ChatInterface = () => {
                     key="chat"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="h-full"
+                    className="flex flex-col space-y-6 pb-4" // Added padding bottom to avoid cut-off
                   >
                     <ChatWindow
                       messages={chatState.messages}
@@ -639,16 +680,17 @@ const ChatInterface = () => {
               </AnimatePresence>
             </div>
 
-            <div className="border-t border-white/10 dark:border-white/5 p-3 sm:p-4 mt-auto flex-shrink-0">
-              <div className="w-full flex items-end space-x-2 bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-full shadow-inner px-2 sm:px-4 py-2 sm:py-3">
+            {/* Floating Input Area */}
+            <div className="p-4 pt-2">
+              <div className="relative bg-[#0F1117]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl focus-within:border-teal-500/50 focus-within:ring-1 focus-within:ring-teal-500/50 transition-all duration-300">
                 <textarea
                   ref={(el) => {
                     if (el) {
                       el.style.height = "auto";
-                      const maxHeight = 120;
+                      const maxHeight = 150;
                       const scrollHeight = el.scrollHeight;
                       el.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
-                      el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+                      el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'; // Only show scroll if needed
                     }
                   }}
                   value={chatState.inputValue}
@@ -659,34 +701,33 @@ const ChatInterface = () => {
                       handleSendMessage();
                     }
                   }}
-                  placeholder="Send a message..."
+                  placeholder="Ask anything about code..."
                   rows={1}
-                  className="flex-1 bg-transparent focus:outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 resize-none scrollbar-thin ml-1"
+                  className="w-full bg-transparent text-gray-200 placeholder-gray-500 px-5 py-4 pr-14 focus:outline-none resize-none scrollbar-thin scrollbar-thumb-white/10 rounded-2xl min-h-[56px] text-base leading-relaxed"
                   disabled={chatState.isTyping || (!sessionState.session?.id)}
-                  style={{
-                    maxHeight: "120px",
-                    border: "none",
-                    boxShadow: "none"
-                  }}
                 />
-                <button
-                  onClick={() => handleSendMessage()}
-                  disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
-                  className={`bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
-                                text-white rounded-full p-2 sm:p-2.5 hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700 
-                                focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
-                                dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed 
-                                transition-all duration-200 ${chatState.inputValue.trim() ? 'opacity-100' : 'opacity-50'}`}
-                  aria-label="Send message"
-                >
-                  {chatState.isTyping ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
-                  )}
-                </button>
+
+                <div className="absolute bottom-2 right-2">
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
+                    className="p-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-black shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                  >
+                    {chatState.isTyping ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="text-center mt-3">
+                <p className="text-[10px] text-gray-600 uppercase tracking-widest font-medium">
+                  Powered by Advanced AI • Capable of Mistakes
+                </p>
               </div>
             </div>
+
           </div>
         </main>
 
@@ -696,14 +737,12 @@ const ChatInterface = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-              className="fixed top-5 left-1/2 -translate-x-1/2 w-auto max-w-md bg-red-100/80 dark:bg-red-900/80 backdrop-blur-sm text-red-700 dark:text-red-200 px-4 py-3 rounded-lg shadow-lg border border-red-300 dark:border-red-700 z-50 flex items-center justify-between space-x-4"
-              role="alert"
+              className="absolute top-20 left-1/2 -translate-x-1/2 w-auto max-w-md bg-red-500/10 backdrop-blur-md border border-red-500/50 text-red-200 px-4 py-3 rounded-lg shadow-xl z-50 flex items-center gap-3"
             >
               <span>{chatState.error}</span>
               <button
                 onClick={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
-                className="text-red-500 dark:text-red-300 hover:text-red-700 dark:hover:text-red-100 p-1 rounded-full hover:bg-red-200/50 dark:hover:bg-red-800/50"
-                aria-label="Close error message"
+                className="text-red-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -711,50 +750,11 @@ const ChatInterface = () => {
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
-          {showDeleteConfirm && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4"
-              onClick={() => setShowDeleteConfirm(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-white/10 p-6 rounded-xl shadow-2xl max-w-sm w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-center mb-4">
-                  <div className="bg-red-100 dark:bg-red-900/50 p-3 rounded-full">
-                    <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-center text-gray-800 dark:text-gray-100 mb-2">Delete Chat Session?</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                  Are you sure you want to permanently delete this chat? This action cannot be undone.
-                </p>
-                <div className="flex justify-center space-x-3">
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="px-5 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400/50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteSession}
-                    className="px-5 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <DeleteSessionModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDeleteSession}
+        />
 
         <AnimatePresence>
           {showSettingsModal && (

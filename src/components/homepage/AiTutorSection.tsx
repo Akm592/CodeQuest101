@@ -1,84 +1,138 @@
 import React from 'react';
-import { Button } from '../ui/button'; // Adjust path
-import { MessageCircle } from 'lucide-react';
+import { Button } from '../ui/button';
+import { MessageCircle, Terminal, Cpu, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const AiTutorSection: React.FC = () => {
-  const codeExample = `class Node:
-    def __init__(self, value):
-        self.value = value
-        self.left = self.right = None
-
-class BinarySearchTree:
-    def __init__(self):
-        self.root = None
-
-    def insert(self, value):
-        def _insert(node, value):
-            if not node:
-                return Node(value)
-            if value < node.value:
-                node.left = _insert(node.left, value)
-            else:
-                node.right = _insert(node.right, value)
-            return node
-
-        self.root = _insert(self.root, value)
-
-`; // Keep it concise for display
-
-  const navigateToChat = () => {
-    window.location.href = "/chat"; // Or use React Router's navigation
-  };
+  const codeSnippet = `// AI-Powered Analysis
+function optimizeAlgorithm(code) {
+  const complexity = analyze(code);
+  
+  if (complexity > O(n)) {
+    return suggestImprovements({
+      strategy: "Dynamic Programming",
+      confidence: 98.4%
+    });
+  }
+  return "Optimal Solution";
+}`;
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-12 lg:gap-16">
-        <div className="lg:w-1/2 text-center lg:text-left">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-5">
-            Your AI Coding Tutor is Here
-          </h2>
-          <p className="text-base sm:text-lg text-gray-400 mb-8 leading-relaxed">
-            Stuck on a coding problem? Our intelligent AI tutor provides
-            instant explanations, code examples, and personalized guidance
-            to help you learn faster and overcome challenges.
-          </p>
-          <Button
-            variant="outline" // Assuming 'outline' variant is styled for dark mode
-            size="lg"
-            className="flex items-center gap-2 border-teal-500 text-teal-400 hover:bg-teal-900/30 hover:text-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 mx-auto lg:mx-0" // Adjusted styling
-            onClick={navigateToChat}
-            aria-label="Try the AI Chatbot"
+    <section className="py-24 bg-gradient-to-b from-black to-[#050a14] relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-teal-500/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-16">
+
+        {/* Text Content */}
+        <div className="lg:w-1/2 z-10">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
           >
-            Try the AI Chatbot <MessageCircle className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="lg:w-1/2 w-full max-w-2xl">
-          {/* Terminal Window Mockup */}
-          <div className="bg-gray-950 rounded-lg p-4 shadow-xl border border-gray-700">
-            {/* Window Controls */}
-            <div className="flex items-center mb-4 space-x-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <div className="flex items-center gap-2 text-teal-400 mb-6 uppercase tracking-wider text-sm font-bold">
+              <Zap className="w-4 h-4" />
+              <span>Real-time Intelligence</span>
             </div>
-            {/* Chat Content */}
-            <div className="space-y-4">
-              <div className="bg-gray-800 rounded p-3 shadow-inner">
-                <p className="text-gray-300 text-sm sm:text-base">
-                  How do I implement a binary search tree in Python?
-                </p>
+
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              Your Personal <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">AI Coding Mentor</span>
+            </h2>
+
+            <p className="text-lg text-gray-400 mb-8 leading-relaxed">
+              Stuck on a bug? Need code optimization? Our advanced AI tutor understands context,
+              offers real-time debugging suggestions, and explains complex concepts in simple terms.
+              It's like pair programming with a senior engineer 24/7.
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              {[
+                { icon: <Terminal className="w-4 h-4" />, text: "Context Aware" },
+                { icon: <Cpu className="w-4 h-4" />, text: "Instant Feedback" },
+                { icon: <Zap className="w-4 h-4" />, text: "Performance Tips" }
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-sm">
+                  {feature.icon}
+                  {feature.text}
+                </div>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="mt-10 border-teal-500/50 text-teal-400 hover:bg-teal-500/10 hover:text-teal-300 h-12 px-8 rounded-full"
+              onClick={() => window.location.href = "/chat"}
+            >
+              Start Chatting <MessageCircle className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Improved IDE Mockup */}
+        <div className="lg:w-1/2 w-full relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 40, rotateX: 10 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            style={{ perspective: "1000px" }}
+          >
+            <div className="relative rounded-xl bg-[#0F1117] border border-white/10 shadow-2xl overflow-hidden glass-card-hover group">
+              {/* IDE Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                </div>
+                <div className="text-xs text-gray-500 font-mono">analysis_engine.js</div>
+                <div className="w-10" />
               </div>
-              <div className="bg-gradient-to-r from-blue-900/30 to-teal-900/30 rounded p-3 shadow-inner border border-teal-800/50">
-                <p className="text-gray-300 text-sm sm:text-base mb-2">
-                  Sure! Here's a basic structure:
-                </p>
-                <pre className="bg-black text-green-400 p-3 rounded mt-2 text-xs sm:text-sm overflow-x-auto font-mono ring-1 ring-gray-700">
-                  {codeExample}
+
+              {/* IDE Body */}
+              <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
+                <pre>
+                  <code className="text-gray-300">
+                    {codeSnippet.split('\n').map((line, i) => (
+                      <div key={i} className="table-row">
+                        <span className="table-cell text-gray-700 select-none pr-4 text-right w-8">{i + 1}</span>
+                        <span className="table-cell">
+                          {line
+                            .replace('function', 'FUNCTION_KEYWORD')
+                            .replace('const', 'CONST_KEYWORD')
+                            .replace('return', 'RETURN_KEYWORD')
+                            .replace('if', 'IF_KEYWORD')
+                            .split(' ').map((token, j) => {
+                              if (token.includes('FUNCTION_KEYWORD')) return <span key={j} className="text-purple-400">function </span>;
+                              if (token.includes('CONST_KEYWORD')) return <span key={j} className="text-purple-400">const </span>;
+                              if (token.includes('RETURN_KEYWORD')) return <span key={j} className="text-purple-400">return </span>;
+                              if (token.includes('IF_KEYWORD')) return <span key={j} className="text-purple-400">if </span>;
+                              if (token.includes('//')) return <span key={j} className="text-gray-500">{token} </span>;
+                              if (token.match(/"[^"]*"/)) return <span key={j} className="text-green-400">{token} </span>;
+                              if (token.match(/[0-9]+/)) return <span key={j} className="text-orange-400">{token} </span>;
+                              return <span key={j} className="text-gray-200">{token} </span>;
+                            })}
+                        </span>
+                      </div>
+                    ))}
+                  </code>
                 </pre>
               </div>
+
+              {/* Scanning Effect Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-teal-500/0 via-teal-500/5 to-teal-500/0 w-full h-full pointer-events-none animate-[scan_3s_ease-in-out_infinite]" />
             </div>
-          </div>
+
+            {/* Decorative Elements around IDE */}
+            <div className="absolute -z-10 -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -z-10 -bottom-10 -left-10 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl animate-pulse delay-700" />
+          </motion.div>
         </div>
+
       </div>
     </section>
   );

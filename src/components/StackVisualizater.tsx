@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-const StackAndQueueVisualizer: React.FC = () => {
+const StackAndQueueVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
   const [stack, setStack] = useState<number[]>([1, 2, 3, 4]);
   const [queue, setQueue] = useState<number[]>([5, 6, 7, 8]);
   const [inputValue, setInputValue] = useState<string>("");

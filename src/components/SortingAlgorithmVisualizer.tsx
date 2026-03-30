@@ -1,63 +1,113 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path if needed
-import { Button } from "./ui/button"; // Adjust path if needed
+import { Button } from "./ui/button";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "./ui/select"; // Adjust path if needed
-import { Slider } from "./ui/slider"; // Adjust path if needed
-import { Input } from "./ui/input"; // Adjust path if needed
-import { PlayCircle, PauseCircle, RotateCcw, Loader2 } from "lucide-react"; // Added Loader2
-import SortingDetails from "./SortingDetails"; // Adjust path if needed
+} from "./ui/select";
+import { Slider } from "./ui/slider";
+import { Input } from "./ui/input";
+import { 
+  PlayCircle, 
+  PauseCircle, 
+  RotateCcw, 
+  Shuffle, 
+  Plus
+} from "lucide-react";
+import VisualizerLayout from "./Visualizer/VisualizerLayout";
+import { Label } from "./ui/label";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Constants (can be adjusted)
-const DEFAULT_ARRAY_SIZE = 35; // Slightly increased for visual interest
+const DEFAULT_ARRAY_SIZE = 40;
 const MAX_VALUE = 100;
-const DEFAULT_SPEED_MS = 300; // Slower default speed (lower value = faster animation)
+const DEFAULT_SPEED_MS = 300;
 const MIN_SPEED_MS = 10;
 const MAX_SPEED_MS = 1000;
 
-const SortingAlgorithmVisualizer = () => {
+const ALGO_INFO = {
+  bubble: {
+    title: "Bubble Sort",
+    description: "A simple comparison-based sorting algorithm. It repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.",
+    complexity: { time: "O(n²)", space: "O(1)" },
+    pseudocode: `for i from 0 to n-1:
+    for j from 0 to n-i-1:
+        if arr[j] > arr[j+1]:
+            swap(arr[j], arr[j+1])`
+  },
+  quick: {
+    title: "Quick Sort",
+    description: "A highly efficient, divide-and-conquer sorting algorithm. It works by selecting a 'pivot' element and partitioning the other elements into two sub-arrays according to whether they are less than or greater than the pivot.",
+    complexity: { time: "O(n log n)", space: "O(log n)" },
+    pseudocode: `quickSort(arr, low, high):
+    if low < high:
+        pi = partition(arr, low, high)
+        quickSort(arr, low, pi - 1)
+        quickSort(arr, pi + 1, high)`
+  },
+  selection: {
+    title: "Selection Sort",
+    description: "An in-place comparison sorting algorithm. It divides the input list into two parts: a sorted sublist and an unsorted sublist. It repeatedly finds the minimum element from the unsorted sublist and moves it to the beginning.",
+    complexity: { time: "O(n²)", space: "O(1)" },
+    pseudocode: `for i from 0 to n-1:
+    min_idx = i
+    for j from i+1 to n:
+        if arr[j] < arr[min_idx]:
+            min_idx = j
+    swap(arr[min_idx], arr[i])`
+  },
+  merge: {
+    title: "Merge Sort",
+    description: "An efficient, stable, comparison-based, divide-and-conquer sorting algorithm. Most implementations produce a stable sort, meaning that the implementation preserves the input order of equal elements in the sorted output.",
+    complexity: { time: "O(n log n)", space: "O(n)" },
+    pseudocode: `mergeSort(arr, left, right):
+    if left < right:
+        mid = (left + right) / 2
+        mergeSort(arr, left, mid)
+        mergeSort(arr, mid + 1, right)
+        merge(arr, left, mid, right)`
+  }
+};
+
+interface SortingAlgorithmVisualizerProps {
+  onBack: () => void;
+}
+
+const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({ onBack }) => {
   const [array, setArray] = useState<number[]>([]);
   const [sortingAlgorithm, setSortingAlgorithm] = useState("bubble");
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); // For generate button loading
-  // Store speed slider value (10-1000), higher value = slower animation
+  const [_isGenerating, _setIsGenerating] = useState(false);
   const [speedValue, setSpeedValue] = useState(MAX_SPEED_MS - DEFAULT_SPEED_MS);
   const [customArray, setCustomArray] = useState("");
   const [currentStep, setCurrentStep] = useState<string | null>(null);
-  const [highlightIndices, setHighlightIndices] = useState<{ index: number; color: string }[]>([]); // Store color with index
-  const [sortedIndices, setSortedIndices] = useState<number[]>([]); // Track fully sorted elements
+  const [highlightIndices, setHighlightIndices] = useState<{ index: number; color: string }[]>([]);
+  const [sortedIndices, setSortedIndices] = useState<number[]>([]);
 
   const pauseRef = useRef(false);
   const sortingAbortControllerRef = useRef<AbortController | null>(null);
 
   const generateRandomArray = useCallback((size = DEFAULT_ARRAY_SIZE) => {
-    setIsGenerating(true);
+    _setIsGenerating(true);
     setCurrentStep(null);
     setSortedIndices([]);
     setHighlightIndices([]);
-    // Simulate generation time slightly
     setTimeout(() => {
         const newArray = Array.from(
           { length: size },
           () => Math.floor(Math.random() * MAX_VALUE) + 1
         );
         setArray(newArray);
-        setIsGenerating(false);
-    }, 50); // Short delay
+        _setIsGenerating(false);
+    }, 100);
   }, []);
 
-  // Initial array generation
   useEffect(() => {
     generateRandomArray();
   }, [generateRandomArray]);
 
-  // Cleanup abort controller on unmount
   useEffect(() => {
     return () => {
       sortingAbortControllerRef.current?.abort();
@@ -65,22 +115,19 @@ const SortingAlgorithmVisualizer = () => {
   }, []);
 
   const calculateDelay = (sliderValue: number) => {
-      // Map slider value (10-1000) inversely to delay (MAX_SPEED_MS to MIN_SPEED_MS)
       return MAX_SPEED_MS + MIN_SPEED_MS - sliderValue;
   }
 
-  // Enhanced sleep function that respects pause and abort
   const sleep = useCallback((ms: number): Promise<void> => {
     return new Promise((resolve, reject) => {
       const check = () => {
         if (sortingAbortControllerRef.current?.signal.aborted) {
-          reject(new Error("Sorting aborted")); // Reject promise on abort
+          reject(new Error("Sorting aborted"));
           return;
         }
         if (!pauseRef.current) {
-          setTimeout(resolve, ms); // Use the calculated delay
+          setTimeout(resolve, ms);
         } else {
-          // If paused, check again shortly without resolving
           setTimeout(check, 100);
         }
       };
@@ -88,8 +135,6 @@ const SortingAlgorithmVisualizer = () => {
     });
   }, []);
 
-
-  // --- State Update Functions ---
   const updateVisualState = (
     newArray: number[],
     highlights: { index: number; color: string }[] = [],
@@ -107,271 +152,136 @@ const SortingAlgorithmVisualizer = () => {
   };
 
   const markAsSorted = (indices: number[]) => {
-     setSortedIndices(prev => [...new Set([...prev, ...indices])]); // Use Set to avoid duplicates
+     setSortedIndices(prev => [...new Set([...prev, ...indices])]);
   }
 
   const clearHighlightsAndStatus = () => {
      setHighlightIndices([]);
-     setCurrentStep("Array is sorted!");
+     setCurrentStep("Sorted!");
   }
-
-  // --- Sorting Algorithms (Adapted for better visualization) ---
 
   const swap = (arr: number[], i: number, j: number) => {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   };
 
-  // Bubble Sort
   const bubbleSort = async (signal: AbortSignal) => {
     const arr = [...array];
     const n = arr.length;
     const delay = calculateDelay(speedValue);
-    let newSorted: number[] = [];
 
     for (let i = 0; i < n - 1; i++) {
       let swapped = false;
       for (let j = 0; j < n - i - 1; j++) {
         if (signal.aborted) return;
-
-        updateVisualState(arr, [{ index: j, color: 'compare' }, { index: j + 1, color: 'compare' }], `Comparing ${arr[j]} and ${arr[j + 1]}`);
+        updateVisualState(arr, [{ index: j, color: 'compare' }, { index: j + 1, color: 'compare' }], `Comparing ${arr[j]} and ${arr[j+1]}`);
         await sleep(delay);
-
         if (arr[j] > arr[j + 1]) {
           swap(arr, j, j + 1);
           swapped = true;
           updateVisualState(arr, [{ index: j, color: 'swap' }, { index: j + 1, color: 'swap' }], `Swapped ${arr[j+1]} and ${arr[j]}`);
           await sleep(delay);
         }
-         // Clear highlights for the next comparison
-        updateVisualState(arr, [], `Comparing ${arr[j]} and ${arr[j + 1]}`);
       }
-       // Mark the last element of this pass as sorted
-      newSorted.push(n - 1 - i);
       markAsSorted([n - 1 - i]);
-      updateVisualState(arr, [], `Pass ${i + 1} complete. ${arr[n - 1 - i]} is sorted.`);
-      await sleep(delay * 0.5); // Shorter pause after pass completion
-
-      if (!swapped) break; // Optimization: If no swaps, array is sorted
+      if (!swapped) break;
     }
-     // Mark remaining unsorted elements as sorted if loop finished early
-    const remainingUnsorted = arr.map((_, idx) => idx).filter(idx => !sortedIndices.includes(idx) && !newSorted.includes(idx));
-    markAsSorted(remainingUnsorted);
+    markAsSorted(arr.map((_, idx) => idx));
     clearHighlightsAndStatus();
   };
 
-  // Quick Sort
   const quickSort = async (signal: AbortSignal) => {
       const arr = [...array];
       const n = arr.length;
       const delay = calculateDelay(speedValue);
-
       const partition = async (low: number, high: number): Promise<number> => {
           const pivot = arr[high];
           let i = low - 1;
-
-          updateVisualState(arr, [{ index: high, color: 'pivot' }], `Partitioning [${low}-${high}]. Pivot: ${pivot}`);
+          updateVisualState(arr, [{ index: high, color: 'pivot' }], `Pivot: ${pivot}`);
           await sleep(delay);
-
           for (let j = low; j < high; j++) {
-              if (signal.aborted) return -1; // Indicate abort
-
-              // Highlight comparing elements and pivot
-              const currentHighlights = [{ index: j, color: 'compare' }, { index: high, color: 'pivot' }];
-              if (i >= low) currentHighlights.push({ index: i, color: 'pointer' }); // Show 'i' pointer if valid
-              updateVisualState(arr, currentHighlights, `Comparing ${arr[j]} with pivot ${pivot}`);
+              if (signal.aborted) return -1;
+              updateVisualState(arr, [{ index: j, color: 'compare' }, { index: high, color: 'pivot' }], `Checking ${arr[j]}`);
               await sleep(delay);
-
               if (arr[j] < pivot) {
                   i++;
                   swap(arr, i, j);
-                  const swapHighlights = [{ index: i, color: 'swap' }, { index: j, color: 'swap' }, { index: high, color: 'pivot' }];
-                  updateVisualState(arr, swapHighlights, `Swapped ${arr[i]} and ${arr[j]}`);
+                  updateVisualState(arr, [{ index: i, color: 'swap' }, { index: j, color: 'swap' }], `Swap elements`);
                   await sleep(delay);
               }
           }
-
           swap(arr, i + 1, high);
-          const finalPivotIndex = i + 1;
-          updateVisualState(arr, [{ index: finalPivotIndex, color: 'sorted' }, { index: high, color: 'swap' } ], `Pivot ${pivot} placed at index ${finalPivotIndex}`);
-          markAsSorted([finalPivotIndex]); // Mark pivot as sorted
-          await sleep(delay);
-          return finalPivotIndex;
+          markAsSorted([i + 1]);
+          return i + 1;
       };
-
       const sort = async (low: number, high: number) => {
           if (low < high) {
               const pi = await partition(low, high);
               if (signal.aborted || pi === -1) return;
-
               await sort(low, pi - 1);
-              if (signal.aborted) return;
-
               await sort(pi + 1, high);
-          } else if (low === high && low >= 0 && low < n) {
-             // Mark single-element partitions as sorted
+          } else if (low === high) {
              markAsSorted([low]);
-             updateVisualState(arr, [], `Element ${arr[low]} is sorted.`);
-             await sleep(delay * 0.5);
           }
       };
-
       await sort(0, n - 1);
-      if (!signal.aborted) {
-        // Ensure all elements are marked sorted at the end
-        markAsSorted(arr.map((_, idx) => idx));
-        clearHighlightsAndStatus();
-      }
+      markAsSorted(arr.map((_, idx) => idx));
+      clearHighlightsAndStatus();
   };
 
-
-  // Selection Sort
   const selectionSort = async (signal: AbortSignal) => {
       const arr = [...array];
       const n = arr.length;
       const delay = calculateDelay(speedValue);
-
       for (let i = 0; i < n - 1; i++) {
           let minIdx = i;
-           updateVisualState(arr, [{ index: i, color: 'pointer' }], `Finding minimum for index ${i}`);
-           await sleep(delay * 0.7);
-
           for (let j = i + 1; j < n; j++) {
               if (signal.aborted) return;
-
-              // Highlight current element being considered (i), potential minimum (minIdx), and comparison element (j)
-              updateVisualState(arr, [{ index: i, color: 'pointer' }, { index: minIdx, color: 'compare' }, { index: j, color: 'compare' }], `Comparing ${arr[j]} with current min ${arr[minIdx]}`);
+              updateVisualState(arr, [{ index: minIdx, color: 'pointer' }, { index: j, color: 'compare' }]);
               await sleep(delay);
-
-              if (arr[j] < arr[minIdx]) {
-                  const oldMinIdx = minIdx;
-                  minIdx = j;
-                  // Highlight the new minimum found
-                   updateVisualState(arr, [{ index: i, color: 'pointer' }, { index: j, color: 'compare' }, { index: oldMinIdx, color: 'compare' }], `New minimum found: ${arr[minIdx]}`);
-                   await sleep(delay * 0.7);
-              }
+              if (arr[j] < arr[minIdx]) minIdx = j;
           }
-
-          if (minIdx !== i) {
-              swap(arr, i, minIdx);
-              updateVisualState(arr, [{ index: i, color: 'swap' }, { index: minIdx, color: 'swap' }], `Swapped ${arr[i]} with minimum ${arr[minIdx]}`);
-              await sleep(delay);
-          }
-
-          markAsSorted([i]); // Mark the element at index i as sorted
-           updateVisualState(arr, [], `Placed ${arr[i]} at sorted index ${i}`);
-           await sleep(delay * 0.5);
+          if (minIdx !== i) swap(arr, i, minIdx);
+          markAsSorted([i]);
       }
-
-      markAsSorted([n - 1]); // Mark the last element as sorted
-      if (!signal.aborted) {
-          clearHighlightsAndStatus();
-      }
+      markAsSorted([n - 1]);
+      clearHighlightsAndStatus();
   };
 
-
-  // Merge Sort
   const mergeSort = async (signal: AbortSignal) => {
     const arr = [...array];
     const n = arr.length;
-    const tempArr = [...arr]; // Use a temporary array for merging visualization
     const delay = calculateDelay(speedValue);
-
     const merge = async (left: number, mid: number, right: number) => {
-        let i = left;       // Initial index of first subarray
-        let j = mid + 1;    // Initial index of second subarray
-        let k = left;       // Initial index of merged subarray (in tempArr)
-
-         updateVisualState(arr, [], `Merging subarrays [${left}-${mid}] and [${mid + 1}-${right}]`);
-         await sleep(delay);
-
-        // Copy data to temp arrays L[] and R[] - conceptually visualize this step
-        // The actual merge happens directly into tempArr for visualization
-
+        let i = left, j = mid + 1, k = 0;
+        const temp = new Array(right - left + 1);
         while (i <= mid && j <= right) {
             if (signal.aborted) return;
-
-            // Highlight elements being compared
-             updateVisualState(arr, [{index: i, color: 'compare'}, {index: j, color: 'compare'}], `Comparing ${arr[i]} and ${arr[j]}`);
-             await sleep(delay);
-
-            if (arr[i] <= arr[j]) {
-                 updateVisualState(arr, [{index: i, color: 'swap'}, {index: k, color: 'pointer'}], `Copying ${arr[i]} to merged array at index ${k}`);
-                 tempArr[k] = arr[i];
-                 i++;
-            } else {
-                 updateVisualState(arr, [{index: j, color: 'swap'}, {index: k, color: 'pointer'}], `Copying ${arr[j]} to merged array at index ${k}`);
-                 tempArr[k] = arr[j];
-                 j++;
-            }
-            k++;
-            // Show the element being placed in the temp array conceptually by modifying the original array view
-            const displayArr = [...arr]; displayArr[k-1] = tempArr[k-1]; // Show placement
-            updateVisualState(displayArr, [], `Placed element in merged array (index ${k-1})`);
+            updateVisualState(arr, [{index: i, color: 'compare'}, {index: j, color: 'compare'}]);
             await sleep(delay);
+            if (arr[i] <= arr[j]) temp[k++] = arr[i++];
+            else temp[k++] = arr[j++];
         }
-
-        // Copy remaining elements of L[] if any
-        while (i <= mid) {
+        while (i <= mid) temp[k++] = arr[i++];
+        while (j <= right) temp[k++] = arr[j++];
+        for (let l = 0; l < temp.length; l++) {
             if (signal.aborted) return;
-            updateVisualState(arr, [{index: i, color: 'swap'}, {index: k, color: 'pointer'}], `Copying remaining ${arr[i]} from left subarray`);
-            tempArr[k] = arr[i];
-            const displayArr = [...arr]; displayArr[k] = tempArr[k];
-            updateVisualState(displayArr, [], `Placed element in merged array (index ${k})`);
-            i++; k++;
-            await sleep(delay);
-        }
-
-        // Copy remaining elements of R[] if any
-        while (j <= right) {
-            if (signal.aborted) return;
-             updateVisualState(arr, [{index: j, color: 'swap'}, {index: k, color: 'pointer'}], `Copying remaining ${arr[j]} from right subarray`);
-            tempArr[k] = arr[j];
-            const displayArr = [...arr]; displayArr[k] = tempArr[k];
-             updateVisualState(displayArr, [], `Placed element in merged array (index ${k})`);
-            j++; k++;
-            await sleep(delay);
-        }
-
-        // Copy the sorted subarray back to the original array for the next steps
-        for (let l = left; l <= right; l++) {
-             if (signal.aborted) return;
-             arr[l] = tempArr[l];
-        }
-         updateVisualState(arr, [], `Merged subarray [${left}-${right}] is now sorted`);
-         // Mark elements as sorted only after the full merge sort is complete for simplicity
-         await sleep(delay);
-    };
-
-    const sort = async (left: number, right: number) => {
-        if (left < right) {
-            const mid = Math.floor(left + (right - left) / 2);
-             updateVisualState(arr, [], `Dividing array [${left}-${right}] at index ${mid}`);
-             await sleep(delay * 0.7);
-
-            if (signal.aborted) return;
-            await sort(left, mid);
-
-            if (signal.aborted) return;
-            await sort(mid + 1, right);
-
-            if (signal.aborted) return;
-            await merge(left, mid, right);
-        } else if (left === right && left >= 0 && left < n) {
-           // Optional: Highlight single elements during division
-           updateVisualState(arr, [{index: left, color: 'compare'}], `Single element subarray [${left}]`);
-           await sleep(delay * 0.5);
+            arr[left + l] = temp[l];
+            updateVisualState(arr, [{index: left + l, color: 'swap'}]);
+            await sleep(delay / 2);
         }
     };
-
+    const sort = async (l: number, r: number) => {
+        if (l < r) {
+            const m = Math.floor((l + r) / 2);
+            await sort(l, m);
+            await sort(m + 1, r);
+            await merge(l, m, r);
+        }
+    };
     await sort(0, n - 1);
-    if (!signal.aborted) {
-      markAsSorted(arr.map((_, idx) => idx)); // Mark all as sorted at the very end for Merge Sort
-      clearHighlightsAndStatus();
-    }
+    markAsSorted(arr.map((_, idx) => idx));
+    clearHighlightsAndStatus();
   };
-
-
-  // --- Event Handlers ---
 
   const sortingAlgorithmsMap = {
     bubble: bubbleSort,
@@ -381,40 +291,21 @@ const SortingAlgorithmVisualizer = () => {
   };
 
   const startSorting = useCallback(() => {
-    if (isRunning) return; // Prevent multiple starts
-
+    if (isRunning) return;
     setIsRunning(true);
     setIsPaused(false);
     pauseRef.current = false;
-    setSortedIndices([]); // Clear sorted status on new run
-    sortingAbortControllerRef.current?.abort(); // Abort previous run if any
-
+    setSortedIndices([]);
     const controller = new AbortController();
     sortingAbortControllerRef.current = controller;
-
     const sortingFunction = sortingAlgorithmsMap[sortingAlgorithm as keyof typeof sortingAlgorithmsMap];
-
     if (sortingFunction) {
       sortingFunction(controller.signal)
-        .catch((error) => {
-          if (error.message !== "Sorting aborted") {
-            console.error("Sorting error:", error);
-            setCurrentStep(`Error during sorting: ${error.message}`);
-          } else {
-             setCurrentStep("Sorting stopped.");
-          }
-        })
         .finally(() => {
-          // Check if aborted before declaring finished or resetting state
-          if (!controller.signal.aborted) {
-              setIsRunning(false);
-          }
+          if (!controller.signal.aborted) setIsRunning(false);
         });
-    } else {
-        console.error("Selected algorithm function not found");
-        setIsRunning(false);
     }
-  }, [sortingAlgorithm, array, speedValue, sleep]); // Include sleep in dependencies
+  }, [sortingAlgorithm, array, speedValue]);
 
   const togglePause = useCallback(() => {
     if (!isRunning) return;
@@ -425,212 +316,171 @@ const SortingAlgorithmVisualizer = () => {
   }, [isRunning, isPaused]);
 
   const resetSorting = useCallback(() => {
-    sortingAbortControllerRef.current?.abort(); // Send abort signal
-    sortingAbortControllerRef.current = null; // Clear the ref
+    sortingAbortControllerRef.current?.abort();
     setIsRunning(false);
     setIsPaused(false);
     pauseRef.current = false;
-    generateRandomArray(); // Generate new array resets highlights/steps
+    generateRandomArray();
   }, [generateRandomArray]);
 
-  const handleCustomArrayInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow only numbers, commas, and spaces
-    const value = e.target.value.replace(/[^0-9,\s]/g, '');
-    setCustomArray(value);
-  };
-
-  const applyCustomArray = () => {
-    if (isRunning) return;
-    const newArray = customArray
-      .split(/[\s,]+/) // Split by comma or space
-      .map(Number)
-      .filter(num => !isNaN(num) && num > 0 && num <= MAX_VALUE); // Validate numbers
-
-    if (newArray.length > 0 && newArray.length <= 100) { // Add size limit
-        setArray(newArray);
-        setCurrentStep(null);
-        setSortedIndices([]);
-        setHighlightIndices([]);
-        setCustomArray(""); // Clear input after applying
-    } else if (newArray.length > 100) {
-        alert("Maximum array size is 100 elements.");
-    } else {
-        alert("Invalid custom array input. Please use comma or space-separated positive numbers up to " + MAX_VALUE);
-    }
-  };
-
-  const handleAlgorithmChange = (newAlgorithm: string) => {
-    if (isRunning) {
-      // Optionally reset or just prevent change while running
-       resetSorting(); // Resetting might be better UX
-    }
-    setSortingAlgorithm(newAlgorithm);
-    setCurrentStep(null); // Clear step description
+  const handleAlgorithmChange = (val: string) => {
+    if (isRunning) resetSorting();
+    setSortingAlgorithm(val);
     setSortedIndices([]);
   };
 
   const getBarColor = (index: number): string => {
-      if (sortedIndices.includes(index)) {
-          return 'bg-green-500'; // Sorted elements
-      }
+      if (sortedIndices.includes(index)) return 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]';
       const highlight = highlightIndices.find(h => h.index === index);
       if (highlight) {
           switch (highlight.color) {
-              case 'compare': return 'bg-yellow-500'; // Comparing
-              case 'swap': return 'bg-red-500';      // Swapping
-              case 'pivot': return 'bg-purple-500'; // Pivot (Quick Sort)
-              case 'pointer': return 'bg-blue-500';   // Pointer/Min Index (Selection Sort) / Merge Pointer
-              case 'sorted': return 'bg-green-500';  // Element just placed correctly (Quick Sort)
-              default: return 'bg-teal-400';        // Default highlight
+              case 'compare': return 'bg-primary shadow-[0_0_15px_rgba(6,182,212,0.4)]';
+              case 'swap': return 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]';
+              case 'pivot': return 'bg-secondary shadow-[0_0_15px_rgba(139,92,246,0.4)]';
+              case 'pointer': return 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.4)]';
+              default: return 'bg-primary';
           }
       }
-      return 'bg-gradient-to-t from-gray-600 to-gray-500'; // Default bar color
+      return 'bg-white/10 border-white/5';
   }
 
-  return (
-    // Main container with dark background
-    <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300">
-      {/* Main Card with dark styling */}
-      <Card className="w-full max-w-5xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
-        {/* Card Header */}
-        <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-            Sorting Algorithm Visualizer
-          </CardTitle>
-        </CardHeader>
+  const controls = (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+      {/* Selection & Speed */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Algorithm</Label>
+          <Select value={sortingAlgorithm} onValueChange={handleAlgorithmChange} disabled={isRunning}>
+            <SelectTrigger className="bg-white/5 border-white/10 h-10 sm:h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-950 border-white/10">
+              <SelectItem value="bubble">Bubble Sort</SelectItem>
+              <SelectItem value="quick">Quick Sort</SelectItem>
+              <SelectItem value="selection">Selection Sort</SelectItem>
+              <SelectItem value="merge">Merge Sort</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold text-glow">Animation Speed</Label>
+            <span className="text-[10px] font-mono text-primary">{calculateDelay(speedValue)}ms</span>
+          </div>
+          <Slider
+            value={[speedValue]}
+            onValueChange={(value) => setSpeedValue(value[0])}
+            min={MIN_SPEED_MS}
+            max={MAX_SPEED_MS}
+            step={10}
+            disabled={isRunning}
+          />
+        </div>
+      </div>
 
-        {/* Card Content */}
-        <CardContent className="p-4 sm:p-6 space-y-5">
-          {/* Controls Row 1: Algorithm Select & Generate Button */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <Select
-              value={sortingAlgorithm}
-              onValueChange={handleAlgorithmChange}
-              disabled={isRunning || isGenerating}
-            >
-              <SelectTrigger className="w-full sm:w-[200px] bg-gray-800 border-gray-600 text-gray-300 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70">
-                <SelectValue placeholder="Select algorithm" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700 text-gray-300">
-                <SelectItem value="bubble" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Bubble Sort</SelectItem>
-                <SelectItem value="quick" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Quick Sort</SelectItem>
-                <SelectItem value="selection" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Selection Sort</SelectItem>
-                <SelectItem value="merge" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Merge Sort</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={() => generateRandomArray()}
-              disabled={isRunning || isGenerating}
-               className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium disabled:opacity-60"
-            >
-               {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Generate New Array
+      {/* Playback Controls */}
+      <div className="flex flex-col gap-3">
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Playback</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {!isRunning ? (
+            <Button onClick={startSorting} className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-black font-bold col-span-2 text-xs sm:text-sm">
+              <PlayCircle className="mr-2 h-4 w-4" /> Start Sorting
             </Button>
-          </div>
-
-          {/* Controls Row 2: Speed Slider */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-2">
-            <span className="text-sm font-medium text-gray-400 shrink-0">
-              Animation Speed:
-            </span>
-            <Slider
-              value={[speedValue]}
-              onValueChange={(value) => setSpeedValue(value[0])}
-              min={MIN_SPEED_MS} // Slider min
-              max={MAX_SPEED_MS} // Slider max
-              step={10}
-              className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700" // Custom track/thumb colors
-              disabled={isRunning}
-              aria-label="Animation Speed Control"
-            />
-             <span className="text-xs font-mono text-gray-500 w-16 text-right">
-                {`${calculateDelay(speedValue)} ms`} {/* Display calculated delay */}
-             </span>
-          </div>
-
-           {/* Controls Row 3: Custom Array Input */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            <Input
-              placeholder="Custom array (e.g., 5, 3, 8, 1)"
-              value={customArray}
-              onChange={handleCustomArrayInput}
-              disabled={isRunning || isGenerating}
-              className="w-full sm:flex-grow h-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70"
-            />
-            <Button
-              onClick={applyCustomArray}
-              disabled={isRunning || isGenerating || !customArray.trim()}
-              className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium disabled:opacity-60"
-            >
-              Apply Array
-            </Button>
-          </div>
-
-          {/* Controls Row 4: Start/Pause/Reset Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-3 border-t border-gray-700/50">
-            {!isRunning ? (
-              <Button
-                onClick={startSorting}
-                disabled={isGenerating}
-                className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
-              >
-                <PlayCircle size={18} />
-                <span>Start Sorting</span>
+          ) : (
+            <>
+              <Button onClick={togglePause} className={`h-10 sm:h-11 ${isPaused ? 'bg-green-600' : 'bg-amber-600'} text-white font-bold text-xs sm:text-sm`}>
+                {isPaused ? <PlayCircle className="mr-2 h-4 w-4" /> : <PauseCircle className="mr-2 h-4 w-4" />}
+                {isPaused ? "Resume" : "Pause"}
               </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={togglePause}
-                  className={`flex items-center justify-center gap-2 ${
-                    isPaused
-                      ? "bg-blue-600 hover:bg-blue-700" // Resume button color
-                      : "bg-yellow-600 hover:bg-yellow-700" // Pause button color
-                  } text-white font-semibold w-full sm:w-auto px-6 py-2.5`}
-                >
-                  {isPaused ? (
-                    <PlayCircle size={18} />
-                  ) : (
-                    <PauseCircle size={18} />
-                  )}
-                  <span>{isPaused ? "Resume" : "Pause"}</span>
-                </Button>
-                <Button
-                  onClick={resetSorting}
-                  className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5"
-                >
-                  <RotateCcw size={18} />
-                  <span>Reset</span>
-                </Button>
-              </>
-            )}
-          </div>
+              <Button onClick={resetSorting} variant="destructive" className="h-10 sm:h-11 font-bold text-xs sm:text-sm">
+                <RotateCcw className="mr-2 h-4 w-4" /> Stop
+              </Button>
+            </>
+          )}
+          <Button onClick={() => generateRandomArray()} variant="outline" disabled={isRunning} className="h-10 sm:h-11 col-span-2 border-white/10 hover:bg-white/5 text-xs sm:text-sm">
+             <Shuffle className="mr-2 h-4 w-4" /> New Array
+          </Button>
+        </div>
+      </div>
 
-          {/* Visualization Area */}
-          <div className="h-64 md:h-80 lg:h-[400px] flex items-end justify-center gap-px sm:gap-0.5 p-2 bg-black/20 rounded border border-gray-700/50 overflow-hidden">
+      {/* Custom Input */}
+      <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Custom Data</Label>
+        <div className="flex gap-2">
+          <Input
+            placeholder="e.g. 5, 2, 8, 1..."
+            value={customArray}
+            onChange={(e) => setCustomArray(e.target.value)}
+            disabled={isRunning}
+            className="h-10 sm:h-11 bg-white/5 border-white/10 text-sm"
+          />
+          <Button 
+            onClick={() => {
+              const arr = customArray.split(/[\s,]+/).map(Number).filter(n => !isNaN(n) && n > 0);
+              if (arr.length) setArray(arr);
+              setCustomArray("");
+            }}
+            variant="secondary"
+            disabled={isRunning || !customArray.trim()}
+            className="h-10 sm:h-11"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+              <div className="w-2 h-2 rounded-full bg-primary" /> Comparing
+           </div>
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+              <div className="w-2 h-2 rounded-full bg-red-500" /> Swapping
+           </div>
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+              <div className="w-2 h-2 rounded-full bg-green-500" /> Sorted
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const currentAlgo = ALGO_INFO[sortingAlgorithm as keyof typeof ALGO_INFO];
+
+  return (
+    <VisualizerLayout
+      title={currentAlgo.title}
+      description={currentAlgo.description}
+      controls={controls}
+      onBack={onBack}
+      pseudocode={currentAlgo.pseudocode}
+      complexity={currentAlgo.complexity}
+    >
+       <div className="w-full h-full max-h-[350px] sm:max-h-[500px] flex items-end justify-center gap-0.5 p-4 sm:p-8 bg-black/20 rounded-2xl sm:rounded-3xl border border-white/5 relative overflow-hidden">
+          <div className="flex items-end justify-center w-full h-full gap-[1px] sm:gap-0.5">
             {array.map((value, index) => (
-              <div
+              <motion.div
                 key={index}
-                className={`flex-grow transition-colors duration-150 ease-linear rounded-t-sm ${getBarColor(index)}`}
-                 // Calculate height relative to the MAX_VALUE for consistency
-                style={{ height: `${Math.max((value / MAX_VALUE) * 100, 1)}%` }} // Ensure min height of 1%
-                title={`Value: ${value}`} // Tooltip on hover
-              ></div>
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex-grow rounded-t-sm border-t border-x border-white/5 transition-all duration-200 ${getBarColor(index)}`}
+                style={{ height: `${Math.max((value / MAX_VALUE) * 100, 2)}%` }}
+              />
             ))}
           </div>
 
-          {/* Current Step Display */}
-          {currentStep && (
-            <div className="p-3 bg-gray-800 text-gray-300 mt-4 rounded-md border border-gray-700/50 min-h-[60px]">
-              <h3 className="font-semibold text-gray-200 text-sm mb-1">Status:</h3>
-              <p className="text-sm font-mono">{currentStep}</p>
-            </div>
-          )}
-
-          {/* Algorithm Details */}
-          <SortingDetails algorithm={sortingAlgorithm} />
-        </CardContent>
-      </Card>
-    </div>
+          <AnimatePresence>
+            {currentStep && (
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: 20 }}
+                 className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 glass-panel rounded-full text-[10px] font-bold tracking-widest uppercase text-primary border-primary/20"
+               >
+                 {currentStep}
+               </motion.div>
+            )}
+          </AnimatePresence>
+       </div>
+    </VisualizerLayout>
   );
 };
 

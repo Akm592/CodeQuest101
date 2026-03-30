@@ -9,7 +9,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 2000;
 const DEFAULT_SPEED_MS = 1000;
 
-const LongestSubarraySumKVisualizer = () => {
+const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
   const [arr, setArr] = useState<number[]>([10, 5, 2, 7, 1, 9]);
   const [arrInput, setArrInput] = useState<string>("10, 5, 2, 7, 1, 9"); // Separate state for input
   const [k, setK] = useState<number | string>(15);

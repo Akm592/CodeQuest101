@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
-import { Button } from '../ui/button'; // Adjust path
+import React, { useState, useMemo } from 'react';
+import { Input } from '../ui/input';
 import {
-  Code2, GitBranch, Grid, SortDesc, Search, RotateCw, Brain, Database, AlignJustify, ArrowLeft // Changed ArrowRight to ArrowLeft
+  Code2, GitBranch, Grid, SortDesc, Search, RotateCw, Brain, Database, ArrowLeft, ArrowRight, Layers, Cpu, Network, Filter
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Data (can be moved to a separate file if large)
 const categories = [
-  { title: "Algorithms", description: "Explore various algorithmic visualizations", icon: <AlignJustify className="h-10 w-10 text-blue-400" />, key: "algorithms" },
-  { title: "Data Structures", description: "Visualize common data structures", icon: <Database className="h-10 w-10 text-teal-400" />, key: "dataStructures" },
-  { title: "Machine Learning", description: "Dive into machine learning concepts", icon: <Brain className="h-10 w-10 text-purple-400" />, key: "machineLearning" },
+  { title: "Algorithms", description: "Master efficient problem solving", icon: <Cpu className="h-6 w-6 text-cyan-400" />, key: "algorithms", gradient: "from-cyan-500/10 to-blue-500/10" },
+  { title: "Data Structures", description: "Build strong foundations", icon: <Database className="h-6 w-6 text-teal-400" />, key: "dataStructures", gradient: "from-teal-500/10 to-green-500/10" },
+  { title: "Machine Learning", description: "Explore AI concepts", icon: <Brain className="h-6 w-6 text-purple-400" />, key: "machineLearning", gradient: "from-purple-500/10 to-pink-500/10" },
 ];
 
 const visualizations = {
   algorithms: [
-    { title: "Longest Subarray Sum K", description: "Find the longest subarray with sum K", icon: <Code2 className="h-5 w-5 text-blue-400" />, key: "longestSubarray" },
-    { title: "Spiral Matrix", description: "Animate spiral traversal of a matrix", icon: <Grid className="h-5 w-5 text-blue-400" />, key: "spiralMatrix" },
-    { title: "Rotate Image", description: "Rotate a square matrix in-place", icon: <RotateCw className="h-5 w-5 text-blue-400" />, key: "rotateImage" },
-    { title: "Sorting Algorithms", description: "Visualize popular sorting algorithms", icon: <SortDesc className="h-5 w-5 text-blue-400" />, key: "sortingAlgorithms" },
-    { title: "Binary Search", description: "Visualize the binary search algorithm", icon: <Search className="h-5 w-5 text-blue-400" />, key: "binarySearch" },
-    { title: "Hare-Tortoise", description: "Visualize Hare-Tortoise algorithm", icon: <GitBranch className="h-5 w-5 text-blue-400" />, key: "hareTortoise" },
+    { title: "Longest Subarray Sum K", description: "Sliding window technique visualization", icon: <Code2 />, key: "longestSubarray", level: "Medium" },
+    { title: "Spiral Matrix", description: "2D Array traversal animation", icon: <Grid />, key: "spiralMatrix", level: "Medium" },
+    { title: "Rotate Image", description: "Matrix manipulation in-place", icon: <RotateCw />, key: "rotateImage", level: "Medium" },
+    { title: "Sorting Algorithms", description: "Compare efficiency of sorts", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
+    { title: "Binary Search", description: "Divide and conquer strategy", icon: <Search />, key: "binarySearch", level: "Easy" },
+    { title: "Floyd's Algorithm", description: "Cycle detection in linked lists", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
   ],
   dataStructures: [
-    { title: "Binary Tree Traversal", description: "Visualize tree traversal algorithms", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "binaryTree" },
-    { title: "Linked List", description: "Visualize linked list operations", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "linkedList" },
-    { title: "Stack and Queue", description: "Visualize stack and queue operations", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "stack" },
-    { title: "Tree Data Structure", description: "Visualize tree data structure", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "tree" },
-    { title: "Graph Data Structure", description: "Visualize graph data structure", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "graph" },
-    { title: "Heap Data Structure", description: "Visualize heap data structure", icon: <GitBranch className="h-5 w-5 text-teal-400" />, key: "heap" },
+    { title: "Binary Tree Traversal", description: "DFS & BFS animations", icon: <Network />, key: "binaryTree", level: "Easy" },
+    { title: "Linked List", description: "Pointer manipulation visualizer", icon: <GitBranch />, key: "linkedList", level: "Easy" },
+    { title: "Stack and Queue", description: "LIFO & FIFO operations", icon: <Layers />, key: "stack", level: "Easy" },
+    { title: "Tree Structures", description: "Hierarchical data modeling", icon: <Network />, key: "tree", level: "Medium" },
+    { title: "Graph Theory", description: "Nodes and edges exploration", icon: <Network />, key: "graph", level: "Hard" },
+    { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
   ],
   machineLearning: [
-    { title: "Neural Network", description: "Visualize Neural Network", icon: <Brain className="h-5 w-5 text-purple-400" />, key: "neuralNetwork" },
+    { title: "Neural Networks", description: "Backpropagation visualized", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
   ],
 };
 
@@ -39,78 +39,161 @@ interface VisualizationSectionProps {
 
 export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSelectVisualization }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const currentVisualizations = selectedCategory ? visualizations[selectedCategory as keyof typeof visualizations] : [];
+  const allVisualizations = useMemo(() => [
+    ...visualizations.algorithms,
+    ...visualizations.dataStructures,
+    ...visualizations.machineLearning
+  ], []);
+
+  const filteredVisualizations = useMemo(() => {
+    if (searchQuery) {
+      return allVisualizations.filter(v => 
+        v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return selectedCategory ? visualizations[selectedCategory as keyof typeof visualizations] : [];
+  }, [searchQuery, selectedCategory, allVisualizations]);
+
+  const isSearching = searchQuery.length > 0;
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-950 text-gray-300">
+    <section id="visualizations" className="py-24 relative bg-black/40">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-100 mb-12 sm:mb-16">
-          Visualize Code in Action
-        </h2>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            Interactive <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Playground</span>
+          </h2>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-8">
+            Choose a domain to explore our extensive library of interactive visualizations.
+          </p>
 
-        {!selectedCategory ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {categories.map((category) => (
-              <div
-                key={category.key}
-                className="bg-gray-900 rounded-lg shadow-lg hover:shadow-cyan-900/30 ring-1 ring-gray-800 cursor-pointer p-6 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800/50"
-                onClick={() => setSelectedCategory(category.key)}
-                role="button"
-                tabIndex={0} // Make it focusable
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedCategory(category.key)} // Keyboard accessibility
-                aria-label={`Select ${category.title} category`}
-              >
-                <div className="mb-5 p-4 rounded-full bg-gradient-to-br from-gray-800 to-gray-700 inline-flex items-center justify-center ring-1 ring-gray-600">
-                  {category.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-100">
-                  {category.title}
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  {category.description}
-                </p>
-              </div>
-            ))}
+          <div className="max-w-md mx-auto relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+              <Input 
+                type="text"
+                placeholder="Search algorithms or data structures..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border-white/10 pl-12 h-14 rounded-2xl focus:border-primary/50 focus:ring-primary/20 transition-all text-lg"
+              />
+            </div>
           </div>
-        ) : (
-          <>
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="mb-8 sm:mb-10 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-md transition-colors duration-200 inline-flex items-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-950"
-              aria-label="Back to categories"
+        </div>
+
+        <AnimatePresence mode="wait">
+          {!selectedCategory && !isSearching ? (
+            <motion.div
+              key="categories"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
-              <ArrowLeft className="h-4 w-4" /> Back to Categories
-            </button>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {currentVisualizations.map((viz) => (
+              {categories.map((category) => (
                 <div
-                  key={viz.key}
-                  className="bg-gray-900 rounded-lg shadow-lg hover:shadow-blue-900/30 ring-1 ring-gray-800 p-6 flex flex-col justify-between transition-all duration-300 hover:bg-gray-800/50"
+                  key={category.key}
+                  onClick={() => setSelectedCategory(category.key)}
+                  className={`group relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br ${category.gradient} p-8 cursor-pointer transition-all duration-300 hover:border-white/20 hover:shadow-2xl`}
                 >
-                  <div> {/* Content container */}
-                    <div className="mb-4 inline-flex p-2 rounded-full bg-gray-800 ring-1 ring-gray-700">
-                      {viz.icon}
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2 text-gray-100">
-                      {viz.title}
-                    </h3>
-                    <p className="text-gray-400 mb-5 text-sm">
-                      {viz.description}
-                    </p>
+                  <div className="absolute inset-0 bg-black/20 backdrop-blur-3xl -z-10" />
+
+                  <div className="mb-6 p-4 rounded-2xl bg-white/5 w-fit border border-white/10 group-hover:scale-110 transition-transform duration-300">
+                    {category.icon}
                   </div>
-                  <Button
-                    onClick={() => onSelectVisualization(viz.key)}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                    aria-label={`Explore ${viz.title}`}
-                  >
-                    Explore <Code2 className="h-4 w-4" />
-                  </Button>
+
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                    {category.title}
+                  </h3>
+                  <p className="text-gray-400 group-hover:text-gray-300">
+                    {category.description}
+                  </p>
+
+                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
+                    <ArrowRight className="text-white/50" />
+                  </div>
                 </div>
               ))}
-            </div>
-          </>
-        )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="visualizations"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSearchQuery("");
+                  }}
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                >
+                  <div className="p-2 rounded-full bg-white/5 group-hover:bg-primary/20 transition-colors">
+                    <ArrowLeft className="h-4 w-4" />
+                  </div>
+                  <span className="font-medium">{isSearching ? "Clear Search" : "Back to Categories"}</span>
+                </button>
+                
+                {isSearching && (
+                  <div className="text-sm text-gray-500">
+                    Found {filteredVisualizations.length} results for "{searchQuery}"
+                  </div>
+                )}
+              </div>
+
+              {filteredVisualizations.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredVisualizations.map((viz, idx) => (
+                    <motion.div
+                      key={viz.key}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => onSelectVisualization(viz.key)}
+                      className="group flex flex-col justify-between bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-primary/5 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-3 rounded-xl bg-black/40 text-primary ring-1 ring-white/10 group-hover:ring-primary/50 transition-all">
+                            {React.cloneElement(viz.icon as React.ReactElement, { className: 'w-5 h-5' })}
+                          </div>
+                          <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            viz.level === "Easy" ? "bg-green-500/10 text-green-500" :
+                            viz.level === "Medium" ? "bg-amber-500/10 text-amber-500" :
+                            "bg-red-500/10 text-red-500"
+                          }`}>
+                            {viz.level}
+                          </div>
+                        </div>
+
+                        <h3 className="text-lg font-bold text-gray-100 group-hover:text-primary mb-2">
+                          {viz.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 group-hover:text-gray-400 line-clamp-2">
+                          {viz.description}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                   <Filter className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                   <h3 className="text-xl font-bold text-gray-400">No visualizations found</h3>
+                   <p className="text-gray-500">Try searching for something else or browse categories.</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
