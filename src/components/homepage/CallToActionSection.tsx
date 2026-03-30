@@ -1,28 +1,47 @@
 import React from 'react';
-import { Button } from '../ui/button'; // Adjust path
+import { Button } from '../ui/button';
+import { ArrowRight, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const CallToActionSection: React.FC = () => {
-  const navigateToChat = () => {
-    window.location.href = "/chat"; // Or use React Router
-  };
-
   return (
-    <section className="bg-gradient-to-r from-teal-800 to-blue-900 text-white py-16 sm:py-20">
-      <div className="container mx-auto px-4 text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-          Ready to Start Your Coding Quest?
-        </h2>
-        <p className="text-lg sm:text-xl mb-8 text-gray-300 max-w-2xl mx-auto">
-          Join CodeQuest101 today and transform the way you learn complex code concepts. It's free to get started!
-        </p>
-        <Button
-          size="lg"
-          className="bg-white text-teal-700 font-semibold hover:bg-gray-200 transition-colors duration-300 px-8 py-3 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-teal-800" // High contrast CTA
-          onClick={navigateToChat}
-          aria-label="Get Started for Free"
+    <section className="py-24 relative overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-900/40 to-black z-0" />
+
+      <div className="container mx-auto px-4 relative z-10 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-4xl mx-auto bg-white/5 border border-white/10 rounded-3xl p-12 backdrop-blur-xl shadow-2xl"
         >
-          Get Started for Free
-        </Button>
+          <div className="flex justify-center gap-1 mb-6">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+            ))}
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Upgrade Your Skills?
+          </h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            Join thousands of students and developers mastering algorithms with CodeQuest101.
+            Start your journey today—completely free.
+          </p>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button
+              size="lg"
+              className="bg-teal-500 hover:bg-teal-400 text-black font-bold h-14 px-10 rounded-full shadow-lg shadow-teal-500/20 transition-all hover:scale-105"
+              onClick={() => window.location.href = "/chat"}
+            >
+              Get Started Now
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

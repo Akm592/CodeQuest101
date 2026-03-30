@@ -2,138 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-
-
-@layer base {
-  html {
-    /* Enable smooth scrolling for hash links */
-    scroll-behavior: smooth;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Base HSL values for smoother gradients */
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    
+    --card: 224 71% 4%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 180 100% 50%; /* Cyan/Teal Neon */
+    --primary-foreground: 0 0% 0%; /* Black text on neon */
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --accent: 180 100% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 180 100% 50%;
+    
+    --radius: 0.75rem;
+    
+    /* Charts for consistency if used later */
+    --chart-1: 180 100% 50%;
+    --chart-2: 270 100% 60%;
+    --chart-3: 200 100% 50%;
+    --chart-4: 300 100% 60%;
+    --chart-5: 40 100% 60%;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 180 100% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 180 100% 50%;
   }
 }
 
@@ -143,45 +72,41 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 25%), 
+      radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+    background-attachment: fixed;
   }
 }
 
+@layer utilities {
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl;
+  }
+  
+  .glass-card-hover {
+    @apply transition-all duration-300 hover:bg-white/5 hover:border-teal-500/30 hover:shadow-lg hover:shadow-teal-500/10;
+  }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
+  }
+  
+  .neon-border {
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.3), inset 0 0 10px rgba(45, 212, 191, 0.1);
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari, and Opera */
-}
-
-
-textarea {
-  scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
-}
-
-textarea::-webkit-scrollbar {
-  width: 6px;
-}
-
-textarea::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-textarea::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-  background: #666;
-}
-
-
-
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -190,68 +115,14 @@ textarea::-webkit-scrollbar-thumb:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 100, 100, 0.5);
-  border-radius: 6px;
+  background: #334155;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 100, 100, 0.8);
-}
-
-
-
-.glassmorphic {
-  background-color: rgba(255, 255, 255, 0.2); /* Adjust transparency as needed */
-  backdrop-filter: blur(10px); /* Adjust blur amount as needed */
-  -webkit-backdrop-filter: blur(10px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Optional border for more definition */
-}
-
-.dark .glassmorphic {
-  background-color: rgba(25, 25, 25, 0.4); /* Dark theme glassmorphism */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Scrollbar styling for webkit browsers (Chrome, Safari) */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 5px; /* Thin scrollbar */
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent; /* Transparent track */
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #a0aec0; /* Gray scrollbar thumb */
-  border-radius: 20px; /* Rounded corners */
-  border: transparent; /* No border */
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: #718096; /* Darker gray on hover */
-}
-
-/* Hide scrollbar in other browsers (Firefox, IE, Edge) - more generic approach */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-body {
- background-image: linear-gradient(
-    to bottom right,
-    #030712, /* gray-950 */
-    #000000, /* black */
-    #111827  /* gray-900 */
-  );
-  background-size: cover;
-  background-attachment: fixed;
+  background: #475569;
 }

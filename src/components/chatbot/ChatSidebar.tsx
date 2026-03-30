@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { MessageCircle, Plus, CalendarDays, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { MessageCircle, Plus, CalendarDays, X, ChevronRight, Loader2, Sparkles, FolderOpen } from "lucide-react";
 
 interface ChatSessionInfo {
   id: string;
@@ -44,7 +44,7 @@ const getSessionDisplayName = (session: ChatSessionInfo, index: number): string 
   if (session.session_name && session.session_name.trim().length > 3 && session.session_name !== potentialDefaultName) {
     return session.session_name.trim();
   }
-  return `Chat (${formatRelativeTime(session.created_at)})`;
+  return `Session ${index + 1}`; // Simplified default names
 };
 
 const SessionItem = React.memo<{
@@ -79,50 +79,45 @@ const SessionItem = React.memo<{
 
   return (
     <div
-      className={`group relative rounded-xl overflow-hidden transition-all duration-300 ease-out transform
+      className={`group relative rounded-xl transition-all duration-200 mb-2
         ${isSelected
-          ? "bg-blue-500/15 dark:bg-blue-600/25 ring-2 ring-blue-500/30 dark:ring-blue-400/40 scale-[1.02]"
-          : "hover:bg-gray-500/8 dark:hover:bg-white/8 hover:scale-[1.01]"
+          ? "bg-teal-500/10 border border-teal-500/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]"
+          : "hover:bg-gray-100/50 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/5"
         }
         ${isDeleting ? "opacity-50 scale-95" : "opacity-100"}
       `}
-      style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+      style={{ animationDelay: `${index * 50}ms` }}
     >
       <button
         onClick={handleSelect}
         disabled={isDeleting}
-        className="w-full flex items-start p-3 text-left focus:outline-none focus:ring-2 focus:ring-blue-400/50 rounded-xl transition-all duration-200"
-        aria-current={isSelected ? "page" : undefined}
-        aria-label={`Select conversation: ${displayName}`}
+        className="w-full flex items-center p-3 text-left focus:outline-none rounded-xl"
         title={displayName}
       >
-        <div className="mr-3 mt-1 transition-transform duration-200 group-hover:scale-110">
-          <MessageCircle className={`w-4 h-4 transition-colors duration-200 ${isSelected ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"}`} />
+        <div className={`mr-3 p-2 rounded-lg transition-colors ${isSelected ? "bg-teal-500/20 text-teal-400" : "bg-gray-200/50 dark:bg-white/5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"}`}>
+          <MessageCircle className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate transition-colors duration-200 ${isSelected ? "text-blue-700 dark:text-blue-300" : "text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400"}`}>
+          <p className={`text-sm font-medium truncate ${isSelected ? "text-teal-600 dark:text-teal-50" : "text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200"}`}>
             {displayName}
           </p>
-          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-200 group-hover:text-gray-600 dark:group-hover:text-gray-300">
-            <CalendarDays className="w-3 h-3 mr-1 flex-shrink-0" />
+          <div className="flex items-center text-[10px] text-gray-500 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-500 mt-0.5">
+            <CalendarDays className="w-3 h-3 mr-1" />
             <span>{relativeTime}</span>
           </div>
         </div>
       </button>
+
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full 
-                  text-gray-400 dark:text-gray-500 transition-all duration-200
-                  opacity-0 group-hover:opacity-100 group-focus-within:opacity-100
-                  hover:bg-red-500/15 hover:text-red-500 hover:scale-110
-                  dark:hover:bg-red-400/15 dark:hover:text-red-400
-                  focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:opacity-100
-                  disabled:cursor-not-allowed disabled:opacity-40"
-        aria-label={`Delete conversation: ${displayName}`}
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg
+                  text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-all
+                  hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400
+                  focus:opacity-100 focus:outline-none"
         title="Delete Chat"
       >
-        {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
       </button>
     </div>
   );
@@ -138,162 +133,108 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
   isCreatingSession = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(window.innerWidth > 1024);
-  const [isAnimating, setIsAnimating] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   const handleToggleExpanded = useCallback(() => {
-    setIsAnimating(true);
     setIsExpanded(prev => !prev);
-    setTimeout(() => setIsAnimating(false), 300);
   }, []);
 
+  // Auto-close on mobile selection
   const handleSessionSelect = useCallback((sessionId: string) => {
-    if (sessionId !== selectedSessionId) {
-      onSessionSelect(sessionId);
-    }
-    if (window.innerWidth < 1024) {
-      setIsExpanded(false);
-    }
+    if (sessionId !== selectedSessionId) onSessionSelect(sessionId);
+    if (window.innerWidth < 1024) setIsExpanded(false);
   }, [onSessionSelect, selectedSessionId]);
 
   const handleCreateSession = useCallback(() => {
-    if (!isCreatingSession) {
-      onCreateNewSession();
-    }
-    if (window.innerWidth < 1024) {
-      setIsExpanded(false);
-    }
+    if (!isCreatingSession) onCreateNewSession();
+    if (window.innerWidth < 1024) setIsExpanded(false);
   }, [onCreateNewSession, isCreatingSession]);
-
-  const handleDeleteSession = useCallback((sessionId: string) => {
-    onDeleteSession(sessionId);
-  }, [onDeleteSession]);
 
   const sortedSessions = useMemo(() => {
     return [...sessions].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   }, [sessions]);
 
+  // Responsive handling
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 1024) {
-        setIsExpanded(true);
-      } else {
-        setIsExpanded(false);
-      }
-    };
+    const handleResize = () => setIsExpanded(window.innerWidth > 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isExpanded) {
-        handleToggleExpanded();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isExpanded, handleToggleExpanded]);
-
   return (
     <>
+      {/* Mobile Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/30 z-30 transition-opacity lg:hidden ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-30 transition-opacity duration-300 lg:hidden ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={handleToggleExpanded}
       />
 
+      {/* Mobile Toggle Button */}
       <button
         onClick={handleToggleExpanded}
-        className={`fixed left-2 top-3 z-40 rounded-full p-2.5 shadow-lg transition-all duration-300 ease-out
-          bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 active:scale-95
-          focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2
-          lg:hidden ${isExpanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
-        aria-label="Show sidebar"
-        disabled={isAnimating}
+        className={`fixed left-4 top-4 z-40 p-2 rounded-full bg-white dark:bg-[#0F1117] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white shadow-lg lg:hidden transition-all ${isExpanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-5 h-5" />
       </button>
 
+      {/* Sidebar Container */}
       <aside
         ref={sidebarRef}
-        className={`bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl m-2 rounded-2xl
-                   h-[calc(100%-1rem)] flex flex-col shadow-xl border border-white/10 
-                   dark:border-white/5 overflow-hidden transition-all duration-300 ease-out
-                   fixed lg:relative z-40
-                   ${isExpanded ? 'w-72 translate-x-0' : '-translate-x-full w-72 lg:w-0 lg:m-0 lg:translate-x-0'}
+        className={`fixed lg:relative z-40 h-full w-72 bg-white/80 dark:bg-[#050a14]/95 backdrop-blur-xl border-r border-gray-200 dark:border-white/5 flex flex-col transition-transform duration-300 ease-out
+                   ${isExpanded ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:border-none lg:overflow-hidden'}
         `}
-        role="complementary"
-        aria-label="Chat conversations sidebar"
-        aria-expanded={isExpanded}
       >
-        <div className="flex-1 flex flex-col min-h-0">
-          <header className="p-5 flex-shrink-0 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
-              <span>Conversations</span>
-              {sessions.length > 0 && (
-                <span className="ml-2 px-2 py-1 text-xs bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full font-medium">
-                  {sessions.length}
-                </span>
-              )}
-            </h2>
-            <button
-              onClick={handleToggleExpanded}
-              className="rounded-full p-2 text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 
-                         transition-all duration-200 hover:scale-110 active:scale-95 lg:hidden
-                         focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-              aria-label="Hide sidebar"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          </header>
-
-          <div className="flex-grow px-3 pb-3 pt-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50 scrollbar-track-transparent">
-            {sortedSessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-4 text-gray-500 dark:text-gray-400 animate-fade-in">
-                <div className="mb-4 p-3 rounded-full bg-gray-100 dark:bg-gray-800/50">
-                  <MessageCircle className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-                </div>
-                <p className="text-sm font-medium mb-1">No Conversations Yet</p>
-                <p className="text-xs opacity-75">Start a new conversation below</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {sortedSessions.map((session, index) => (
-                  <SessionItem
-                    key={session.id}
-                    session={session}
-                    index={index}
-                    isSelected={selectedSessionId === session.id}
-                    onSelect={handleSessionSelect}
-                    onDelete={handleDeleteSession}
-                  />
-                ))}
-              </div>
-            )}
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 dark:border-white/5">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-br from-teal-500 to-blue-600 rounded-lg">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="font-bold text-gray-800 dark:text-white tracking-wide">CodeQuest</h2>
           </div>
 
-          <footer className="p-3 mt-auto flex-shrink-0">
-            <button
-              onClick={handleCreateSession}
-              disabled={isCreatingSession}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600 
-                         text-white rounded-xl p-3 flex items-center justify-center space-x-2
-                         hover:from-blue-600 hover:to-indigo-600 dark:hover:from-blue-700 dark:hover:to-indigo-700
-                         focus:outline-none focus:ring-2 focus:ring-blue-400/50 dark:focus:ring-blue-500/50
-                         shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]
-                         disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-              aria-label="Create new conversation"
-            >
-              {isCreatingSession ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              <span className="font-medium">
-                {isCreatingSession ? "Creating..." : "New Conversation"}
-              </span>
-            </button>
-          </footer>
+          <button
+            onClick={handleCreateSession}
+            disabled={isCreatingSession}
+            className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-700 dark:text-white flex items-center justify-center gap-2 transition-all group"
+          >
+            {isCreatingSession ? (
+              <Loader2 className="w-4 h-4 animate-spin text-teal-600 dark:text-teal-400" />
+            ) : (
+              <Plus className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
+            )}
+            <span>New Chat</span>
+          </button>
+        </div>
+
+        {/* Sessions List */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/5 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-white/10">
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-4 px-2">History</h3>
+
+          {sortedSessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3">
+                <FolderOpen className="w-5 h-5 text-gray-400 dark:text-gray-600" />
+              </div>
+              <p className="text-sm text-gray-500">No history yet</p>
+            </div>
+          ) : (
+            sortedSessions.map((session, index) => (
+              <SessionItem
+                key={session.id}
+                session={session}
+                index={index}
+                isSelected={selectedSessionId === session.id}
+                onSelect={handleSessionSelect}
+                onDelete={onDeleteSession}
+              />
+            ))
+          )}
+        </div>
+
+        {/* User / Footer Area (Optional placeholder) */}
+        <div className="p-4 border-t border-gray-200 dark:border-white/5">
+          {/* Could add user profile snippet here */}
         </div>
       </aside>
     </>

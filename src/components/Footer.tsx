@@ -1,43 +1,60 @@
-
-import { Link } from 'react-router-dom'; // Use Link for internal navigation if applicable
+import { Link } from 'react-router-dom';
+import { Github, Twitter, Linkedin } from 'lucide-react';
 
 const Footer = () => {
-    // Example year - consider making this dynamic
     const currentYear = new Date().getFullYear();
 
     return (
-        // Use a dark background, consistent with the theme. Add padding and a top border.
-        <footer className="bg-black text-gray-400 py-8 border-t border-gray-800/70 w-full">
+        <footer className="bg-[#030508] border-t border-white/5 pt-16 pb-8 text-gray-400">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
-                    {/* Copyright Info */}
-                    <div className="mb-4 md:mb-0">
-                        <p className="text-sm">
-                            © {currentYear} CodeQuest101. All rights reserved.
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                    {/* Brand */}
+                    <div className="col-span-1 md:col-span-1">
+                        <Link to="/" className="text-2xl font-bold text-white mb-4 block">
+                            CodeQuest<span className="text-teal-500">101</span>
+                        </Link>
+                        <p className="text-sm leading-relaxed mb-6">
+                            Mastering algorithms through visualization. Built for the modern developer.
                         </p>
+                        <div className="flex space-x-4">
+                            {[Github, Twitter, Linkedin].map((Icon, i) => (
+                                <a key={i} href="#" className="p-2 bg-white/5 rounded-lg hover:bg-teal-500/10 hover:text-teal-400 transition-colors">
+                                    <Icon className="w-5 h-5" />
+                                </a>
+                            ))}
+                        </div>
                     </div>
-                    {/* Footer Links */}
-                    <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6" aria-label="Footer navigation">
-                        {/* Use Link component if these are internal routes */}
-                        <Link to="/terms" className="text-sm hover:text-teal-400 transition-colors duration-200">
-                            Terms of Service
-                        </Link>
-                        <Link to="/privacy" className="text-sm hover:text-teal-400 transition-colors duration-200">
-                            Privacy Policy
-                        </Link>
-                        <Link to="/contact" className="text-sm hover:text-teal-400 transition-colors duration-200">
-                            Contact
-                        </Link>
-                        {/* Example external link */}
-                         <a
-                            href="https://github.com/Akm592/CodeQuest101"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm hover:text-teal-400 transition-colors duration-200"
-                         >
-                            GitHub
-                        </a>
-                    </nav>
+
+                    {/* Links */}
+                    <div>
+                        <h4 className="text-white font-semibold mb-6">Platform</h4>
+                        <ul className="space-y-3 text-sm">
+                            <li><Link to="/" className="hover:text-teal-400 transition-colors">Visualizations</Link></li>
+                            <li><Link to="/chat" className="hover:text-teal-400 transition-colors">AI Tutor</Link></li>
+                            <li><Link to="/about" className="hover:text-teal-400 transition-colors">About Us</Link></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="text-white font-semibold mb-6">Resources</h4>
+                        <ul className="space-y-3 text-sm">
+                            <li><a href="#" className="hover:text-teal-400 transition-colors">Documentation</a></li>
+                            <li><a href="#" className="hover:text-teal-400 transition-colors">Community</a></li>
+                            <li><a href="#" className="hover:text-teal-400 transition-colors">Blog</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="text-white font-semibold mb-6">Legal</h4>
+                        <ul className="space-y-3 text-sm">
+                            <li><Link to="/privacy" className="hover:text-teal-400 transition-colors">Privacy Policy</Link></li>
+                            <li><Link to="/terms" className="hover:text-teal-400 transition-colors">Terms of Service</Link></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="border-t border-white/5 pt-8 text-center text-sm">
+                    <p>© {currentYear} CodeQuest101. All rights reserved.</p>
                 </div>
             </div>
         </footer>
