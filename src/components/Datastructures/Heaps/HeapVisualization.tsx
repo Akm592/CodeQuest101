@@ -22,7 +22,7 @@ const HeapVisualization: React.FC = () => {
     let currentIsMinHeap = true; // Internal heap type
     let animationState: "idle" | "inserting" | "comparing" | "swapping" | "done" | "building" = "idle";
     let animationStep = 0;
-    let animationSpeed = 35; // Adjust frame count for speed (lower is faster)
+    const animationSpeed = 35; // Adjust frame count for speed (lower is faster)
     let frameCounter = 0;
     let currentValue: number | null = null;
     let currentIndex = -1;
@@ -106,7 +106,18 @@ const HeapVisualization: React.FC = () => {
         let nodeStroke = p.color(107, 114, 128);
         let scale = 1;
 
-        if (i === currentIndex) {
+        // State-specific highlights are checked first. Previously the plain
+        // `i === currentIndex` / `i === parentIndex` branches came first and
+        // matched every node these two cases care about, so the red "swapping"
+        // and green "done" highlights could never render.
+        if (animationState === 'swapping' && (i === currentIndex || i === parentIndex)) {
+          nodeFill = p.color(239, 68, 68);
+          nodeStroke = p.color(252, 165, 165);
+          scale = 1.15;
+        } else if (animationState === 'done' && i === currentIndex) {
+          nodeFill = p.color(34, 197, 94);
+          nodeStroke = p.color(134, 239, 172);
+        } else if (i === currentIndex) {
           nodeFill = p.color(245, 158, 11);
           nodeStroke = p.color(253, 230, 138);
           scale = 1.1;
@@ -116,13 +127,6 @@ const HeapVisualization: React.FC = () => {
           scale = 1.1;
         } else if (animationState === "building" && i >= buildingStep && buildingStep !== -1) {
           nodeFill = p.color(79, 70, 229, 150);
-        } else if (animationState === 'swapping' && (i === currentIndex || i === parentIndex)) {
-          nodeFill = p.color(239, 68, 68);
-          nodeStroke = p.color(252, 165, 165);
-          scale = 1.15;
-        } else if (animationState === 'done' && i === currentIndex) {
-          nodeFill = p.color(34, 197, 94);
-          nodeStroke = p.color(134, 239, 172);
         }
 
         p.strokeWeight(1.5);

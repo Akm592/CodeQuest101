@@ -124,7 +124,7 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
   const getCellClass = (r: number, c: number) => {
     const isVisited = traversalOrder.slice(0, currentStep).some(([row, col]) => row === r && col === c);
     const isCurrent = currentStep > 0 && traversalOrder[currentStep - 1]?.[0] === r && traversalOrder[currentStep - 1]?.[1] === c;
-    let baseClass =
+    const baseClass =
       "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center border rounded-md text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out";
     if (isCurrent) {
       return `${baseClass} bg-teal-500 border-teal-300 text-white scale-110 shadow-lg z-10`;

@@ -170,7 +170,11 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
         else if (ref) ref.current = node;
     }, [ref]);
 
-    if (error) {
+    // An error used to replace the whole component, so a single failed send
+    // wiped the visible conversation until the user dismissed it. Show it only
+    // as a banner above the messages, and take over the view solely when there
+    // is nothing else to display.
+    if (error && messagesCount === 0) {
         return (
             <div ref={combinedRef} className={`flex items-center justify-center h-full ${className}`} role="alert" aria-live="polite">
                 <ErrorMessage error={error} onRetry={onRetry} />
@@ -189,6 +193,7 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
     if (shouldUseVirtualization) {
         return (
             <div ref={combinedRef} className={`h-full ${className}`} role="log" aria-live="polite" aria-label="Chat messages">
+                {error && <ErrorMessage error={error} onRetry={onRetry} />}
                 <VirtualList
                     ref={virtualListRef}
                     height={containerRef.current?.clientHeight || 400}
@@ -207,6 +212,7 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
 
     return (
         <div ref={combinedRef} className={`h-full ${className}`} role="log" aria-live="polite" aria-label="Chat messages">
+            {error && <ErrorMessage error={error} onRetry={onRetry} />}
             <AnimatePresence initial={false} mode="popLayout">
                 {memoizedMessages.map((message, index) => (
                     <MessageItem

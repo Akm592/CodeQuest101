@@ -478,22 +478,6 @@ const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _
                     state: { distances: new Map(), predecessors: new Map(), openSet: new Set(), closedSet: new Set(), hCosts: new Map(), fCosts: new Map() },
                     goalNode: endNode
                 };
-            } else if (algorithmType === 'dijkstra') {
-                errorStep = {
-                    algorithm: algorithmType,
-                    currentNode: startNode,
-                    action: "ERROR: Invalid or missing End Node",
-                    state: { distances: new Map(), predecessors: new Map(), openSet: new Set(), closedSet: new Set() },
-                    goalNode: endNode
-                };
-            } else if (algorithmType === 'astar') {
-                errorStep = {
-                    algorithm: algorithmType,
-                    currentNode: startNode,
-                    action: "ERROR: Invalid or missing End Node",
-                    state: { distances: new Map(), predecessors: new Map(), openSet: new Set(), closedSet: new Set(), hCosts: new Map(), fCosts: new Map() },
-                    goalNode: endNode
-                };
             }
         } else if (isPathfinding && startNode === endNode) {
             // Handle start === end case specifically

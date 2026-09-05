@@ -121,13 +121,13 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
     // Create new p5 instance with responsive dimensions
     const sketch = (p: p5) => {
       let currentStep = 0;
-      let animationSpeed = 60;
+      const animationSpeed = 60;
       let frameCounter = 0;
       let isAnimating = false;
       
       // Responsive canvas dimensions
-      let canvasWidth = dimensions.width;
-      let canvasHeight = dimensions.height;
+      const canvasWidth = dimensions.width;
+      const canvasHeight = dimensions.height;
       
       // Responsive scaling function
       const getScaleFactor = () => Math.min(canvasWidth / 800, canvasHeight / 500);
@@ -371,7 +371,7 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ visualization
 
         // Draw computed values
         if (currentStepData.computedValues) {
-          let yOffset = arrayY + boxHeight + scale(80);
+          const yOffset = arrayY + boxHeight + scale(80);
           p.fill(colors.text);
           p.textSize(scale(14));
           p.textStyle(p.NORMAL);

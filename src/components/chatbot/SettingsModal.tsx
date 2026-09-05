@@ -1,15 +1,41 @@
 // SettingsModal.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Monitor, Check } from 'lucide-react';
+import { X, Sun, Moon, Monitor, Check, LogOut, LogIn, Code2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface SettingsModalProps {
     currentTheme: string;
     onThemeChange: (theme: string) => void;
     onClose: () => void;
+    userEmail?: string | null;
+    onSignOut?: () => void;
+    preferredLanguage?: string;
+    onPreferredLanguageChange?: (language: string) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ currentTheme, onThemeChange, onClose }) => {
+// Kept in step with SUPPORTED_LANGUAGES in the backend's chat schema.
+const LANGUAGE_OPTIONS = [
+    { name: 'Ask me each time', value: '' },
+    { name: 'Python', value: 'python' },
+    { name: 'Java', value: 'java' },
+    { name: 'C++', value: 'c++' },
+    { name: 'JavaScript', value: 'javascript' },
+    { name: 'TypeScript', value: 'typescript' },
+    { name: 'Go', value: 'go' },
+    { name: 'Rust', value: 'rust' },
+    { name: 'C#', value: 'c#' },
+];
+
+const SettingsModal: React.FC<SettingsModalProps> = ({
+    currentTheme,
+    onThemeChange,
+    onClose,
+    userEmail,
+    onSignOut,
+    preferredLanguage = '',
+    onPreferredLanguageChange,
+}) => {
 
     const themeOptions = [
         { name: 'Light', value: 'light', icon: Sun },
@@ -88,9 +114,74 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ currentTheme, onThemeChan
                         </div>
 
 
+                        {/* Solution language: setting this lets the tutor answer
+                            immediately instead of asking which language first. */}
+                        <div>
+                            <label
+                                htmlFor="preferred-language"
+                                className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider"
+                            >
+                                Solution language
+                            </label>
+                            <div className="relative">
+                                <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                <select
+                                    id="preferred-language"
+                                    value={preferredLanguage}
+                                    onChange={(e) => onPreferredLanguageChange?.(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-gray-200 focus:outline-none focus:border-teal-500/50"
+                                >
+                                    {LANGUAGE_OPTIONS.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                Pick one and solutions arrive in a single step.
+                            </p>
+                        </div>
+
+                        {/* Account. Until now the app had no sign-out anywhere. */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+                                Account
+                            </label>
+                            {userEmail ? (
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-gray-900 dark:text-gray-200 truncate">{userEmail}</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500">Chats are saved to your account</p>
+                                    </div>
+                                    <button
+                                        onClick={onSignOut}
+                                        className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        Sign out
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-gray-900 dark:text-gray-200">Browsing as a guest</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500">Sign in to save your chat history</p>
+                                    </div>
+                                    <Link
+                                        to="/login"
+                                        onClick={onClose}
+                                        className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 transition-colors"
+                                    >
+                                        <LogIn className="w-4 h-4" />
+                                        Sign in
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="pt-2 text-center text-xs text-gray-400 dark:text-gray-600">
-                            CodeQuest101 v2.0 • Build 2024.10.27
+                            CodeQuest101 v2.0
                         </div>
                     </div>
                 </motion.div>
