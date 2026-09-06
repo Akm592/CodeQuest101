@@ -123,8 +123,8 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
     }
 
     // Move Hare
-    let hareMove1 = nodes[hare]?.next;
-    let hareMove2 = hareMove1 !== null ? nodes[hareMove1]?.next : null;
+    const hareMove1 = nodes[hare]?.next;
+    const hareMove2 = hareMove1 !== null ? nodes[hareMove1]?.next : null;
 
     if (hareMove1 !== null && hareMove2 !== null) {
        nextHare = hareMove2;

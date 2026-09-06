@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'src/components/AlgorithmVisualizer.tsx'] },
+  { ignores: ['dist'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -23,6 +23,22 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Underscore-prefixed names are intentionally unused. `ignoreRestSiblings`
+      // covers the react-markdown override pattern, where `node` is destructured
+      // only so it is excluded from the forwarded `...props`.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      // A warning rather than an error: the existing components use `any` in
+      // plenty of places and typing them properly is worth doing, but it should
+      // not block CI on unrelated changes. New code should avoid it.
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 )

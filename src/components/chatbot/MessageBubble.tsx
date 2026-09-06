@@ -150,7 +150,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
     const codeBlockCount = (currentText.match(/```/g) || []).length;
     const headerCount = (currentText.match(/^#{1,6}\s/gm) || []).length;
-    const listCount = (currentText.match(/^[\*\-\+]\s/gm) || []).length;
+    const listCount = (currentText.match(/^[*\-+]\s/gm) || []).length;
     const orderedListCount = (currentText.match(/^\d+\.\s/gm) || []).length;
     const wordCount = currentText.split(/\s+/).length;
     const lineCount = currentText.split('\n').length;

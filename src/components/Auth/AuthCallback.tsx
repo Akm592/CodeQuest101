@@ -50,7 +50,7 @@ export const AuthCallback = () => {
     return () => {
       isMounted = false; // Cleanup
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [setIsLoading]); // Add setIsLoading dependency if used
 
   // --- Render Logic ---

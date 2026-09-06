@@ -180,7 +180,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
   };
 
   const getBarClass = (index: number): string => {
-    let baseClasses = "w-8 mx-0.5 relative rounded-t-lg transition-all duration-300 ease-in-out flex items-end justify-center pb-2 font-bold text-xs";
+    const baseClasses = "w-8 mx-0.5 relative rounded-t-lg transition-all duration-300 ease-in-out flex items-end justify-center pb-2 font-bold text-xs";
     let colorClasses = "bg-white/10 text-white/40 border border-white/5";
 
     if (searchStatus === 'running' || searchStatus === 'found') {
@@ -201,7 +201,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
   };
 
   const getPointerPositionClass = (pointerType: 'L' | 'R' | 'M', index: number): string => {
-      let base = "absolute -top-8 text-[10px] font-bold transition-all duration-300 ease-in-out px-2 py-0.5 rounded-full";
+      const base = "absolute -top-8 text-[10px] font-bold transition-all duration-300 ease-in-out px-2 py-0.5 rounded-full";
       let color = "";
 
       if (pointerType === 'L' && index === left) color = "bg-blue-500/20 text-blue-400 border border-blue-500/30";

@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer } from "react";
-import axios from "axios";
+import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles } from "lucide-react";
 import ChatWindow from "./ChatWindow";
@@ -9,6 +8,8 @@ import ChatSidebar from "./ChatSidebar";
 import SettingsModal from "./SettingsModal";
 import DeleteSessionModal from "./DeleteSessionModal";
 import { supabase } from "../../lib/supabaseClient";
+import { api, postChatStream, PendingContext } from "../../lib/api";
+import { v4 as uuidv4 } from "uuid";
 import SuggestionsScreen from "./SuggestionsScreen";
 
 // --- Interfaces ---
@@ -151,13 +152,9 @@ const useTheme = () => {
   return { theme, handleThemeChange };
 };
 
-const useAPI = () => {
-  const api = useMemo(() => axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
-  }), []);
-
-  return api;
-};
+// The shared instance in lib/api.ts attaches the Supabase access token and
+// retries once on 401 with a refreshed one.
+const useAPI = () => api;
 
 // Guest sessions are ephemeral - no localStorage persistence
 
@@ -168,7 +165,7 @@ SuggestionsScreen.displayName = 'SuggestionsScreen';
 // --- Main ChatInterface Component ---
 const ChatInterface = () => {
   // --- Hooks and Context ---
-  const { user, getChatSession, createChatSession } = useAuth();
+  const { user, getChatSession, createChatSession, signOut } = useAuth();
   const { theme, handleThemeChange } = useTheme();
   const api = useAPI();
 
@@ -189,16 +186,47 @@ const ChatInterface = () => {
   });
 
   // --- Local State ---
+  const [preferredLanguage, setPreferredLanguage] = useState<string>(
+    () => {
+      try {
+        return localStorage.getItem("preferredLanguage") || "";
+      } catch {
+        return "";
+      }
+    },
+  );
+  const handlePreferredLanguageChange = useCallback((language: string) => {
+    setPreferredLanguage(language);
+    try {
+      if (language) localStorage.setItem("preferredLanguage", language);
+      else localStorage.removeItem("preferredLanguage");
+    } catch {
+      // A blocked localStorage must not break the setting for this session.
+    }
+  }, []);
+
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      setShowSettingsModal(false);
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      chatDispatch({ type: 'SET_ERROR', payload: "Could not sign out. Please try again." });
+    }
+  }, [signOut]);
+
   // --- Refs ---
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Context the backend asked us to hold between turns. A ref, not state,
+  // because handleSendMessage must read the latest value without re-subscribing.
+  const pendingRef = useRef<PendingContext | null>(null);
 
   // --- Memoized Values ---
-  const apiLink = useMemo(() => import.meta.env.VITE_API_URL || "http://localhost:8000", []);
 
   // --- Memoized Handlers ---
   const handleSendMessage = useCallback(async (messageText?: string) => {
@@ -237,15 +265,24 @@ const ChatInterface = () => {
 
       abortControllerRef.current = new AbortController();
 
-      const response = await fetch(`${apiLink}/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-ID": sessionState.session.id,
+      // `pending` carries the LeetCode context the backend handed us on the
+      // previous turn. Echoing it back keeps the two-message "which language?"
+      // exchange working even if the backend restarted in between — which the
+      // free tier does whenever it spins down.
+      // Consume the pending context: clear it now so it cannot leak into a
+      // later, unrelated turn. The backend re-sends it if it still needs one.
+      const pending = pendingRef.current;
+      pendingRef.current = null;
+
+      const response = await postChatStream(
+        sessionState.session.id,
+        {
+          user_input: textToSend,
+          preferred_language: preferredLanguage || null,
+          pending,
         },
-        body: JSON.stringify({ user_input: textToSend }),
-        signal: abortControllerRef.current.signal,
-      });
+        abortControllerRef.current.signal,
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: "Unknown server error" }));
@@ -302,6 +339,10 @@ const ChatInterface = () => {
                       payload: { id: botMessageId, updates: { text: accumulatedBotText } }
                     });
                   }
+                } else if (data.type === "pending") {
+                  // The backend needs another turn to finish this request and
+                  // has handed us the context it will need.
+                  pendingRef.current = data.data as PendingContext;
                 } else if (data.type === "visualization") {
                   const vizMessage: Message = {
                     id: `bot-viz-${Date.now()}`,
@@ -341,13 +382,20 @@ const ChatInterface = () => {
       chatDispatch({ type: 'SET_LOADING', payload: false });
       abortControllerRef.current = null;
     }
-  }, [chatState.inputValue, chatState.isLoading, sessionState.session?.id, apiLink]);
+  }, [chatState.inputValue, chatState.isLoading, sessionState.session?.id, preferredLanguage]);
 
   const handleSessionSelect = useCallback(async (sessionId: string) => {
     if (sessionId === sessionState.selectedSessionId) return;
 
     sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionId });
     sessionDispatch({ type: 'SET_SESSION', payload: { id: sessionId } });
+    pendingRef.current = null;
+
+    if (!user) {
+      // Guest sessions are ephemeral: there is no stored history to fetch.
+      chatDispatch({ type: 'SET_MESSAGES', payload: [] });
+      return;
+    }
 
     try {
       chatDispatch({ type: 'SET_LOADING', payload: true });
@@ -379,7 +427,7 @@ const ChatInterface = () => {
     } finally {
       chatDispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [sessionState.selectedSessionId, api]);
+  }, [sessionState.selectedSessionId, api, user]);
 
   const handleNewChat = useCallback(async () => {
     if (sessionState.isCreatingSession) return;
@@ -394,7 +442,12 @@ const ChatInterface = () => {
         newSessionRecord = await createChatSession();
       } else {
         // Guest mode: Generate UUID locally (ephemeral, no DB persistence)
-        const sessionId = crypto.randomUUID();
+        // crypto.randomUUID is only available in a secure context, so fall
+        // back to the uuid package rather than throwing on plain http.
+        const sessionId =
+          typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : uuidv4();
         newSessionRecord = {
           id: sessionId,
           session_name: "Guest Chat",
@@ -412,6 +465,7 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_SESSION', payload: newSessionRecord });
       sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: newSessionRecord.id });
       chatDispatch({ type: 'CLEAR_CHAT' });
+      pendingRef.current = null;
 
       // Refresh sessions list (User only)
       if (user) {
@@ -446,7 +500,10 @@ const ChatInterface = () => {
       const { error: deleteError } = await supabase
         .from("chat_sessions")
         .delete()
-        .eq("id", sessionToDelete);
+        .eq("id", sessionToDelete)
+        // Row level security enforces this too; stating it keeps the intent
+        // visible and lets the query use the owner index.
+        .eq("user_id", user.id);
 
       if (deleteError) {
         sessionDispatch({ type: 'SET_SESSIONS', payload: originalSessions });
@@ -762,6 +819,10 @@ const ChatInterface = () => {
               currentTheme={theme}
               onThemeChange={handleThemeChange}
               onClose={() => setShowSettingsModal(false)}
+              userEmail={user?.email ?? null}
+              onSignOut={handleSignOut}
+              preferredLanguage={preferredLanguage}
+              onPreferredLanguageChange={handlePreferredLanguageChange}
             />
           )}
         </AnimatePresence>
