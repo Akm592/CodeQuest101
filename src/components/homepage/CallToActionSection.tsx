@@ -7,7 +7,7 @@ export const CallToActionSection: React.FC = () => {
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-900/40 to-black z-0" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-black z-0" />
 
       <div className="container mx-auto px-4 relative z-10 text-center">
         <motion.div
@@ -26,7 +26,7 @@ export const CallToActionSection: React.FC = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Upgrade Your Skills?
           </h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
             Join thousands of students and developers mastering algorithms with CodeQuest101.
             Start your journey today—completely free.
           </p>
@@ -34,7 +34,7 @@ export const CallToActionSection: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
               size="lg"
-              className="bg-teal-500 hover:bg-teal-400 text-black font-bold h-14 px-10 rounded-full shadow-lg shadow-teal-500/20 transition-all hover:scale-105"
+              className="bg-primary hover:bg-primary text-black font-bold h-14 px-10 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105"
               onClick={() => window.location.href = "/chat"}
             >
               Get Started Now

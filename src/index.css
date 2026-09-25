@@ -2,67 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------
+   CodeQuest is a dark product. There used to be a `:root` and a `.dark` block
+   holding byte-identical values, which meant "light mode" did not exist: the
+   theme toggle only stripped the `dark:` variants off the ten components that
+   had them (all in the chatbot), so the chat went pale while the homepage, the
+   visualizers and the auth pages stayed dark. One palette, applied everywhere,
+   is what makes the app look like one product.
+
+   Accent: teal. `--primary` was cyan (180 100% 50%) while ~250 literal
+   `teal-*` classes claimed the brand elsewhere; they are visibly different
+   hues. Teal wins because the logo, the chatbot and the auth pages already use
+   it. Violet survives only as a gradient partner.
+--------------------------------------------------------------------------- */
+
 @layer base {
   :root {
-    /* Base HSL values for smoother gradients */
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
-    
-    --card: 224 71% 4%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 180 100% 50%; /* Cyan Neon */
-    --primary-foreground: 0 0% 0%;
-    
-    --secondary: 262 83% 58%; /* Electric Violet */
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20.2% 65.1%;
-    
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 180 100% 50%;
-    
-    --radius: 0.75rem;
-    
-    /* Charts for consistency if used later */
-    --chart-1: 180 100% 50%;
-    --chart-2: 270 100% 60%;
-    --chart-3: 200 100% 50%;
-    --chart-4: 300 100% 60%;
-    --chart-5: 40 100% 60%;
-  }
 
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 224 71% 4%;
+    /* Cards sit slightly above the page rather than matching it exactly, so a
+       surface reads as raised without needing a border to prove it. */
+    --card: 222 47% 7%;
     --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
+
+    --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 180 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 262 83% 58%;
+
+    --primary: 172 66% 50%; /* teal-400 — bright enough to read on near-black */
+    --primary-foreground: 180 100% 6%;
+
+    --secondary: 262 83% 58%; /* violet, for gradients only */
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 70%;
+
+    --accent: 172 66% 50%;
+    --accent-foreground: 180 100% 6%;
+
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 180 100% 50%;
+
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 172 66% 50%;
+
+    --radius: 0.75rem;
+
+    /* Surfaces. One blur, one border, one raised fill, one recessed fill —
+       the audit found nine semantic surfaces written as ~35 class strings
+       across 5 blur radii, 3 border alphas and 5 background alphas. */
+    --surface-raised: 0 0% 100% / 0.05;
+    --surface-recessed: 0 0% 0% / 0.4;
+    --surface-overlay: 0 0% 0% / 0.65;
+    --surface-border: 0 0% 100% / 0.1;
+    --surface-border-strong: 0 0% 100% / 0.16;
+
+    /* Algorithm state colours, shared by DOM, SVG and canvas renderers.
+       Canvas code reads these through useCanvasPalette() so a p5 sketch and a
+       Tailwind class cannot drift apart. */
+    --viz-idle: 215 20% 45%;
+    --viz-current: 172 66% 50%;
+    --viz-compare: 38 92% 50%;
+    --viz-swap: 0 72% 51%;
+    --viz-visited: 262 83% 68%;
+    --viz-found: 142 71% 45%;
+    --viz-pointer: 199 89% 60%;
   }
 }
 
@@ -70,59 +81,64 @@
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family:
+      'Inter',
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
     overflow-x: hidden;
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.12), transparent 25%), 
-      radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 25%);
+    background-image:
+      radial-gradient(circle at 15% 50%, hsl(var(--primary) / 0.08), transparent 25%),
+      radial-gradient(circle at 85% 30%, hsl(var(--secondary) / 0.08), transparent 25%);
     background-attachment: fixed;
+  }
+
+  /* Visible focus, since almost every control here is a custom surface. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply bg-black/50 backdrop-blur-2xl border border-white/10 shadow-2xl;
-  }
-  
-  .glass-card-hover {
-    @apply transition-all duration-300 hover:bg-white/5 hover:border-teal-500/30 hover:shadow-lg hover:shadow-teal-500/10;
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
   }
 
-  .text-glow {
-    text-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
-  }
-  
-  .neon-border {
-    box-shadow: 0 0 10px rgba(45, 212, 191, 0.3), inset 0 0 10px rgba(45, 212, 191, 0.1);
-  }
-  
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
 }
 
-/* Custom Scrollbar */
+/* Custom scrollbar, from tokens rather than hardcoded slate hexes. */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: hsl(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: hsl(var(--border));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: hsl(var(--muted-foreground) / 0.5);
 }

@@ -4,21 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust 
 const NeuralNetworkExplanation: React.FC = () => {
   return (
     // Dark Card for explanation
-    <Card className="mt-8 bg-gray-800 border border-gray-700/50 text-gray-300">
-       <CardHeader className="border-b border-gray-700/50 pb-3">
-            <CardTitle className="text-xl font-semibold text-gray-100">Understanding Neural Networks</CardTitle>
+    <Card className="mt-8 bg-muted border border-border text-muted-foreground">
+       <CardHeader className="border-b border-border pb-3">
+            <CardTitle className="text-xl font-semibold text-foreground">Understanding Neural Networks</CardTitle>
        </CardHeader>
       <CardContent className="pt-4 text-sm">
         <div className="space-y-5">
           <section>
-            <h3 className="text-lg font-semibold text-gray-200 mb-1">What is a Neural Network?</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">What is a Neural Network?</h3>
             <p className="leading-relaxed">
               Inspired by the human brain, a neural network is a machine learning model comprising layers of interconnected nodes (neurons). These networks process input data, identify patterns, and generate outputs like predictions or classifications. They excel at learning from data, improving performance over time on complex tasks (e.g., image recognition, NLP).
             </p>
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-200 mb-1">Key Components</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">Key Components</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 <strong>Input Layer:</strong> Receives raw input data. Each node typically corresponds to a feature.
@@ -39,7 +39,7 @@ const NeuralNetworkExplanation: React.FC = () => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-200 mb-1">How It Works (Forward Pass)</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">How It Works (Forward Pass)</h3>
             <ol className="list-decimal pl-5 space-y-1">
               <li>Input data enters the Input Layer.</li>
               <li>Data flows to Hidden Layers. Each neuron calculates a weighted sum of its inputs, adds a bias, and applies an activation function.</li>
@@ -50,7 +50,7 @@ const NeuralNetworkExplanation: React.FC = () => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-200 mb-1">Common Types</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">Common Types</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>FNNs (Feedforward):</strong> Simple, unidirectional data flow.</li>
               <li><strong>CNNs (Convolutional):</strong> Excel at spatial hierarchies (images, video). Use convolutional filters.</li>
@@ -62,7 +62,7 @@ const NeuralNetworkExplanation: React.FC = () => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-gray-200 mb-1">Applications</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">Applications</h3>
             <ul className="list-disc pl-5 grid grid-cols-2 gap-x-4 gap-y-1">
               <li>Image Recognition</li>
               <li>Speech Recognition</li>
@@ -77,13 +77,13 @@ const NeuralNetworkExplanation: React.FC = () => {
 
           {/* Further Reading - Keep as is, maybe style links */}
            <section>
-             <h3 className="text-lg font-semibold text-gray-200 mb-1">Further Reading</h3>
+             <h3 className="text-lg font-semibold text-foreground mb-1">Further Reading</h3>
              <ul className="list-disc pl-5 text-xs space-y-1">
                  {/* Example styled link */}
-                 <li>Goodfellow, I., et al. (2016). <em>Deep Learning</em>. MIT Press. <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
-                 <li>LeCun, Y., et al. (2015). Deep learning. <em>Nature</em>. <a href="https://www.nature.com/articles/nature14539" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
+                 <li>Goodfellow, I., et al. (2016). <em>Deep Learning</em>. MIT Press. <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">(Link)</a></li>
+                 <li>LeCun, Y., et al. (2015). Deep learning. <em>Nature</em>. <a href="https://www.nature.com/articles/nature14539" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">(Link)</a></li>
                  {/* Add other links similarly */}
-                 <li>Schmidhuber, J. (2015). Deep learning overview. <em>Neural Networks</em>. <a href="https://doi.org/10.1016/j.neunet.2014.09.003" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline">(Link)</a></li>
+                 <li>Schmidhuber, J. (2015). Deep learning overview. <em>Neural Networks</em>. <a href="https://doi.org/10.1016/j.neunet.2014.09.003" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">(Link)</a></li>
 
              </ul>
            </section>

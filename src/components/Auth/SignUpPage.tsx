@@ -95,24 +95,24 @@ export const SignUpPage = () => {
   // --- Success Screen ---
   if (signupSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-gray-300">
-        <Card className="w-full max-w-md bg-gray-900 border border-gray-700/50 shadow-xl">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-muted-foreground">
+        <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="pb-6">
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-400" /> {/* Adjusted color */}
             </div>
-            <CardTitle className="text-2xl md:text-3xl font-bold text-center text-gray-100">
+            <CardTitle className="text-2xl md:text-3xl font-bold text-center text-foreground">
               Check Your Email
             </CardTitle>
-            <CardDescription className="text-center text-gray-400 mt-2">
-              We've sent a confirmation link to <strong className="text-teal-400">{submittedEmail}</strong>
+            <CardDescription className="text-center text-muted-foreground mt-2">
+              We've sent a confirmation link to <strong className="text-primary">{submittedEmail}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center pb-6">
-            <p className="mb-4 text-gray-300">
+            <p className="mb-4 text-muted-foreground">
               Please click the link in the email to complete your registration and sign in.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Didn't receive it? Check your spam folder or{" "}
               <button
                 onClick={() => {
@@ -121,14 +121,14 @@ export const SignUpPage = () => {
                     setConfirmPassword("");
                     setIsSubmitting(false); // Allow resubmit
                 }}
-                className="text-teal-400 hover:text-teal-300 transition-colors underline"
+                className="text-primary hover:text-primary transition-colors underline"
               >
                 try signing up again
               </button>.
             </p>
           </CardContent>
            <CardFooter className="flex justify-center pt-4">
-                <Link to="/login" className="text-sm text-teal-400 hover:text-teal-300 transition-colors">
+                <Link to="/login" className="text-sm text-primary hover:text-primary transition-colors">
                     Back to Sign In
                 </Link>
            </CardFooter>
@@ -139,13 +139,13 @@ export const SignUpPage = () => {
 
   // --- Sign Up Form ---
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-gray-300">
-      <Card className="w-full max-w-md bg-gray-900 border border-gray-700/50 shadow-xl">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-muted-foreground">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl md:text-3xl font-bold text-center text-gray-100">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-center text-foreground">
             Create Your CodeQuest101 Account
           </CardTitle>
-          <CardDescription className="text-center text-gray-400">
+          <CardDescription className="text-center text-muted-foreground">
             Unlock interactive code visualizations
           </CardDescription>
         </CardHeader>
@@ -161,9 +161,9 @@ export const SignUpPage = () => {
           <form onSubmit={handleEmailSignUp} className="space-y-4">
             {/* Name Input */}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-300 font-medium">Name</Label>
+              <Label htmlFor="name" className="text-muted-foreground font-medium">Name</Label>
               <div className="relative">
-                 <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                 <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
                     id="name"
                     type="text" // Use text type for name
@@ -172,16 +172,16 @@ export const SignUpPage = () => {
                     onChange={(e) => setName(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                    className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                   />
               </div>
             </div>
 
             {/* Email Input */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300 font-medium">Email</Label>
+              <Label htmlFor="email" className="text-muted-foreground font-medium">Email</Label>
                <div className="relative">
-                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
                   id="email"
                   type="email"
@@ -190,16 +190,16 @@ export const SignUpPage = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                  className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
                </div>
             </div>
 
             {/* Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-300 font-medium">Password</Label>
+              <Label htmlFor="password" className="text-muted-foreground font-medium">Password</Label>
               <div className="relative">
-                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
                   id="password"
                   type="password"
@@ -208,16 +208,16 @@ export const SignUpPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                  className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
               </div>
             </div>
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-gray-300 font-medium">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-muted-foreground font-medium">Confirm Password</Label>
               <div className="relative">
-                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                  <Input
                   id="confirmPassword"
                   type="password"
@@ -226,7 +226,7 @@ export const SignUpPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                  className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export const SignUpPage = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-11 mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
               disabled={isSubmitting || isLoading}
             >
               {isSubmitting ? "Creating Account..." : "Create Account"}
@@ -244,10 +244,10 @@ export const SignUpPage = () => {
           {/* Separator */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
+              <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-500">
+              <span className="px-2 bg-gray-900 text-muted-foreground">
                 Or continue with
               </span>
             </div>
@@ -257,7 +257,7 @@ export const SignUpPage = () => {
           <div className="space-y-3">
             <Button
               type="button"
-              className="w-full h-11 flex items-center justify-center gap-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 flex items-center justify-center gap-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
               onClick={() => handleOAuthLogin("google")}
               disabled={isSubmitting || isLoading}
               variant="outline" // Uses outline styles defined in className
@@ -270,18 +270,18 @@ export const SignUpPage = () => {
             {/* Add other OAuth providers here if needed */}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col items-center space-y-3 pt-4 pb-6 px-8 border-t border-gray-700/50 mt-6">
-          <div className="text-sm text-center text-gray-400">
+        <CardFooter className="flex flex-col items-center space-y-3 pt-4 pb-6 px-8 border-t border-border mt-6">
+          <div className="text-sm text-center text-muted-foreground">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-teal-400 hover:text-teal-300 font-medium transition-colors duration-200 underline"
+              className="text-primary hover:text-primary font-medium transition-colors duration-200 underline"
             >
               Sign in
             </Link>
           </div>
-          <p className="text-xs text-gray-500 text-center">
-            By signing up, you agree to our <Link to="/terms" className="underline hover:text-gray-300">Terms</Link> and <Link to="/privacy" className="underline hover:text-gray-300">Privacy Policy</Link>.
+          <p className="text-xs text-muted-foreground text-center">
+            By signing up, you agree to our <Link to="/terms" className="underline hover:text-muted-foreground">Terms</Link> and <Link to="/privacy" className="underline hover:text-muted-foreground">Privacy Policy</Link>.
           </p>
         </CardFooter>
       </Card>

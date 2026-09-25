@@ -24,7 +24,7 @@ export const AboutSection: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
               Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Mission</span>
             </h2>
-            <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               CodeQuest101 exists to democratize computer science education. We believe that seeing is understanding,
               and our interactive tools are designed to make the invisible logic of algorithms visible and intuitive.
             </p>
@@ -33,12 +33,12 @@ export const AboutSection: React.FC = () => {
           {/* Creator Card */}
           <div className="relative group">
             {/* Glow Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 via-blue-500 to-purple-500 rounded-2xl opacity-25 blur group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-blue-500 to-purple-500 rounded-2xl opacity-25 blur group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
 
             <div className="relative bg-[#0F1117] border border-white/10 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
 
               <div className="relative shrink-0">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-br from-teal-400 to-blue-500">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-br from-primary to-blue-500">
                   <img
                     src={creator.image}
                     alt={creator.name}
@@ -49,11 +49,11 @@ export const AboutSection: React.FC = () => {
 
               <div className="text-center md:text-left flex-grow">
                 <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">{creator.name}</h3>
-                <div className="inline-block px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-sm font-medium mb-4">
+                <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
                   {creator.title}
                 </div>
 
-                <p className="text-gray-400 mb-6 leading-relaxed">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
                   {creator.bio}
                 </p>
 
@@ -68,7 +68,7 @@ export const AboutSection: React.FC = () => {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"
+                      className="p-2 rounded-full bg-white/5 text-muted-foreground hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"
                       aria-label={social.label}
                     >
                       {social.icon}

@@ -5,7 +5,7 @@ import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
 import { PlayCircle, PauseCircle, RotateCcw, ArrowRight } from "lucide-react";
 
-const RotateImageVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
+const RotateImageVisualizer = () => {
   const [matrix, setMatrix] = useState([
     [1, 2, 3],
     [4, 5, 6],
@@ -132,7 +132,7 @@ const RotateImageVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => 
   );
 
   return (
-    <div className=" bg-white w-screen">
+    <div className="w-full">
     <Card className="w-full  mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
       <CardHeader className="bg-black text-white p-4 sm:p-6">
         <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
@@ -164,7 +164,7 @@ const RotateImageVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => 
           <Button
             onClick={toggleRunning}
             disabled={step >= rotationSteps.length}
-            className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white"
+            className="flex items-center space-x-2 bg-muted hover:bg-muted text-white"
           >
             {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
             <span>{isRunning ? "Pause" : "Start"}</span>
@@ -181,7 +181,7 @@ const RotateImageVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => 
           {renderMatrix(matrix)}
           <ArrowRight
             size={32}
-            className="text-gray-500 transform rotate-90 sm:rotate-0"
+            className="text-muted-foreground transform rotate-90 sm:rotate-0"
           />
           {renderMatrix(matrix, true)}
         </div>

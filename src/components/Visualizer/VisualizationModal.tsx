@@ -34,7 +34,7 @@ const VisualizationModal: React.FC<VisualizationModalProps> = ({ visualizationDa
         transition={{ duration: 0.2 }}
       >
         <motion.div
-          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-white/10
+          className="bg-white/80 dark:bg-muted/80 backdrop-blur-xl border border-white/20 dark:border-white/10
                      rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] 
                      flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal content
@@ -47,13 +47,13 @@ const VisualizationModal: React.FC<VisualizationModalProps> = ({ visualizationDa
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
           {/* Modal Header */}
-          <header className="flex items-center justify-between p-4 border-b border-white/10 dark:border-gray-700/50 flex-shrink-0">
-            <h2 id="visualization-modal-title" className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          <header className="flex items-center justify-between p-4 border-b border-white/10 dark:border-border flex-shrink-0">
+            <h2 id="visualization-modal-title" className="text-lg font-semibold text-gray-800 dark:text-foreground">
               Algorithm Visualization
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-200/50 dark:hover:bg-gray-700/50
+              className="p-2 rounded-full text-muted-foreground hover:bg-gray-200/50 dark:hover:bg-muted/50
                          transition-all duration-200 hover:scale-110 active:scale-95
                          focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               aria-label="Close visualization"

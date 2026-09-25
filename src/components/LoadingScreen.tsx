@@ -83,7 +83,7 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
                 {/* Progress Group */}
                 <div className="w-64 sm:w-80 space-y-3">
                     <div className="flex justify-between items-end">
-                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">System Initializing</span>
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">System Initializing</span>
                         <span className="text-xs font-mono text-primary">{Math.min(percent, 100)}%</span>
                     </div>
                     <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden">
@@ -97,9 +97,9 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
 
             {/* Bottom Tech Text */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 text-gray-600">
-                <div className="h-[1px] w-8 bg-gray-800" />
+                <div className="h-[1px] w-8 bg-muted" />
                 <span className="text-[9px] uppercase tracking-widest font-medium">Visualization Engine v2.0.4</span>
-                <div className="h-[1px] w-8 bg-gray-800" />
+                <div className="h-[1px] w-8 bg-muted" />
             </div>
 
             <style>{`

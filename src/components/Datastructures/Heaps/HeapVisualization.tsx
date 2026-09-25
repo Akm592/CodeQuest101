@@ -396,9 +396,9 @@ const HeapVisualization: React.FC = () => {
           value={inputValue}
           onChange={(e) => { setInputValue(e.target.value); setInputError(null); }}
           disabled={isBuilding}
-          className="h-9 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70"
+          className="h-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70"
         />
-        <Button onClick={handleInsert} disabled={isBuilding || !inputValue} className="h-9 text-sm bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-60">
+        <Button onClick={handleInsert} disabled={isBuilding || !inputValue} className="h-9 text-sm bg-primary hover:bg-primary text-white disabled:opacity-60">
           <Plus size={16} className="mr-1" /> Insert
         </Button>
       </div>
@@ -409,7 +409,7 @@ const HeapVisualization: React.FC = () => {
           value={initialArrayInput}
           onChange={(e) => { setInitialArrayInput(e.target.value); setInputError(null); }}
           disabled={isBuilding}
-          className="h-9 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70 font-mono text-xs"
+          className="h-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70 font-mono text-xs"
         />
         <Button onClick={handleBuildHeap} disabled={isBuilding || !initialArrayInput.trim()} className="h-9 text-sm bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60">
           {isBuilding ? <Loader2 size={16} className="mr-1 animate-spin" /> : <Settings size={16} className="mr-1" />}
@@ -418,7 +418,7 @@ const HeapVisualization: React.FC = () => {
       </div>
       {inputError && <p className="text-xs text-red-400 mt-1 self-center">{inputError}</p>}
       <div className="flex flex-wrap justify-center gap-2 mt-2">
-        <Button onClick={handleToggleHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+        <Button onClick={handleToggleHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-muted hover:bg-gray-600 disabled:opacity-60">
           <ArrowDownUp size={14} className="mr-1" /> Toggle <span className='font-mono ml-1'>{isMinHeap ? '[MIN]' : '[MAX]'}</span>
         </Button>
         <Button onClick={handleResetHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-red-700 hover:bg-red-600 text-white disabled:opacity-60">
@@ -427,7 +427,7 @@ const HeapVisualization: React.FC = () => {
       </div>
       <div
         ref={sketchRef}
-        className="w-full max-w-3xl h-[400px] sm:h-[450px] border border-gray-700/50 rounded-lg bg-gray-900 mt-4 overflow-hidden"
+        className="w-full max-w-3xl h-[400px] sm:h-[450px] border border-border rounded-lg bg-gray-900 mt-4 overflow-hidden"
         aria-label="Heap visualization canvas"
       />
     </div>

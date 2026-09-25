@@ -49,19 +49,19 @@ export const UserProfile = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-500">Email</div>
+            <div className="text-sm font-medium text-muted-foreground">Email</div>
             <div className="text-base">{user.email}</div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-500">Provider</div>
+            <div className="text-sm font-medium text-muted-foreground">Provider</div>
             <div className="text-base capitalize">
               {user.app_metadata.provider || "Email"}
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-500">
+            <div className="text-sm font-medium text-muted-foreground">
               Last Sign In
             </div>
             <div className="text-base">

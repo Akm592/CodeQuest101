@@ -167,7 +167,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       {/* Configuration */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">List Type</Label>
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">List Type</Label>
           <Select onValueChange={(value: "singly" | "doubly" | "circular") => setListType(value)} value={listType} disabled={operationStatus === 'running'}>
             <SelectTrigger className="bg-white/5 border-white/10">
               <SelectValue />
@@ -180,7 +180,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">New Node Value</Label>
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">New Node Value</Label>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -200,7 +200,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
 
       {/* Main Operations */}
       <div className="flex flex-col gap-3">
-        <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Operations</Label>
+        <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Operations</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button onClick={handleReverseList} disabled={operationStatus === 'running' || nodes.length < 2} className="bg-secondary hover:bg-secondary/80 text-white font-bold col-span-2">
             <RotateCw className="mr-2 h-4 w-4" /> Reverse List
@@ -216,18 +216,18 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
 
       {/* Legend */}
       <div className="space-y-3">
-         <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Legend</Label>
+         <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Legend</Label>
          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-primary" /> Active
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-secondary" /> Current (C)
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-blue-500" /> Previous (P)
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-red-500" /> Deleting
             </div>
          </div>
@@ -246,7 +246,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       pseudocode={currentInfo.pseudocode}
       complexity={currentInfo.complexity}
     >
-      <div className="w-full max-w-5xl h-80 glass-panel rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-full max-w-5xl h-80 bg-card/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="flex items-center justify-center gap-12 flex-wrap">
            <AnimatePresence mode="popLayout">
               {nodes.map((node, index) => {

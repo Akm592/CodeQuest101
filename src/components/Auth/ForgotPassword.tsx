@@ -40,20 +40,20 @@ export const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-gray-300">
-      <Card className="w-full max-w-md bg-gray-900 border border-gray-700/50 shadow-xl">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-muted-foreground">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-2 pb-6">
             {resetSent && (
                  <div className="flex justify-center mb-3">
                     <CheckCircle className="h-12 w-12 text-green-400" />
                 </div>
             )}
-          <CardTitle className="text-2xl font-bold text-center text-gray-100">
+          <CardTitle className="text-2xl font-bold text-center text-foreground">
             {resetSent ? 'Check Your Email' : 'Reset Your Password'}
           </CardTitle>
-          <CardDescription className="text-center text-gray-400 pt-1">
+          <CardDescription className="text-center text-muted-foreground pt-1">
             {resetSent
-              ? <>Instructions sent to <strong className="text-teal-400">{submittedEmail}</strong></>
+              ? <>Instructions sent to <strong className="text-primary">{submittedEmail}</strong></>
               : 'Enter your email to receive a password reset link.'}
           </CardDescription>
         </CardHeader>
@@ -66,16 +66,16 @@ export const ForgotPassword = () => {
           )}
 
           {resetSent ? (
-            <p className="text-center text-sm text-gray-300 leading-relaxed">
+            <p className="text-center text-sm text-muted-foreground leading-relaxed">
               Please follow the instructions in the email to reset your password.
               If you don't see it within a few minutes, please check your spam folder.
             </p>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="font-medium text-gray-300">Email Address</Label>
+                <Label htmlFor="email" className="font-medium text-muted-foreground">Email Address</Label>
                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -84,13 +84,13 @@ export const ForgotPassword = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                      className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                     />
                  </div>
               </div>
               <Button
                 type="submit"
-                className="w-full h-11 mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full h-11 mt-2 bg-primary hover:bg-primary text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -104,10 +104,10 @@ export const ForgotPassword = () => {
             </form>
           )}
         </CardContent>
-        <CardFooter className="flex justify-center border-t border-gray-700/50 pt-5 pb-6">
+        <CardFooter className="flex justify-center border-t border-border pt-5 pb-6">
           <Link
              to="/login"
-             className="text-sm text-teal-400 hover:text-teal-300 transition-colors duration-200 underline"
+             className="text-sm text-primary hover:text-primary transition-colors duration-200 underline"
             >
             Return to Sign In
           </Link>

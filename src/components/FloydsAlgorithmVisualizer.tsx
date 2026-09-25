@@ -33,7 +33,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 1500;
 const DEFAULT_SPEED_MS = 750;
 
-const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
+const FloydsAlgorithmVisualizer: React.FC = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [tortoise, setTortoise] = useState<number | null>(null); // Index of tortoise
   const [hare, setHare] = useState<number | null>(null);       // Index of hare
@@ -299,8 +299,8 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
       const yPosition = svgHeight / 2;
 
       return (
-        <div className="flex justify-center items-center min-h-[180px] overflow-x-auto py-4 bg-black/20 rounded border border-gray-700/50 relative">
-            {nodes.length === 0 ? <p className="text-gray-500">Add nodes to begin</p> :
+        <div className="flex justify-center items-center min-h-[180px] overflow-x-auto py-4 bg-black/20 rounded border border-border relative">
+            {nodes.length === 0 ? <p className="text-muted-foreground">Add nodes to begin</p> :
              <svg width={svgWidth} height={svgHeight} style={{ overflow: "visible" }}>
                 <AnimatePresence>
                     {/* Render Arrows First */}
@@ -338,14 +338,14 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
                         const isMiddle = middleNodes.includes(index);
                         const isDetect = cycleDetected && index === detectedAtNode;
 
-                        let borderColor = "border-gray-600"; // Default
+                        let borderColor = "border-border"; // Default
                         if (isDetect) borderColor = "border-yellow-400 ring-2 ring-yellow-400/50";
                         else if (isTortoise && isHare) borderColor = "border-purple-500 ring-2 ring-purple-500/50"; // Met
                         else if (isTortoise) borderColor = "border-blue-500";
                         else if (isHare) borderColor = "border-red-500";
                         else if (isMiddle) borderColor = "border-green-500";
 
-                         let bgColor = "bg-gray-800"; // Default
+                         let bgColor = "bg-muted"; // Default
                          if (isDetect) bgColor = "bg-yellow-600/50";
 
                          let shadowClass = "";
@@ -364,7 +364,7 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
                             >
                                  <foreignObject x="-24" y="-24" width="48" height="48">
                                      <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all duration-300 ${borderColor} ${bgColor} ${shadowClass}`}>
-                                        <span className="text-gray-100">{node.value}</span>
+                                        <span className="text-foreground">{node.value}</span>
                                     </div>
                                  </foreignObject>
 
@@ -405,10 +405,10 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
 
   return (
     // Dark theme page container
-    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300 flex items-center justify-center">
+    <div className="flex w-full items-center justify-center">
       {/* Dark Card */}
-      <Card className="w-full max-w-5xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
-        <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
+      <Card className="w-full max-w-5xl mx-auto shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border bg-white/[0.03] text-foreground p-4 sm:p-5">
           <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
             {mode === "cycle" ? "Floyd's Cycle Detection (Tortoise & Hare)" : "Find Middle Node (Tortoise & Hare)"}
           </CardTitle>
@@ -423,12 +423,12 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
               }}
               disabled={isRunning}
             >
-              <SelectTrigger className="w-full sm:w-[250px] bg-gray-800 border-gray-600 text-gray-300 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70">
+              <SelectTrigger className="w-full sm:w-[250px] bg-muted border-border text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70">
                 <SelectValue placeholder="Select Algorithm Mode" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700 text-gray-300">
-                <SelectItem value="cycle" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Cycle Detection</SelectItem>
-                <SelectItem value="middle" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Find Middle Node</SelectItem>
+              <SelectContent className="bg-muted border-border text-muted-foreground">
+                <SelectItem value="cycle" className="hover:bg-primary/15 focus:bg-primary/15">Cycle Detection</SelectItem>
+                <SelectItem value="middle" className="hover:bg-primary/15 focus:bg-primary/15">Find Middle Node</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -437,23 +437,23 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
           {renderNodes()}
 
           {/* Node Manipulation Controls */}
-           <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-gray-700/50">
-             <Button onClick={addNode} disabled={isRunning || nodes.length >= 10} className="text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+           <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
+             <Button onClick={addNode} disabled={isRunning || nodes.length >= 10} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
                <Plus size={14} className="mr-1" /> Add Node
              </Button>
-             <Button onClick={removeNode} disabled={isRunning || nodes.length <= 1} className="text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+             <Button onClick={removeNode} disabled={isRunning || nodes.length <= 1} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
                <Minus size={14} className="mr-1" /> Remove Node
              </Button>
              {mode === "cycle" && (
-               <Button onClick={toggleCycle} disabled={isRunning || nodes.length < 2} className="text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-60">
+               <Button onClick={toggleCycle} disabled={isRunning || nodes.length < 2} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
                  {nodes[nodes.length - 1]?.next !== null ? "Remove Cycle" : "Create Cycle"}
                </Button>
              )}
            </div>
 
           {/* Simulation Controls */}
-          <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-gray-700/50">
-            <Button onClick={runAlgorithm} disabled={isRunning || nodes.length === 0} className="text-sm bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-60">
+          <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
+            <Button onClick={runAlgorithm} disabled={isRunning || nodes.length === 0} className="text-sm bg-primary hover:bg-primary text-white disabled:opacity-60">
               <PlayCircle size={16} className="mr-1" /> Start/Restart
             </Button>
             <Button onClick={pauseResume} disabled={!isRunning} className={`text-sm disabled:opacity-60 ${isPaused ? 'bg-blue-600 hover:bg-blue-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-white`}>
@@ -474,7 +474,7 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
 
           {/* Speed Control */}
           <div className="pt-4">
-            <Label className="block text-sm font-medium text-gray-400 mb-1 text-center">
+            <Label className="block text-sm font-medium text-muted-foreground mb-1 text-center">
               Animation Speed: {calculateDelay(speedValue)}ms
             </Label>
             <Slider
@@ -483,27 +483,27 @@ const FloydsAlgorithmVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: 
               step={50}
               value={[speedValue]}
               onValueChange={(value) => setSpeedValue(value[0])}
-              className="w-full max-w-xs mx-auto [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+              className="w-full max-w-xs mx-auto [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
               disabled={isRunning && !isPaused}
             />
           </div>
 
           {/* Explanation Panel */}
           <motion.div
-            className="mt-4 p-4 bg-gray-800 border border-gray-700/50 rounded-lg min-h-[100px]"
+            className="mt-4 p-4 bg-muted border border-border rounded-lg min-h-[100px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <h3 className="font-semibold text-gray-200 mb-1 text-sm">Status & Explanation:</h3>
-             <p className="text-xs sm:text-sm text-gray-300 mb-1 font-mono">{currentOperation || " "}</p>
-            <p className="text-xs sm:text-sm text-gray-400">{explanation || "Controls are above the visualization."}</p>
+            <h3 className="font-semibold text-foreground mb-1 text-sm">Status & Explanation:</h3>
+             <p className="text-xs sm:text-sm text-muted-foreground mb-1 font-mono">{currentOperation || " "}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{explanation || "Controls are above the visualization."}</p>
              {explanation.includes("Learn more:") && (
                <a
                  href={explanation.split("Learn more: ")[1]}
                  target="_blank"
                  rel="noopener noreferrer"
-                 className="text-teal-400 hover:text-teal-300 text-xs sm:text-sm inline-flex items-center mt-2 underline"
+                 className="text-primary hover:text-primary text-xs sm:text-sm inline-flex items-center mt-2 underline"
                >
                  Learn more on LeetCode <ExternalLink size={14} className="ml-1" />
                </a>

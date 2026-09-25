@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- The app is dark-only; the class is set here so every route gets it,
+     not just the ones the chatbot happened to run its theme effect on. -->
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#030712" />
+
+    <!-- index.css has always asked for Inter and nothing ever fetched it, so
+         the app rendered in the system fallback. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <meta name="google-site-verification" content="1UpHMajCLJISBerWywJuL9Qa6Lux3RHXe3k6IBrmVNY" />
     <meta name="msvalidate.01" content="7F4C5D26D211FB92C876A48B2F0225CC" />
 

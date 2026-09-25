@@ -3,7 +3,7 @@ import HeapVisualization from "./HeapVisualization"; // Assuming this component 
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"; // Using Card for structure
 import { Eye, EyeOff } from 'lucide-react'; // Icons for toggle button
 
-const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
+const HeapDataStructure = () => {
   const [showExplanations, setShowExplanations] = useState(true);
   const [activeTab, setActiveTab] = useState('insertion');
 
@@ -24,13 +24,13 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
 
   const renderTabContent = () => {
     // Common dark theme classes
-    const cardClass = "bg-gray-800 border border-gray-700/50 p-4 sm:p-6 rounded-lg text-gray-300";
-    const codeBlockClass = "bg-black/50 p-3 rounded-md border border-gray-700 my-3 overflow-x-auto";
-    const codeClass = "text-sm font-mono text-teal-300";
-    const complexityClass = "text-teal-400 font-mono text-sm";
-    const sectionTitleClass = "text-lg sm:text-xl font-semibold text-teal-400 mb-3";
-    const descriptionClass = "text-sm text-gray-300 mb-2 leading-relaxed";
-    const listClass = "list-decimal list-inside mb-4 ml-4 space-y-1 text-sm text-gray-400";
+    const cardClass = "bg-muted border border-border p-4 sm:p-6 rounded-lg text-muted-foreground";
+    const codeBlockClass = "bg-black/50 p-3 rounded-md border border-border my-3 overflow-x-auto";
+    const codeClass = "text-sm font-mono text-primary";
+    const complexityClass = "text-primary font-mono text-sm";
+    const sectionTitleClass = "text-lg sm:text-xl font-semibold text-primary mb-3";
+    const descriptionClass = "text-sm text-muted-foreground mb-2 leading-relaxed";
+    const listClass = "list-decimal list-inside mb-4 ml-4 space-y-1 text-sm text-muted-foreground";
 
     switch (activeTab) {
       case 'insertion':
@@ -38,9 +38,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Heap Insertion</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Add a new element while maintaining the heap property (min-heap or max-heap).
+              <strong className="font-medium text-foreground">Goal:</strong> Add a new element while maintaining the heap property (min-heap or max-heap).
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm:</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm:</p>
             <ol className={listClass}>
               <li>Add the new element to the bottom level of the heap (end of the array).</li>
               <li>Compare the added element with its parent.</li>
@@ -69,7 +69,7 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
             </p>
           </div>
         );
@@ -78,9 +78,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Root Extraction (Deletion)</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Remove the root element (min/max value) and restore the heap property.
+              <strong className="font-medium text-foreground">Goal:</strong> Remove the root element (min/max value) and restore the heap property.
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm:</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm:</p>
             <ol className={listClass}>
               <li>Replace the root element with the last element of the heap.</li>
               <li>Remove the last element (reducing the heap size).</li>
@@ -106,7 +106,7 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
             </p>
           </div>
         );
@@ -115,9 +115,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Heapify Down (Sift Down)</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Restore the heap property for a subtree rooted at a given index, assuming its children are already valid heaps.
+              <strong className="font-medium text-foreground">Goal:</strong> Restore the heap property for a subtree rooted at a given index, assuming its children are already valid heaps.
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm:</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm:</p>
             <ol className={listClass}>
               <li>Start at the given node index.</li>
               <li>Compare the node with its left and right children.</li>
@@ -154,7 +154,7 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
             </p>
           </div>
         );
@@ -163,9 +163,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Build Heap</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Convert an arbitrary array into a valid heap efficiently.
+              <strong className="font-medium text-foreground">Goal:</strong> Convert an arbitrary array into a valid heap efficiently.
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm (Bottom-Up):</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm (Bottom-Up):</p>
             <ol className={listClass}>
               <li>Start from the last non-leaf node: <code className={codeClass}>Math.floor(n/2) - 1</code>.</li>
               <li>Call <code className={codeClass}>heapifyDown</code> on this node.</li>
@@ -185,7 +185,7 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(n)</span> (More efficient than n insertions)
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(n)</span> (More efficient than n insertions)
             </p>
           </div>
         );
@@ -194,9 +194,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Update Key</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Change a node’s value and restore the heap property.
+              <strong className="font-medium text-foreground">Goal:</strong> Change a node’s value and restore the heap property.
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm:</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm:</p>
             <ol className={listClass}>
               <li>Update the value at the specified index.</li>
               <li>Determine if the new value is more or less important compared to the old value.</li>
@@ -232,7 +232,7 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(log n)</span>
             </p>
           </div>
         );
@@ -241,9 +241,9 @@ const HeapDataStructure = ({ onBack: _onBack }: { onBack?: () => void }) => {
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Heap Sort</h3>
             <p className={descriptionClass}>
-              <strong className="font-medium text-gray-200">Goal:</strong> Sort an array in-place using a heap.
+              <strong className="font-medium text-foreground">Goal:</strong> Sort an array in-place using a heap.
             </p>
-            <p className="font-medium text-gray-200 mb-1 text-sm">Algorithm:</p>
+            <p className="font-medium text-foreground mb-1 text-sm">Algorithm:</p>
             <ol className={listClass}>
               <li>Build a heap (max-heap for ascending, min-heap for descending).</li>
               <li>Swap the root with the last element and reduce the heap size.</li>
@@ -271,18 +271,18 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
               </pre>
             </div>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Time Complexity:</strong> <span className={complexityClass}>O(n log n)</span> (Build: O(n), Extractions: n * O(log n))
+              <strong className="font-medium text-foreground">Time Complexity:</strong> <span className={complexityClass}>O(n log n)</span> (Build: O(n), Extractions: n * O(log n))
             </p>
             <p className="text-sm">
-              <strong className="font-medium text-gray-200">Space Complexity:</strong> O(1) (In-place sort)
+              <strong className="font-medium text-foreground">Space Complexity:</strong> O(1) (In-place sort)
             </p>
           </div>
         );
       case 'summary': {
-        const summaryItemClass = "bg-gray-700/50 p-3 rounded border border-gray-600/50";
-        const summaryTitleClass = "font-semibold text-teal-400 mb-1 text-base";
-        const summaryDescClass = "text-gray-300 text-xs";
-        const summaryTimeClass = "text-xs text-teal-500 mt-1 font-mono";
+        const summaryItemClass = "bg-muted/50 p-3 rounded border border-border";
+        const summaryTitleClass = "font-semibold text-primary mb-1 text-base";
+        const summaryDescClass = "text-muted-foreground text-xs";
+        const summaryTimeClass = "text-xs text-primary mt-1 font-mono";
         return (
           <div className={cardClass}>
             <h3 className={sectionTitleClass}>Operations Summary</h3>
@@ -330,20 +330,17 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-950 to-black text-gray-300">
+    <div className="w-full">
       <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
-        <header className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-100 mb-2">Heap Data Structure</h1>
-          <p className="text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
-            Visualize and understand binary heap operations like insertion, extraction, and heapify.
-          </p>
-        </header>
+        <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-muted-foreground sm:mb-10 sm:text-base">
+          Visualize and understand binary heap operations like insertion, extraction, and heapify.
+        </p>
 
         {/* Visualization Card */}
-        <Card className="bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden mb-8 sm:mb-12">
-          <CardHeader className="bg-gray-800 border-b border-gray-700/50 p-4">
-            <CardTitle className="text-lg text-gray-200 text-center">
+        <Card className="shadow-xl overflow-hidden mb-8 sm:mb-12">
+          <CardHeader className="border-b border-border bg-white/[0.03] p-4">
+            <CardTitle className="text-lg text-foreground text-center">
               Interactive Heap Visualization
             </CardTitle>
           </CardHeader>
@@ -355,10 +352,10 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
         {/* Explanations Section */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-100">Heap Operations Explained</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Heap Operations Explained</h2>
             <button
               onClick={toggleExplanations}
-              className="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium text-xs sm:text-sm py-1.5 px-3 rounded-md transition duration-150 ease-in-out flex items-center gap-1.5"
+              className="bg-muted hover:bg-gray-600 text-foreground font-medium text-xs sm:text-sm py-1.5 px-3 rounded-md transition duration-150 ease-in-out flex items-center gap-1.5"
             >
               {showExplanations ? <EyeOff size={16} /> : <Eye size={16} />}
               {showExplanations ? "Hide Details" : "Show Details"}
@@ -366,9 +363,9 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
           </div>
 
           {showExplanations && (
-            <Card className="bg-gray-900 border border-gray-700/50 shadow-lg rounded-lg overflow-hidden">
+            <Card className=" shadow-lg rounded-lg overflow-hidden">
               {/* Tabs */}
-              <div className="border-b border-gray-700">
+              <div className="border-b border-border">
                 <div className="flex overflow-x-auto no-scrollbar">
                   {tabs.map((tab) => (
                     <button
@@ -376,8 +373,8 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
                       onClick={() => setActiveTab(tab.id)}
                       className={`py-2.5 px-4 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap transition-colors duration-200 ${
                         activeTab === tab.id
-                          ? 'text-teal-400 border-teal-500'
-                          : 'text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-600'
+                          ? 'text-primary border-primary'
+                          : 'text-muted-foreground border-transparent hover:text-foreground hover:border-border'
                       }`}
                     >
                       {tab.label}

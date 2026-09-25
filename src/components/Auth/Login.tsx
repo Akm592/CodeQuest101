@@ -28,8 +28,8 @@ export const LoginPage = () => {
   // Display a loading indicator while auth state is resolving
   if (isLoading) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-gray-400 w-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-muted-foreground w-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       );
   }
@@ -67,13 +67,13 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-gray-300">
-      <Card className="w-full max-w-md bg-gray-900 border border-gray-700/50 shadow-xl">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black p-4 w-screen text-muted-foreground">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl md:text-3xl font-bold text-center text-gray-100">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-center text-foreground">
             Welcome Back!
           </CardTitle>
-          <CardDescription className="text-center text-gray-400">
+          <CardDescription className="text-center text-muted-foreground">
             Sign in to access your CodeQuest101 dashboard
           </CardDescription>
         </CardHeader>
@@ -88,9 +88,9 @@ export const LoginPage = () => {
           <form onSubmit={handleEmailLogin} className="space-y-4">
             {/* Email Input */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-medium text-gray-300">Email</Label>
+              <Label htmlFor="email" className="font-medium text-muted-foreground">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -99,7 +99,7 @@ export const LoginPage = () => {
                   required
                   disabled={submitting}
                   placeholder="name@example.com"
-                  className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                  className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
               </div>
             </div>
@@ -107,16 +107,16 @@ export const LoginPage = () => {
             {/* Password Input */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="font-medium text-gray-300">Password</Label>
+                <Label htmlFor="password" className="font-medium text-muted-foreground">Password</Label>
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-teal-400 hover:text-teal-300 transition-colors underline"
+                  className="text-sm text-primary hover:text-primary transition-colors underline"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
@@ -125,7 +125,7 @@ export const LoginPage = () => {
                   required
                   disabled={submitting}
                   placeholder="••••••••"
-                  className="h-10 pl-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500"
+                  className="h-10 pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
               </div>
             </div>
@@ -134,7 +134,7 @@ export const LoginPage = () => {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-11 mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>
@@ -149,10 +149,10 @@ export const LoginPage = () => {
           {/* Separator */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
+              <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-500">
+              <span className="px-2 bg-gray-900 text-muted-foreground">
                 Or continue with
               </span>
             </div>
@@ -163,7 +163,7 @@ export const LoginPage = () => {
             onClick={handleGoogleLogin}
             disabled={submitting}
             variant="outline"
-            className="w-full h-11 flex items-center justify-center gap-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full h-11 flex items-center justify-center gap-2 border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
           >
              <GoogleIcon />
               <span className="text-sm font-medium">
@@ -172,12 +172,12 @@ export const LoginPage = () => {
           </Button>
         </CardContent>
 
-        <CardFooter className="flex justify-center border-t border-gray-700/50 pt-6 pb-6">
-          <p className="text-sm text-gray-400">
+        <CardFooter className="flex justify-center border-t border-border pt-6 pb-6">
+          <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="font-medium text-teal-400 hover:text-teal-300 transition-colors duration-200 underline"
+              className="font-medium text-primary hover:text-primary transition-colors duration-200 underline"
             >
               Sign up
             </Link>

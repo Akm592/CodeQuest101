@@ -58,8 +58,8 @@ export const AuthCallback = () => {
   // Still loading auth state (handled by AuthContext ideally)
   if (isLoading) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-gray-400 w-screen p-4">
-            <Loader2 className="h-10 w-10 animate-spin text-teal-500 mb-4" />
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-muted-foreground w-screen p-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
             <p>Processing authentication...</p>
         </div>
       );
@@ -72,16 +72,16 @@ export const AuthCallback = () => {
 
   // Authentication failed or no user found after processing
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-gray-300 w-screen p-4">
-        <div className="text-center max-w-md p-6 bg-gray-900 border border-gray-700 rounded-lg shadow-xl">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-muted-foreground w-screen p-4">
+        <div className="text-center max-w-md p-6 bg-gray-900 border border-border rounded-lg shadow-xl">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-100 mb-2">Authentication Failed</h1>
-            <p className="text-gray-400 mb-6">
+            <h1 className="text-2xl font-bold text-foreground mb-2">Authentication Failed</h1>
+            <p className="text-muted-foreground mb-6">
                 Something went wrong during the authentication process. Please try signing in again.
             </p>
             <Link
                 to="/login"
-                className="inline-block bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                className="inline-block bg-primary hover:bg-primary text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
             >
                 Return to Sign In
             </Link>

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button"; // Adjust path
 import {
   Select,
@@ -49,7 +49,7 @@ const NODE_RADIUS = 18;
 const VERTICAL_GAP = 75;
 const HORIZONTAL_FACTOR = 1.8; // Controls horizontal spread
 
-const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
+const BinaryTreeTraversalVisualizer = () => {
   const [traversalType, setTraversalType] = useState<TraversalType>("in-order");
   const [traversalSteps, setTraversalSteps] = useState<number[]>([]); // Stores node values in order
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
@@ -227,22 +227,16 @@ const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
   }, []);
 
   const getNodeColor = (nodeId: string): string => {
-      if (nodeId === highlightedNodeId) return "fill-teal-500"; // Current step highlight
+      if (nodeId === highlightedNodeId) return "fill-primary"; // Current step highlight
       if (visitedNodeIds.has(nodeId)) return "fill-gray-600"; // Visited node
       return "fill-gray-800"; // Default node
   }
 
   return (
     // Dark background for the page
-    <div id="tree-visualizer-container" className="min-h-screen w-screen flex flex-col items-center bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300">
+    <div id="tree-visualizer-container" className="flex w-full flex-col items-center">
       {/* Dark Card */}
-      <Card className="w-full max-w-4xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
-         {/* Dark Header */}
-        <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-            Binary Tree Traversal
-          </CardTitle>
-        </CardHeader>
+      <Card className="w-full max-w-4xl mx-auto shadow-xl overflow-hidden">
         <CardContent className="p-4 sm:p-6 space-y-5">
           {/* Controls */}
           <div className="flex flex-col sm:flex-row justify-center items-center flex-wrap gap-3">
@@ -251,19 +245,19 @@ const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
               onValueChange={(value: TraversalType) => setTraversalType(value)}
               disabled={isAnimating}
             >
-              <SelectTrigger className="w-full sm:w-[180px] bg-gray-800 border-gray-600 text-gray-300 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70">
+              <SelectTrigger className="w-full sm:w-[180px] bg-muted border-border text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70">
                 <SelectValue placeholder="Traversal Type" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700 text-gray-300">
-                <SelectItem value="in-order" className="hover:bg-teal-900/50 focus:bg-teal-900/50">In-order</SelectItem>
-                <SelectItem value="pre-order" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Pre-order</SelectItem>
-                <SelectItem value="post-order" className="hover:bg-teal-900/50 focus:bg-teal-900/50">Post-order</SelectItem>
+              <SelectContent className="bg-muted border-border text-muted-foreground">
+                <SelectItem value="in-order" className="hover:bg-primary/15 focus:bg-primary/15">In-order</SelectItem>
+                <SelectItem value="pre-order" className="hover:bg-primary/15 focus:bg-primary/15">Pre-order</SelectItem>
+                <SelectItem value="post-order" className="hover:bg-primary/15 focus:bg-primary/15">Post-order</SelectItem>
               </SelectContent>
             </Select>
              <Button
                 onClick={animateTraversal}
                 disabled={isAnimating || currentStepIndex >= traversalSteps.length -1} // Disable if finished
-                className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 disabled:opacity-60"
+                className="flex items-center gap-2 bg-primary hover:bg-primary text-white font-semibold px-4 py-2 disabled:opacity-60"
             >
                 <Play size={18} />
                 <span>Animate All</span>
@@ -287,7 +281,7 @@ const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
           </div>
 
           {/* SVG Visualization Area */}
-          <div className="flex justify-center items-center bg-black/20 rounded border border-gray-700/50 overflow-hidden" style={{ height: `${svgSize.height}px` }}>
+          <div className="flex justify-center items-center bg-black/20 rounded border border-border overflow-hidden" style={{ height: `${svgSize.height}px` }}>
              <svg width={svgSize.width} height={svgSize.height} >
                 <g>
                     {/* Render Lines */}
@@ -341,24 +335,24 @@ const BinaryTreeTraversalVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
           </div>
 
           {/* Traversal Steps Display */}
-          <div className="mt-4 text-center space-y-1 border-t border-gray-700/50 pt-4">
-            <h3 className="text-md font-semibold text-gray-200">Traversal Order ({traversalType}):</h3>
+          <div className="mt-4 text-center space-y-1 border-t border-border pt-4">
+            <h3 className="text-md font-semibold text-foreground">Traversal Order ({traversalType}):</h3>
              <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 min-h-[24px]">
                  {traversalSteps.map((val, index) => (
                     <span
                         key={index}
                         className={`font-mono px-2 py-0.5 rounded text-xs transition-colors duration-300 ${
                             index <= currentStepIndex
-                                ? "bg-teal-600 text-white"
-                                : "bg-gray-700 text-gray-400"
+                                ? "bg-primary text-white"
+                                : "bg-muted text-muted-foreground"
                         }`}
                     >
                         {val}
                     </span>
                  ))}
-                 {traversalSteps.length === 0 && <span className="text-gray-500 text-sm">Click 'Start Traversal'</span>}
+                 {traversalSteps.length === 0 && <span className="text-muted-foreground text-sm">Click 'Start Traversal'</span>}
             </div>
-            <p className="text-sm text-gray-500 pt-1">
+            <p className="text-sm text-muted-foreground pt-1">
                 Step: {currentStepIndex + 1} / {traversalSteps.length}
              </p>
           </div>

@@ -35,14 +35,14 @@ const DeleteSessionModal: React.FC<DeleteSessionModalProps> = ({ isOpen, onClose
                         </div>
 
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 relative z-10">Delete Session?</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-8 leading-relaxed relative z-10">
+                        <p className="text-gray-600 dark:text-muted-foreground text-sm mb-8 leading-relaxed relative z-10">
                             This conversation will be permanently removed from your history. This action cannot be undone.
                         </p>
 
                         <div className="flex gap-3 relative z-10">
                             <button
                                 onClick={onClose}
-                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium transition-colors border border-transparent dark:border-white/5"
+                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-muted-foreground font-medium transition-colors border border-transparent dark:border-white/5"
                             >
                                 Cancel
                             </button>

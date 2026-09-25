@@ -41,7 +41,7 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed font-medium"
+            className="text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed font-medium"
           >
             CodeQuest101 transforms abstract algorithms into immersive, high-fidelity visualizations.
             Accelerate your learning path with our interactive playground.
@@ -88,7 +88,7 @@ export const HeroSection: React.FC = () => {
             ].map((stat, i) => (
               <div key={i} className="flex flex-col items-center">
                 <span className="text-3xl font-bold text-white mb-1">{stat.value}</span>
-                <span className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</span>
+                <span className="text-sm text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
               </div>
             ))}
           </motion.div>

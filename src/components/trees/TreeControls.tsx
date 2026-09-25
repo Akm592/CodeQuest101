@@ -33,17 +33,17 @@ const TreeControls: React.FC<TreeControlsProps> = ({
 
   return (
     // Container: Dark background, lighter border
-    <div className="flex flex-col items-center justify-center space-y-4 w-full max-w-md mx-auto p-4 border border-gray-700 rounded-lg bg-gray-800">
+    <div className="flex flex-col items-center justify-center space-y-4 w-full max-w-md mx-auto p-4 border border-border rounded-lg bg-muted">
       <Select
         value={treeType}
         onValueChange={(value) => setTreeType(value as TreeType)}
       >
         {/* Select Trigger: Darker bg, light text, lighter border */}
-        <SelectTrigger className="w-full bg-gray-700 text-white rounded-md border border-gray-600 hover:bg-gray-600 transition-colors focus:ring-blue-500 focus:border-blue-500">
+        <SelectTrigger className="w-full bg-muted text-white rounded-md border border-border hover:bg-gray-600 transition-colors focus:ring-blue-500 focus:border-blue-500">
           <SelectValue placeholder="Select a tree type" />
         </SelectTrigger>
         {/* Select Content: Darker bg, light text, lighter border */}
-        <SelectContent className="bg-gray-700 text-white border border-gray-600 rounded-md">
+        <SelectContent className="bg-muted text-white border border-border rounded-md">
           <SelectItem value="binary">Binary Tree</SelectItem>
           <SelectItem value="bst">Binary Search Tree</SelectItem>
           <SelectItem value="avl">AVL Tree</SelectItem>
@@ -55,7 +55,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({
           type="number"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="flex-grow p-2 border border-gray-600 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors bg-gray-700 text-white placeholder-gray-400"
+          className="flex-grow p-2 border border-border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors bg-muted text-white placeholder-gray-400"
           placeholder="Enter a number"
         />
         {/* Buttons: Distinct action color (e.g., blue) */}

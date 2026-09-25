@@ -228,7 +228,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
       {/* Target & Speed */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Target Value</Label>
+          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Target Value</Label>
           <div className="relative">
             <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
             <Input
@@ -245,7 +245,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Animation Speed</Label>
+            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Animation Speed</Label>
             <span className="text-[10px] font-mono text-primary">{calculateDelay(speedValue)}ms</span>
           </div>
           <Slider
@@ -261,7 +261,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
 
       {/* Main Actions */}
       <div className="flex flex-col gap-3">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Simulation Controls</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Simulation Controls</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={binarySearch}
@@ -292,7 +292,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
 
       {/* Custom Input */}
       <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Custom Array</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Custom Array</Label>
         <div className="flex gap-2">
           <Input
             value={customArrayInput}
@@ -311,7 +311,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
           </Button>
         </div>
         {arrayError && <p className="text-[10px] text-red-400">{arrayError}</p>}
-        <p className="text-[10px] text-gray-500 italic">Sorted numbers only, max 50.</p>
+        <p className="text-[10px] text-muted-foreground italic">Sorted numbers only, max 50.</p>
       </div>
     </div>
   );

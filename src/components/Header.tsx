@@ -50,10 +50,10 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent hover:opacity-90 transition-opacity flex items-center gap-2"
+            className="text-2xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent hover:opacity-90 transition-opacity flex items-center gap-2"
           >
-            <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
-              <span className="text-teal-400 font-mono text-lg">{`{}`}</span>
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
+              <span className="text-primary font-mono text-lg">{`{}`}</span>
             </div>
             CodeQuest101
           </Link>
@@ -66,8 +66,8 @@ const Header = () => {
                   key={link.name}
                   to={link.href}
                   className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300 ${isActiveLink(link.href)
-                      ? "bg-teal-500/20 text-teal-300 shadow-[0_0_15px_rgba(45,212,191,0.3)]"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      ? "bg-primary/20 text-primary shadow-[0_0_15px_rgba(45,212,191,0.3)]"
+                      : "text-muted-foreground hover:text-white hover:bg-white/5"
                     }`}
                 >
                   {link.name}
@@ -81,7 +81,7 @@ const Header = () => {
               ) : user ? (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-white text-xs ring-2 ring-black">
+                    <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-primary flex items-center justify-center text-white text-xs ring-2 ring-black">
                       {user.user_metadata?.avatar_url ? (
                         <img
                           src={user.user_metadata.avatar_url}
@@ -92,24 +92,24 @@ const Header = () => {
                         <User className="h-3 w-3" />
                       )}
                     </div>
-                    <span className="text-sm font-medium text-gray-300 max-w-[100px] truncate">
+                    <span className="text-sm font-medium text-muted-foreground max-w-[100px] truncate">
                       {user.user_metadata?.full_name || user.email?.split("@")[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                    className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                   >
                     <LogOut className="h-5 w-5" />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                  <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
                     Log in
                   </Link>
                   <Link to="/signup">
-                    <button className="bg-teal-600 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-teal-500 hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all duration-300">
+                    <button className="bg-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all duration-300">
                       Sign Up
                     </button>
                   </Link>
@@ -122,7 +122,7 @@ const Header = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-300 hover:text-white"
+              className="p-2 text-muted-foreground hover:text-white"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -141,8 +141,8 @@ const Header = () => {
               key={link.name}
               to={link.href}
               className={`block px-4 py-3 rounded-xl text-base font-medium transition-all ${isActiveLink(link.href)
-                  ? "bg-teal-500/10 text-teal-300 border border-teal-500/20"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-muted-foreground hover:text-white hover:bg-white/5"
                 }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -162,10 +162,10 @@ const Header = () => {
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-gray-300 bg-white/5 hover:bg-white/10 transition-colors">Log In</button>
+                  <button className="w-full py-3 rounded-xl text-muted-foreground bg-white/5 hover:bg-white/10 transition-colors">Log In</button>
                 </Link>
                 <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-black bg-teal-400 hover:bg-teal-300 font-medium transition-colors">Sign Up</button>
+                  <button className="w-full py-3 rounded-xl text-black bg-primary hover:bg-primary font-medium transition-colors">Sign Up</button>
                 </Link>
               </div>
             )}
