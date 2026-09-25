@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles } from "lucide-react";
+import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
@@ -165,7 +165,7 @@ SuggestionsScreen.displayName = 'SuggestionsScreen';
 // --- Main ChatInterface Component ---
 const ChatInterface = () => {
   // --- Hooks and Context ---
-  const { user, getChatSession, createChatSession, signOut } = useAuth();
+  const { user, getChatSession, createChatSession, signOut, authDegraded } = useAuth();
   const { theme, handleThemeChange } = useTheme();
   const api = useAPI();
 
@@ -687,6 +687,20 @@ const ChatInterface = () => {
 
         <main className="flex-1 overflow-hidden flex justify-center items-center pt-20 pb-4 px-4">
           <div className="flex flex-col h-full w-full max-w-5xl mx-auto">
+            {/* Account state, not message state: this must sit alongside the
+                conversation rather than replacing it. */}
+            {authDegraded && (
+              <div
+                role="status"
+                className="mx-4 mb-2 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                <CloudOff className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>
+                  Can&apos;t reach the sign-in service. You can keep chatting, but this
+                  conversation won&apos;t be saved.
+                </span>
+              </div>
+            )}
             <div
               ref={chatWindowRef}
               className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-teal-500/50"
