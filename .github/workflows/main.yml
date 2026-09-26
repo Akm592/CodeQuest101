@@ -25,6 +25,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # A grep, not a browser test, so it can run here. Fails if a component
+      # starts hand-rolling playback controls again instead of using
+      # VisualizerControls. ui-consistency-check.mjs stays manual: it needs a
+      # preview build and a real Chromium.
+      - name: Controls
+        run: node scripts/controls-lint.mjs
+
       - name: Build
         # Build-time env vars only need to be present, not valid.
         env:

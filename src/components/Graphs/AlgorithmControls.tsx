@@ -1,6 +1,21 @@
 // src/components/Graphs/AlgorithmControls.tsx
+//
+// Graph-specific settings (algorithm, start/end node, directed toggle) plus the
+// shared playback surface.
+//
+// The prop signature is unchanged on purpose: GraphTraversalVisualizer already
+// stores speed in milliseconds and exposes handleSetSpeed(ms), so the whole
+// migration fits inside this file and its 650-line host needs no edits.
+//
+// Three things went away with the hand-rolled controls:
+//   - a 0-100% speed mapping (the only one in the app) with a bg-blue-500
+//     literal outside the token system;
+//   - step-forward and step-back disabled unless `isRunning`, so a run that had
+//     not been started could not be stepped through at all — the one thing a
+//     precomputed step array is good for;
+//   - a speed slider locked while running.
+
 import React from "react";
-import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -10,9 +25,10 @@ import {
 } from "../ui/select";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
-import { Slider } from "../ui/slider";
-import { Play, Pause, RotateCcw, SkipForward, SkipBack, FastForward } from "lucide-react";
 import { AlgorithmType, NodeId } from "./Types";
+
+import type { PlayerStatus } from "../../hooks/useAlgorithmPlayer";
+import VisualizerControls from "../Visualizer/VisualizerControls";
 
 interface AlgorithmControlsProps {
   algorithmType: AlgorithmType;
@@ -59,42 +75,44 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
   setEndNode,
   nodes,
   currentStep,
-  // totalSteps,
+  totalSteps,
 }) => {
-  const isPathfinding = algorithmType === 'dijkstra' || algorithmType === 'astar';
+  const isPathfinding = algorithmType === "dijkstra" || algorithmType === "astar";
   const canStart = !!startNode && (!isPathfinding || !!endNode);
+  const settingsLocked = isRunning && !isPaused;
 
-  const maxMs = 2000;
-  const minMs = 100;
-  const speedToSliderValue = (ms: number): number => {
-    const clampedMs = Math.max(minMs, Math.min(maxMs, ms));
-    return Math.round(100 * (maxMs - clampedMs) / (maxMs - minMs));
-  };
-  const sliderValueToSpeed = (value: number): number => {
-    const ms = maxMs - (value / 100) * (maxMs - minMs);
-    return Math.round(ms);
-  };
+  // This host tracks playback as three booleans; the shared control surface
+  // takes one status. Collapsing them here rather than in the host keeps the
+  // migration to a single file.
+  const status: PlayerStatus = isFinished
+    ? "finished"
+    : isRunning
+      ? (isPaused ? "paused" : "running")
+      : "idle";
 
-  const handleSpeedChange = (value: number[]) => {
-    setSpeed(sliderValueToSpeed(value[0]));
-  };
+  // Every generator in GraphTraversalVisualizer pushes an INITIAL/INITIALIZE
+  // step first, so its step 0 is "nothing has happened yet" — the same frame
+  // useAlgorithmPlayer calls index -1. Shifting by one lines the two up, so the
+  // readout counts real steps and step-back is disabled on the initial frame.
+  const stepIndex = currentStep - 1;
+  const stepCount = Math.max(0, totalSteps - 1);
 
   return (
-    <div className="space-y-6 p-6 bg-muted text-foreground rounded-lg border border-border shadow-lg">
+    <div className="space-y-6 rounded-lg border border-border bg-muted p-6 text-foreground shadow-lg">
       {/* Header: Algorithm and Node Settings */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Algorithm Selection */}
         <div>
-          <Label htmlFor="algo-select" className="text-xs text-muted-foreground mb-1">Algorithm</Label>
-          <Select 
-            value={algorithmType} 
-            onValueChange={(v) => setAlgorithmType(v as AlgorithmType)} 
-            disabled={isRunning && !isPaused}
+          <Label htmlFor="algo-select" className="mb-1 text-xs text-muted-foreground">Algorithm</Label>
+          <Select
+            value={algorithmType}
+            onValueChange={(v) => setAlgorithmType(v as AlgorithmType)}
+            disabled={settingsLocked}
           >
-            <SelectTrigger id="algo-select" className="w-full bg-muted border-border text-foreground">
+            <SelectTrigger id="algo-select" className="w-full border-border bg-muted text-foreground">
               <SelectValue placeholder="Algorithm" />
             </SelectTrigger>
-            <SelectContent className="bg-muted border-border text-foreground">
+            <SelectContent className="border-border bg-muted text-foreground">
               <SelectItem value="bfs">BFS</SelectItem>
               <SelectItem value="dfs">DFS</SelectItem>
               <SelectItem value="dijkstra">Dijkstra</SelectItem>
@@ -105,17 +123,17 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
 
         {/* Start Node Selection */}
         <div>
-          <Label htmlFor="start-node-select" className="text-xs text-muted-foreground mb-1">Start Node</Label>
-          <Select 
-            value={startNode ?? ""} 
-            onValueChange={(v) => setStartNode(v || null)} 
-            disabled={isRunning && !isPaused}
+          <Label htmlFor="start-node-select" className="mb-1 text-xs text-muted-foreground">Start Node</Label>
+          <Select
+            value={startNode ?? ""}
+            onValueChange={(v) => setStartNode(v || null)}
+            disabled={settingsLocked}
           >
-            <SelectTrigger id="start-node-select" className="w-full bg-muted border-border text-foreground">
+            <SelectTrigger id="start-node-select" className="w-full border-border bg-muted text-foreground">
               <SelectValue placeholder="Select Start" />
             </SelectTrigger>
-            <SelectContent className="bg-muted border-border text-foreground max-h-60">
-              {nodes.map(node => (
+            <SelectContent className="max-h-60 border-border bg-muted text-foreground">
+              {nodes.map((node) => (
                 <SelectItem key={node} value={node} disabled={node === endNode}>
                   {node}
                 </SelectItem>
@@ -127,17 +145,17 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
         {/* End Node Selection for Pathfinding */}
         {isPathfinding && (
           <div>
-            <Label htmlFor="end-node-select" className="text-xs text-muted-foreground mb-1">End Node</Label>
-            <Select 
-              value={endNode ?? ""} 
-              onValueChange={(v) => setEndNode(v || null)} 
-              disabled={isRunning && !isPaused}
+            <Label htmlFor="end-node-select" className="mb-1 text-xs text-muted-foreground">End Node</Label>
+            <Select
+              value={endNode ?? ""}
+              onValueChange={(v) => setEndNode(v || null)}
+              disabled={settingsLocked}
             >
-              <SelectTrigger id="end-node-select" className="w-full bg-muted border-border text-foreground">
+              <SelectTrigger id="end-node-select" className="w-full border-border bg-muted text-foreground">
                 <SelectValue placeholder="Select End" />
               </SelectTrigger>
-              <SelectContent className="bg-muted border-border text-foreground max-h-60">
-                {nodes.map(node => (
+              <SelectContent className="max-h-60 border-border bg-muted text-foreground">
+                {nodes.map((node) => (
                   <SelectItem key={node} value={node} disabled={node === startNode}>
                     {node}
                   </SelectItem>
@@ -154,8 +172,8 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           id="directed-mode"
           checked={isDirected}
           onCheckedChange={toggleDirected}
-          disabled={isRunning && !isPaused}
-          className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600"
+          disabled={settingsLocked}
+          className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-border"
           aria-label="Toggle Directed Mode"
         />
         <Label htmlFor="directed-mode" className="text-sm font-medium text-muted-foreground">
@@ -163,68 +181,29 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
         </Label>
       </div>
 
-      {/* Playback Controls */}
-      <div className="flex flex-wrap justify-center items-center gap-4 bg-muted text-foreground p-4 rounded-lg border border-border">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={resetAlgorithm}
-          title="Reset Algorithm"
-          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white"
-        >
-          <RotateCcw className="h-5 w-5"/>
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={stepBackward}
-          disabled={!isRunning || currentStep <= 0}
-          title="Step Backward"
-          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
-        >
-          <SkipBack className="h-5 w-5"/>
-        </Button>
-        <Button
-          variant={isRunning && !isPaused ? "destructive" : "secondary"}
-          size="icon"
-          onClick={isRunning ? pauseResume : startAlgorithm}
-          disabled={!canStart && !isRunning}
-          title={isRunning ? (isPaused ? "Resume" : "Pause") : "Start"}
-          className={`border-border disabled:opacity-50 ${
-            isRunning && !isPaused
-              ? 'border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90'
-          }`}
-        >
-          {isRunning && !isPaused ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={stepForward}
-          disabled={!isRunning || isFinished}
-          title="Step Forward"
-          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
-        >
-          <SkipForward className="h-5 w-5"/>
-        </Button>
-      </div>
-
-      {/* Speed Slider */}
-      <div className="flex items-center gap-3">
-        <Label htmlFor="speed-slider" className="text-xs text-muted-foreground">Speed</Label>
-        <Slider
-          id="speed-slider"
-          min={0}
-          max={100}
-          step={1}
-          value={[speedToSliderValue(speed)]}
-          onValueChange={handleSpeedChange}
-          className="w-full [&>span:first-child]:h-1 [&>span>span]:bg-blue-500 [&>span>span]:h-1"
-          disabled={isRunning && !isPaused}
-        />
-        <FastForward className="h-5 w-5 text-muted-foreground" />
-      </div>
+      <VisualizerControls
+        status={status}
+        // Resuming a paused run and starting a fresh one are different calls in
+        // this host; the shared surface only knows "play".
+        onPlay={isRunning && isPaused ? pauseResume : startAlgorithm}
+        onPause={pauseResume}
+        onReset={resetAlgorithm}
+        onStepForward={stepForward}
+        onStepBack={stepBackward}
+        delayMs={speed}
+        onDelayChange={setSpeed}
+        minDelayMs={100}
+        maxDelayMs={2000}
+        stepIndex={stepIndex}
+        stepCount={stepCount}
+        disabledReason={
+          canStart
+            ? null
+            : isPathfinding
+              ? "Choose a start and an end node."
+              : "Choose a start node."
+        }
+      />
     </div>
   );
 };
