@@ -44,9 +44,16 @@ export interface NQueensOptions extends GeneratorOptions {
   firstOnly?: boolean;
 }
 
-/** Which placed queen attacks (row, col), or null if the square is free. */
+/**
+ * Which placed queen attacks (row, col), or null if the square is free.
+ *
+ * Scans from the deepest row up, so a square is blamed on the nearest queen.
+ * Several queens may attack the same square and any of them is a correct
+ * answer, but the line drawn to the one immediately above is far easier to read
+ * than a long diagonal to row 0.
+ */
 function blockedBy(queens: number[], row: number, col: number): number | null {
-  for (let r = 0; r < queens.length; r++) {
+  for (let r = queens.length - 1; r >= 0; r--) {
     const c = queens[r];
     if (c === col) return r;
     if (Math.abs(c - col) === Math.abs(r - row)) return r;

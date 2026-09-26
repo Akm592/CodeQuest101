@@ -120,6 +120,16 @@ const DynamicProgrammingVisualizer: React.FC = () => {
   const overlayW = (colHeader.length + 1) * PITCH;
   const overlayH = (rowHeader.length + 1) * PITCH;
 
+  // Base row and column are given; an interior cell only has a value once the
+  // sweep has written it. Rendering the initial 0 there reads as a computed
+  // zero, which is exactly the confusion this page exists to remove.
+  const isFilled = (row: number, col: number): boolean => {
+    if (row === 0 || col === 0) return true;
+    if (!step) return false;
+    if (step.phase !== "fill") return true;
+    return row < step.row || (row === step.row && col <= step.col);
+  };
+
   const cellClass = (row: number, col: number): string => {
     const key = `${row},${col}`;
     const current = step && step.row === row && step.col === col && step.phase === "fill";
@@ -243,7 +253,7 @@ const DynamicProgrammingVisualizer: React.FC = () => {
                     )}
                     style={{ height: CELL }}
                   >
-                    {value}
+                    {isFilled(r, c) ? value : ""}
                   </div>
                 ))}
               </React.Fragment>
