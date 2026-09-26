@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import GraphVisualization from "./Graphs/GraphVisualization";
 import AlgorithmControls from "./Graphs/AlgorithmControls"; // Renamed Control component
 import ExplanationPanel from "./Graphs/ExplanationPanel";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Assuming shadcn/ui
+import { Card, CardContent } from "./ui/card";
 
 // Import Types and Sample Graph Data
 import {
@@ -50,7 +50,7 @@ const calculateNodePositions = (nodes: NodeId[], svgWidth: number, svgHeight: nu
 
 
 // --- Main Component ---
-const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
+const GraphTraversalVisualizer: React.FC = () => {
     const [isClient, setIsClient] = useState(false);
     const [graph, setGraph] = useState<Graph>(initialGraph);
     const [algorithmType, setAlgorithmType] = useState<AlgorithmType>("bfs");
@@ -568,18 +568,12 @@ const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _
     // --- Render ---
     if (!isClient) {
         // Render placeholder or null during server-side rendering/hydration mismatch prevention
-        return <div className="w-screen min-h-screen bg-black flex items-center justify-center text-gray-500">Loading Visualizer...</div>;
+        return <div className="flex w-full items-center justify-center py-20 text-muted-foreground">Loading visualizer…</div>;
     }
 
     return (
-        <div className="flex flex-col items-center p-2 w-screen sm:p-4 bg-gradient-to-br from-gray-950 via-black to-gray-950 min-h-screen text-gray-300">
-            <Card className="w-full max-w-7xl bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 shadow-xl rounded-lg overflow-hidden my-4">
-                <CardHeader className="bg-gray-800/70 border-b border-gray-700/50 p-4 sm:p-5">
-                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-gray-100 tracking-tight">
-                        Graph Algorithm Visualizer
-                    </CardTitle>
-                    {/* Optional: Add subtitle or description here */}
-                </CardHeader>
+        <div className="flex w-full flex-col items-center">
+            <Card className="w-full max-w-7xl shadow-xl overflow-hidden my-4">
                 <CardContent className="p-3 sm:p-4 md:p-6">
                     {/* Controls */}
                     <div className="mb-4 sm:mb-6">
@@ -613,7 +607,7 @@ const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _
                     {/* Main Layout: Visualization and Explanation */}
                     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                         {/* Visualization Area */}
-                        <div className="w-full lg:w-[60%] xl:w-[65%] aspect-[4/3] lg:aspect-auto lg:min-h-[500px] border border-gray-700/50 rounded-lg bg-gray-950/50 p-1 overflow-hidden shadow-inner">
+                        <div className="w-full lg:w-[60%] xl:w-[65%] aspect-[4/3] lg:aspect-auto lg:min-h-[500px] border border-border rounded-lg bg-gray-950/50 p-1 overflow-hidden shadow-inner">
                             {adj.size > 0 ? ( // Check if adj list is populated (graph loaded)
                                 <GraphVisualization
                                     graph={graph}
@@ -632,7 +626,7 @@ const GraphTraversalVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _
                                     }}
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full text-gray-500 animate-pulse">
+                                <div className="flex items-center justify-center h-full text-muted-foreground animate-pulse">
                                     Loading Graph...
                                 </div>
                             )}

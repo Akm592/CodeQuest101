@@ -17,6 +17,7 @@ import { ForgotPassword } from "./components/Auth/ForgotPassword";
 import NotFoundPage from "./components/404";
 import About from "./components/About";
 import LoadingScreen from "./components/LoadingScreen";
+import ScrollToHash from "./components/ScrollToHash";
 
 // Visualizers
 import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
@@ -32,27 +33,42 @@ import TreeVisualizer from "./components/TreeVisualizer";
 import NeuralNetworkVisualizer from "./components/NeuralNetworkVisualizer";
 import GraphTraversalVisualizer from "./components/GraphTraversalVisualizer";
 import HeapDataStructure from "./components/Datastructures/Heaps/heapDataStructure";
+import VisualizerPage from "./components/Visualizer/VisualizerPage";
 
 const VisualizeWrapper = () => {
   const navigate = useNavigate();
-  const handleBack = () => navigate('/');
+  // Return to the visualization grid the user launched from, rather than the
+  // top of the home page. ScrollToHash performs the scroll — React Router will
+  // put the fragment in the URL but not act on it.
+  const handleBack = () => navigate({ pathname: "/", hash: "visualizations" });
+
+  // Three visualizers own their full-screen chrome via VisualizerLayout. The
+  // rest are wrapped in VisualizerPage, which supplies the same header and —
+  // the point of this — a working way back. Every one of these routes used to
+  // be a dead end: ten components accepted `onBack` and discarded it.
+  const wrapped = (title: string, element: React.ReactNode) => (
+    <VisualizerPage title={title} onBack={handleBack}>
+      {element}
+    </VisualizerPage>
+  );
 
   return (
     <Routes>
       <Route path="binarySearch" element={<BinarySearchVisualizer onBack={handleBack} />} />
       <Route path="sortingAlgorithms" element={<SortingAlgorithmVisualizer onBack={handleBack} />} />
-      {/* Fallback for other visualizers that might not be refactored yet */}
-      <Route path="longestSubarray" element={<LongestSubarraySumKVisualizer onBack={handleBack} />} />
-      <Route path="spiralMatrix" element={<SpiralMatrixAnimation onBack={handleBack} />} />
-      <Route path="rotateImage" element={<RotateImageVisualizer onBack={handleBack} />} />
-      <Route path="binaryTree" element={<BinaryTreeTraversalVisualizer onBack={handleBack} />} />
       <Route path="linkedList" element={<LinkedListVisualizer onBack={handleBack} />} />
-      <Route path="stack" element={<StackAndQueueVisualizer onBack={handleBack} />} />
-      <Route path="hareTortoise" element={<FloydsAlgorithmVisualizer onBack={handleBack} />} />
-      <Route path="tree" element={<TreeVisualizer onBack={handleBack} />} />
-      <Route path="neuralNetwork" element={<NeuralNetworkVisualizer onBack={handleBack} />} />
-      <Route path="graph" element={<GraphTraversalVisualizer onBack={handleBack} />} />
-      <Route path="heap" element={<HeapDataStructure onBack={handleBack} />} />
+
+      <Route path="longestSubarray" element={wrapped("Longest Subarray with Sum K", <LongestSubarraySumKVisualizer />)} />
+      <Route path="spiralMatrix" element={wrapped("Spiral Matrix Traversal", <SpiralMatrixAnimation />)} />
+      <Route path="rotateImage" element={wrapped("Rotate Image", <RotateImageVisualizer />)} />
+      <Route path="binaryTree" element={wrapped("Binary Tree Traversal", <BinaryTreeTraversalVisualizer />)} />
+      <Route path="stack" element={wrapped("Stacks & Queues", <StackAndQueueVisualizer />)} />
+      <Route path="hareTortoise" element={wrapped("Floyd's Cycle Detection", <FloydsAlgorithmVisualizer />)} />
+      <Route path="tree" element={wrapped("Binary Search Tree", <TreeVisualizer />)} />
+      <Route path="neuralNetwork" element={wrapped("Neural Network", <NeuralNetworkVisualizer />)} />
+      <Route path="graph" element={wrapped("Graph Algorithms", <GraphTraversalVisualizer />)} />
+      <Route path="heap" element={wrapped("Heap Data Structure", <HeapDataStructure />)} />
+
       <Route index element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -75,6 +91,7 @@ function App() {
       <div style={{ display: loading ? 'none' : 'block' }}>
         <AuthProvider>
           <Router>
+            <ScrollToHash />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />

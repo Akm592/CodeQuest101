@@ -178,8 +178,8 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
       ? currentStep.action
       : "Select algorithm, start/end nodes (if applicable), and run.";
      return (
-       <div className="h-full mt-4 lg:mt-0 p-4 bg-gray-800 rounded-lg border border-gray-700/50 flex flex-col items-center justify-center text-center text-gray-400">
-         <AlertCircle className="mb-3 h-8 w-8 text-yellow-500" />
+       <div className="h-full mt-4 lg:mt-0 p-4 bg-muted rounded-lg border border-border flex flex-col items-center justify-center text-center text-muted-foreground">
+         <AlertCircle className="mb-3 h-8 w-8 text-warning" />
          <p>{message}</p>
        </div>
      );
@@ -260,23 +260,23 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
           const structureName = algorithm === 'bfs' ? 'Queue' : 'Stack';
           const structureContent = structure ? formatSet(new Set(structure), dataLimit) : '[ ]'; // Use formatSet for consistency
           return (
-              <div className="text-xs mt-3 space-y-1 text-gray-400 font-mono">
-                   <p><span className="font-semibold text-gray-300">Visited:</span> {formatSet(visited, dataLimit)}</p>
-                   <p><span className="font-semibold text-gray-300">{structureName}:</span> {structureContent}</p>
+              <div className="text-xs mt-3 space-y-1 text-muted-foreground font-mono">
+                   <p><span className="font-semibold text-muted-foreground">Visited:</span> {formatSet(visited, dataLimit)}</p>
+                   <p><span className="font-semibold text-muted-foreground">{structureName}:</span> {structureContent}</p>
               </div>
           );
       } else if (isPathfinding) {
           const { distances, openSet, closedSet, fCosts, hCosts } = state as PathfindingStepState;
           return (
-            <div className="text-xs mt-3 space-y-1 text-gray-400 font-mono">
+            <div className="text-xs mt-3 space-y-1 text-muted-foreground font-mono">
                  <p><span className="font-semibold text-blue-300">Open Set:</span> {formatSet(openSet, dataLimit)}</p>
                  <p><span className="font-semibold text-orange-300">Closed Set:</span> {formatSet(closedSet, dataLimit)}</p>
                  <p><span className="font-semibold text-green-300">Dist (g):</span> {formatMap(distances, dataLimit, "d=", 'value')}</p>
                  {algorithm === 'astar' && fCosts && <p><span className="font-semibold text-purple-300">fCosts (g+h):</span> {formatMap(fCosts, dataLimit, "f=", 'value')}</p>}
                  {/* Optionally show hCosts - uncomment if needed */}
-                 {algorithm === 'astar' && hCosts && <p><span className="font-semibold text-gray-300">hCosts:</span> {formatMap(hCosts, dataLimit, "h=")}</p>}
+                 {algorithm === 'astar' && hCosts && <p><span className="font-semibold text-muted-foreground">hCosts:</span> {formatMap(hCosts, dataLimit, "h=")}</p>}
                  {/* Optionally show Predecessors */}
-                 {/* <p><span className="font-semibold text-gray-300">Prev:</span> {formatMap(predecessors, dataLimit)}</p> */}
+                 {/* <p><span className="font-semibold text-muted-foreground">Prev:</span> {formatMap(predecessors, dataLimit)}</p> */}
             </div>
           );
       }
@@ -284,27 +284,27 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
   };
 
   return (
-    <div className="h-full p-4 bg-gray-800 rounded-lg border border-gray-700/50 text-gray-300 flex flex-col">
+    <div className="h-full p-4 bg-muted rounded-lg border border-border text-muted-foreground flex flex-col">
       {/* Header */}
-      <h3 className="text-base sm:text-lg font-semibold mb-2 border-b border-gray-700 pb-2 flex items-center justify-between">
+      <h3 className="text-base sm:text-lg font-semibold mb-2 border-b border-border pb-2 flex items-center justify-between">
         <div className="flex items-center">
             {/* Icon based on algorithm */}
-            {(algorithm === 'bfs' || algorithm === 'dfs') && <BrainCircuit className="mr-2 h-5 w-5 text-blue-400 flex-shrink-0"/>}
-            {algorithm === 'dijkstra' && <Sigma className="mr-2 h-5 w-5 text-green-400 flex-shrink-0"/>}
+            {(algorithm === 'bfs' || algorithm === 'dfs') && <BrainCircuit className="mr-2 h-5 w-5 text-viz-pointer flex-shrink-0"/>}
+            {algorithm === 'dijkstra' && <Sigma className="mr-2 h-5 w-5 text-viz-found flex-shrink-0"/>}
             {algorithm === 'astar' && <Target className="mr-2 h-5 w-5 text-purple-400 flex-shrink-0"/>}
             Explanation
         </div>
-         {totalSteps > 0 && <span className="text-xs font-normal text-gray-400">{`Step ${displayStepNumber} / ${totalSteps}`}</span>}
+         {totalSteps > 0 && <span className="text-xs font-normal text-muted-foreground">{`Step ${displayStepNumber} / ${totalSteps}`}</span>}
       </h3>
 
       {/* Status Message / Explanation */}
       <div className="mb-2 text-sm min-h-[40px] flex items-start">
         {isFinished ? (
-           <CheckCircle className="mr-2 h-5 w-5 text-green-400 flex-shrink-0 mt-0.5"/>
+           <CheckCircle className="mr-2 h-5 w-5 text-viz-found flex-shrink-0 mt-0.5"/>
         ) : (
            <div className="w-5 h-5 mr-2 flex-shrink-0"></div> // Placeholder for alignment
         )}
-        <span className={isFinished ? 'text-green-300' : 'text-gray-200'}>{getExplanation()}</span>
+        <span className={isFinished ? 'text-green-300' : 'text-foreground'}>{getExplanation()}</span>
       </div>
 
 
@@ -312,10 +312,10 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
        {path && path.length > 0 && (
            <div className="mb-3 text-sm">
                <span className="font-medium text-yellow-300">Path Found: </span>
-               <span className="font-mono text-yellow-400">{path.join(' → ')}</span>
+               <span className="font-mono text-warning">{path.join(' → ')}</span>
                {/* Show total cost for pathfinding */}
                {isPathfinding && goalNode && (state as PathfindingStepState).distances?.get(goalNode) !== undefined && (state as PathfindingStepState).distances.get(goalNode) !== Infinity &&
-                   <span className="ml-2 text-gray-400">(Cost: {(state as PathfindingStepState).distances.get(goalNode)?.toFixed(1)})</span>
+                   <span className="ml-2 text-muted-foreground">(Cost: {(state as PathfindingStepState).distances.get(goalNode)?.toFixed(1)})</span>
                }
            </div>
        )}
@@ -325,11 +325,11 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
 
 
       {/* Pseudo-code Section */}
-      <div className="flex-grow mt-4 pt-3 border-t border-gray-700/50 flex flex-col min-h-[150px]">
-          <h4 className="font-semibold mb-2 text-gray-400 flex items-center text-sm">
+      <div className="flex-grow mt-4 pt-3 border-t border-border flex flex-col min-h-[150px]">
+          <h4 className="font-semibold mb-2 text-muted-foreground flex items-center text-sm">
               <List className="mr-2 h-4 w-4"/> Pseudo-code ({algorithm.toUpperCase()})
           </h4>
-          <div className="flex-grow bg-gray-900 p-3 rounded border border-gray-700/80 overflow-auto relative">
+          <div className="flex-grow bg-gray-900 p-3 rounded border border-border/80 overflow-auto relative">
               <pre className="text-xs sm:text-sm leading-relaxed font-mono whitespace-pre-wrap">
                 {getPseudoCode(algorithm).map((line, index) => (
                   <div
@@ -337,7 +337,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
                     className={`px-2 py-0.5 rounded transition-colors duration-200 ${
                       index === getActiveLineIndex(currentStep)
                         ? "bg-blue-900/70 text-blue-100 font-medium" // Brighter highlight
-                        : "text-gray-400 hover:bg-gray-700/30" // Subtle hover
+                        : "text-muted-foreground hover:bg-muted/30" // Subtle hover
                     }`}
                   >
                     {/* Preserve indentation using non-breaking spaces */}

@@ -167,7 +167,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       {/* Configuration */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">List Type</Label>
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">List Type</Label>
           <Select onValueChange={(value: "singly" | "doubly" | "circular") => setListType(value)} value={listType} disabled={operationStatus === 'running'}>
             <SelectTrigger className="bg-white/5 border-white/10">
               <SelectValue />
@@ -180,7 +180,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">New Node Value</Label>
+          <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">New Node Value</Label>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -190,17 +190,17 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
               className="bg-white/5 border-white/10"
               disabled={operationStatus === 'running'}
             />
-            <Button onClick={handleAddNode} disabled={operationStatus === 'running' || !inputValue} className="bg-primary text-black font-bold">
+            <Button onClick={handleAddNode} disabled={operationStatus === 'running' || !inputValue} className="bg-primary text-primary-foreground font-bold">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          {inputError && <p className="text-[10px] text-red-400">{inputError}</p>}
+          {inputError && <p className="text-[10px] text-destructive">{inputError}</p>}
         </div>
       </div>
 
       {/* Main Operations */}
       <div className="flex flex-col gap-3">
-        <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Operations</Label>
+        <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Operations</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button onClick={handleReverseList} disabled={operationStatus === 'running' || nodes.length < 2} className="bg-secondary hover:bg-secondary/80 text-white font-bold col-span-2">
             <RotateCw className="mr-2 h-4 w-4" /> Reverse List
@@ -208,7 +208,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
           <Button onClick={handleRemoveLastNode} variant="outline" disabled={operationStatus === 'running' || nodes.length === 0} className="border-white/10 hover:bg-white/5">
             <Minus className="mr-2 h-4 w-4" /> Pop Last
           </Button>
-          <Button onClick={handleDeleteNodeByIndex} variant="outline" disabled={operationStatus === 'running' || !inputValue || nodes.length === 0} className="border-white/10 hover:bg-red-500/10 hover:text-red-400">
+          <Button onClick={handleDeleteNodeByIndex} variant="outline" disabled={operationStatus === 'running' || !inputValue || nodes.length === 0} className="border-white/10 hover:bg-destructive/10 hover:text-destructive">
             <Trash2 className="mr-2 h-4 w-4" /> Delete Index
           </Button>
         </div>
@@ -216,18 +216,18 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
 
       {/* Legend */}
       <div className="space-y-3">
-         <Label className="text-xs uppercase tracking-widest text-gray-500 font-bold">Legend</Label>
+         <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Legend</Label>
          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-primary" /> Active
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-secondary" /> Current (C)
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-blue-500" /> Previous (P)
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                <div className="w-3 h-3 rounded-full bg-red-500" /> Deleting
             </div>
          </div>
@@ -246,7 +246,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       pseudocode={currentInfo.pseudocode}
       complexity={currentInfo.complexity}
     >
-      <div className="w-full max-w-5xl h-80 glass-panel rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-full max-w-5xl h-80 bg-card/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="flex items-center justify-center gap-12 flex-wrap">
            <AnimatePresence mode="popLayout">
               {nodes.map((node, index) => {
@@ -266,9 +266,9 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
                     {/* The Node */}
                     <div className={`
                       w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-lg transition-all duration-300 border-2
-                      ${isHighlighted ? 'bg-red-500/20 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]' :
+                      ${isHighlighted ? 'bg-destructive/20 border-destructive text-destructive shadow-[0_0_20px_rgba(239,68,68,0.3)]' :
                         isCurrent ? 'bg-secondary/20 border-secondary text-secondary shadow-[0_0_20px_rgba(139,92,246,0.3)]' :
-                        isPrev ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' :
+                        isPrev ? 'bg-viz-pointer/20 border-viz-pointer text-viz-pointer shadow-[0_0_20px_rgba(59,130,246,0.3)]' :
                         'bg-white/5 border-white/10 text-white'}
                     `}>
                       {node.value}
@@ -279,7 +279,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
                           <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute -top-8 text-[10px] text-secondary font-black">CURRENT</motion.div>
                         )}
                         {isPrev && (
-                          <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute -bottom-8 text-[10px] text-blue-400 font-black">PREV</motion.div>
+                          <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute -bottom-8 text-[10px] text-viz-pointer font-black">PREV</motion.div>
                         )}
                       </AnimatePresence>
                     </div>

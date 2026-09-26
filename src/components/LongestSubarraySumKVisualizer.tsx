@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button"; // Adjust path
 import { Input } from "./ui/input"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
@@ -9,7 +9,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 2000;
 const DEFAULT_SPEED_MS = 1000;
 
-const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => void }) => {
+const LongestSubarraySumKVisualizer = () => {
   const [arr, setArr] = useState<number[]>([10, 5, 2, 7, 1, 9]);
   const [arrInput, setArrInput] = useState<string>("10, 5, 2, 7, 1, 9"); // Separate state for input
   const [k, setK] = useState<number | string>(15);
@@ -170,16 +170,16 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
    // --- Rendering ---
    const getCellClass = (index: number): string => {
        let baseClass = "w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center border rounded text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out";
-       let colorClass = "bg-gray-800 border-gray-600 text-gray-400"; // Default
+       let colorClass = "bg-muted border-border text-muted-foreground"; // Default
 
        // Current window highlight
        if (status !== "idle" && status !== "finished" && index >= left && index < right && left !== -1 && right !== -1) {
-           colorClass = "bg-gray-700 border-teal-500 text-gray-100 ring-1 ring-teal-500/50";
+           colorClass = "bg-muted border-primary text-foreground ring-1 ring-primary/50";
        }
 
         // Highlight the best found subarray when finished
         if (status === "finished" && resultIndices && index >= resultIndices.start && index <= resultIndices.end) {
-             colorClass = "bg-green-800/50 border-green-500 text-green-300 ring-1 ring-green-500/50";
+             colorClass = "bg-green-800/50 border-viz-found text-green-300 ring-1 ring-green-500/50";
         }
 
         // Pointer indicators (can use borders or pseudo-elements)
@@ -192,19 +192,14 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
 
   return (
     // Dark theme page container
-    <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300">
+    <div className="flex w-full items-center justify-center">
       {/* Dark Card */}
-      <Card className="w-full max-w-4xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
-        <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-            Longest Subarray with Sum K
-          </CardTitle>
-        </CardHeader>
+      <Card className="w-full max-w-4xl mx-auto shadow-xl overflow-hidden">
         <CardContent className="p-4 sm:p-6 space-y-5">
           {/* Input Section */}
           <div className="space-y-3">
              <div className="space-y-1">
-                 <label htmlFor="arrayInput" className="text-sm font-medium text-gray-400">Array (comma/space-separated numbers):</label>
+                 <label htmlFor="arrayInput" className="text-sm font-medium text-muted-foreground">Array (comma/space-separated numbers):</label>
                  <Input
                     id="arrayInput"
                     type="text"
@@ -212,14 +207,14 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
                     onChange={handleArrInputChange}
                     placeholder="e.g., 10, 5, 2, 7, 1, 9"
                     disabled={status === 'running' || status === 'paused'}
-                    className="h-10 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70 font-mono text-sm"
+                    className="h-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70 font-mono text-sm"
                   />
              </div>
             <div className="flex flex-col sm:flex-row gap-4">
                <div className="w-full sm:w-1/2 space-y-1">
-                    <label htmlFor="kInput" className="text-sm font-medium text-gray-400">Target Sum (K):</label>
+                    <label htmlFor="kInput" className="text-sm font-medium text-muted-foreground">Target Sum (K):</label>
                     <div className="relative">
-                         <Target className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                         <Target className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                          <Input
                              id="kInput"
                             type="number" // Keep type number for better mobile input
@@ -227,13 +222,13 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
                             onChange={handleKInputChange}
                             placeholder="Enter K"
                              disabled={status === 'running' || status === 'paused'}
-                            className="h-10 pl-9 bg-gray-800 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-teal-500 focus:ring-teal-500 disabled:opacity-70"
+                            className="h-10 pl-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70"
                           />
                     </div>
                </div>
                {/* Speed Control */}
                <div className="w-full sm:w-1/2 flex flex-col justify-center space-y-1 pt-2 sm:pt-0">
-                   <label className="text-sm font-medium text-gray-400 text-center sm:text-left">Animation Speed:</label>
+                   <label className="text-sm font-medium text-muted-foreground text-center sm:text-left">Animation Speed:</label>
                     <div className="flex items-center gap-3">
                          <Slider
                             value={[speedValue]}
@@ -241,36 +236,36 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
                             min={MIN_SPEED_MS}
                             max={MAX_SPEED_MS}
                             step={50}
-                             className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+                             className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             disabled={status === 'running' || status === 'paused'}
                             aria-label="Animation Speed Control"
                         />
-                        <span className="text-xs font-mono text-gray-500 w-14 text-right">
+                        <span className="text-xs font-mono text-muted-foreground w-14 text-right">
                           {`${calculateDelay(speedValue)} ms`}
                         </span>
                     </div>
                </div>
             </div>
-            {inputError && <p className="text-xs text-red-400 mt-1">{inputError}</p>}
+            {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
           </div>
 
            {/* Control Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-gray-700/50">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-border">
             <Button
               onClick={handleStartPause}
               disabled={arr.length === 0 || k === "" || inputError !== null} // Disable if inputs are invalid
                className={`flex items-center justify-center gap-2 font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60 ${
-                    status === 'running' ? 'bg-yellow-600 hover:bg-yellow-700'
-                    : status === 'paused' ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-teal-600 hover:bg-teal-700'
-               } text-white`}
+                    status === 'running' ? 'bg-warning text-background hover:bg-warning/90'
+                    : status === 'paused' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+               }`}
             >
               {status === 'running' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
               <span>{status === 'running' ? "Pause" : status === 'paused' ? "Resume" : status === 'finished' ? "Restart" : "Start"}</span>
             </Button>
             <Button
               onClick={reset}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
+              className="flex items-center justify-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
               disabled={status === 'idle' && left === -1} // Disable if already reset
             >
               <RotateCcw size={18} />
@@ -279,26 +274,26 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
           </div>
 
            {/* Visualization Area */}
-          <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 p-2 bg-black/20 rounded border border-gray-700/50 min-h-[60px]">
+          <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 p-2 bg-black/20 rounded border border-border min-h-[60px]">
             {arr.length > 0 ? arr.map((num, index) => (
               <div key={index} className={getCellClass(index)}>
                 {num}
               </div>
-            )) : <p className="text-gray-500 text-sm">Enter array data above.</p>}
+            )) : <p className="text-muted-foreground text-sm">Enter array data above.</p>}
           </div>
 
            {/* Status/Result Display */}
           <div className="text-center space-y-1 pt-3">
              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                <span>Current Sum: <span className="font-bold text-teal-400 font-mono">{currentSum}</span></span>
-                <span>Max Length: <span className="font-bold text-yellow-400 font-mono">{maxLength}</span></span>
-                <span>Target (K): <span className="font-bold text-gray-200 font-mono">{k}</span></span>
-                <span>L Index: <span className={`font-bold font-mono ${left !== -1 ? 'text-blue-400' : 'text-gray-500'}`}>{left !== -1 ? left : '-'}</span></span>
-                <span>R Index: <span className={`font-bold font-mono ${right !== -1 ? 'text-red-400' : 'text-gray-500'}`}>{right !== -1 ? right : '-'}</span></span>
+                <span>Current Sum: <span className="font-bold text-primary font-mono">{currentSum}</span></span>
+                <span>Max Length: <span className="font-bold text-warning font-mono">{maxLength}</span></span>
+                <span>Target (K): <span className="font-bold text-foreground font-mono">{k}</span></span>
+                <span>L Index: <span className={`font-bold font-mono ${left !== -1 ? 'text-viz-pointer' : 'text-muted-foreground'}`}>{left !== -1 ? left : '-'}</span></span>
+                <span>R Index: <span className={`font-bold font-mono ${right !== -1 ? 'text-destructive' : 'text-muted-foreground'}`}>{right !== -1 ? right : '-'}</span></span>
             </div>
              {/* Final Result */}
             {status === 'finished' && (
-              <div className={`font-semibold mt-3 text-base flex items-center justify-center gap-2 ${resultIndices ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`font-semibold mt-3 text-base flex items-center justify-center gap-2 ${resultIndices ? 'text-viz-found' : 'text-destructive'}`}>
                 {resultIndices ? (
                      <>
                         <CheckCircle size={18}/>
@@ -313,8 +308,8 @@ const LongestSubarraySumKVisualizer = ({ onBack: _onBack }: { onBack?: () => voi
               </div>
             )}
              {/* Operation Log */}
-             <div className="mt-2 pt-2 border-t border-gray-700/50">
-                 <p className="text-xs text-gray-400 font-mono break-words min-h-[18px]">{operationLog}</p>
+             <div className="mt-2 pt-2 border-t border-border">
+                 <p className="text-xs text-muted-foreground font-mono break-words min-h-[18px]">{operationLog}</p>
              </div>
           </div>
         </CardContent>

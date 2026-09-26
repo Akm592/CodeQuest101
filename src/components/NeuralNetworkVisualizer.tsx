@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card"; // Adjust path
 import { Button } from "./ui/button"; // Adjust path
 import { Label } from "./ui/label"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
@@ -15,7 +15,7 @@ const MAX_OUTPUTS = 8;
 const NODE_RADIUS = 8; // Smaller radius for potentially more nodes
 const ANIMATION_DURATION = 400; // Faster animation
 
-const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
+const NeuralNetworkVisualizer: React.FC = () => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoverExplanation, setHoverExplanation] = useState("");
     const [isAnimating, setIsAnimating] = useState(false);
@@ -215,51 +215,46 @@ const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
 
     return (
         // Dark theme page container
-        <div className="min-h-screen w-screen bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300 flex flex-col items-center">
+        <div className="flex w-full flex-col items-center">
             {/* Dark Card */}
-            <Card className="w-full max-w-6xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden mb-6">
-                <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
-                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center flex items-center justify-center gap-2">
-                        <Network size={28} /> Neural Network Visualizer
-                    </CardTitle>
-                </CardHeader>
+            <Card className="w-full max-w-6xl mx-auto shadow-xl overflow-hidden mb-6">
                 <CardContent className="p-4 sm:p-6">
                     {/* Controls */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5 border-b border-gray-700/50 pb-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5 border-b border-border pb-5">
                         {/* Hidden Layers Control */}
                         <div className="space-y-1">
-                            <Label htmlFor="numHiddenLayers" className="text-sm font-medium text-gray-400 flex items-center gap-1">
-                                <SlidersHorizontal size={14} /> Hidden Layers: <span className="font-bold text-teal-400">{numHiddenLayers}</span>
+                            <Label htmlFor="numHiddenLayers" className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                                <SlidersHorizontal size={14} /> Hidden Layers: <span className="font-bold text-primary">{numHiddenLayers}</span>
                             </Label>
                             <Slider
                                 id="numHiddenLayers" min={1} max={MAX_LAYERS - 2} step={1}
                                 value={[numHiddenLayers]}
                                 onValueChange={(val) => setNumHiddenLayers(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                         {/* Neurons per Hidden Layer */}
                         <div className="space-y-1">
-                            <Label htmlFor="neuronsPerHidden" className="text-sm font-medium text-gray-400 flex items-center gap-1">
-                                <Network size={14} /> Neurons/Hidden: <span className="font-bold text-teal-400">{neuronsPerHiddenLayer}</span>
+                            <Label htmlFor="neuronsPerHidden" className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                                <Network size={14} /> Neurons/Hidden: <span className="font-bold text-primary">{neuronsPerHiddenLayer}</span>
                             </Label>
                             <Slider
                                 id="neuronsPerHidden" min={1} max={MAX_NEURONS_PER_LAYER} step={1}
                                 value={[neuronsPerHiddenLayer]}
                                 onValueChange={(val) => setNeuronsPerHiddenLayer(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                         {/* Output Layer Control */}
                         <div className="space-y-1">
-                            <Label htmlFor="numOutputs" className="text-sm font-medium text-gray-400 flex items-center gap-1">
-                                <Target size={14} /> Output Neurons: <span className="font-bold text-teal-400">{numOutputs}</span>
+                            <Label htmlFor="numOutputs" className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                                <Target size={14} /> Output Neurons: <span className="font-bold text-primary">{numOutputs}</span>
                             </Label>
                             <Slider
                                 id="numOutputs" min={1} max={MAX_OUTPUTS} step={1}
                                 value={[numOutputs]}
                                 onValueChange={(val) => setNumOutputs(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                     </div>
@@ -269,7 +264,7 @@ const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
                         <Button
                             onClick={animateDataFlow}
                             disabled={isAnimating}
-                            className="w-full sm:w-auto flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-2 disabled:opacity-60"
+                            className="w-full sm:w-auto flex items-center gap-2 bg-primary hover:bg-primary text-primary-foreground font-semibold px-5 py-2 disabled:opacity-60"
                         >
                             {isAnimating ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
                             {isAnimating ? "Animating..." : "Animate Data Flow"}
@@ -279,16 +274,16 @@ const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
                                 id="showExplanation"
                                 checked={showExplanationComponent}
                                 onCheckedChange={setShowExplanationComponent}
-                                className="data-[state=checked]:bg-teal-600 data-[state=unchecked]:bg-gray-700 [&>span]:bg-gray-300"
+                                className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted text-foreground [&>span]:bg-gray-300"
                             />
-                            <Label htmlFor="showExplanation" className="text-sm text-gray-400 cursor-pointer flex items-center gap-1">
+                            <Label htmlFor="showExplanation" className="text-sm text-muted-foreground cursor-pointer flex items-center gap-1">
                                 <Eye size={14} /> Show Detailed Explanation
                             </Label>
                         </div>
                     </div>
 
                     {/* SVG Visualization Area */}
-                    <div className="bg-black/30 p-2 rounded-lg border border-gray-700/50 min-h-[420px] flex items-center justify-center">
+                    <div className="bg-black/30 p-2 rounded-lg border border-border min-h-[420px] flex items-center justify-center">
                         <svg ref={svgRef} width="100%" height="400"></svg>
                     </div>
 
@@ -296,12 +291,12 @@ const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
                     <AnimatePresence>
                         {hoverExplanation && (
                             <motion.div
-                                className="mt-4 p-3 bg-gray-800 border border-gray-700 rounded-lg text-center"
+                                className="mt-4 p-3 bg-muted text-foreground border border-border rounded-lg text-center"
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
                             >
-                                <p className="text-xs text-gray-300 font-mono">{hoverExplanation}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{hoverExplanation}</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -320,18 +315,18 @@ const NeuralNetworkVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
                             initial={{ scale: 0.7, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.7, opacity: 0 }}
-                            className="bg-gray-800 p-6 rounded-lg max-w-md border border-gray-600 shadow-xl"
+                            className="bg-muted text-foreground p-6 rounded-lg max-w-md border border-border shadow-xl"
                             onClick={e => e.stopPropagation()} // Prevent closing when clicking inside popup
                         >
-                            <h3 className="text-lg font-semibold mb-2 text-teal-400">Layer {activeLayerInfo.index}: {
+                            <h3 className="text-lg font-semibold mb-2 text-primary">Layer {activeLayerInfo.index}: {
                                 activeLayerInfo.index === 0 ? "Input Layer" :
                                     activeLayerInfo.index === layers.length - 1 ? "Output Layer" :
                                         `Hidden Layer ${activeLayerInfo.index}`
                             }</h3>
-                            <p className="text-sm text-gray-300 mb-4">{activeLayerInfo.explanation}</p>
+                            <p className="text-sm text-muted-foreground mb-4">{activeLayerInfo.explanation}</p>
                             <Button
                                 onClick={() => setShowPopup(false)}
-                                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm"
+                                className="w-full bg-primary hover:bg-primary text-primary-foreground text-sm"
                                 size="sm"
                             >
                                 Close

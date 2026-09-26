@@ -204,8 +204,8 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
       const base = "absolute -top-8 text-[10px] font-bold transition-all duration-300 ease-in-out px-2 py-0.5 rounded-full";
       let color = "";
 
-      if (pointerType === 'L' && index === left) color = "bg-blue-500/20 text-blue-400 border border-blue-500/30";
-      if (pointerType === 'R' && index === right) color = "bg-red-500/20 text-red-400 border border-red-500/30";
+      if (pointerType === 'L' && index === left) color = "bg-viz-pointer/20 text-viz-pointer border border-viz-pointer/30";
+      if (pointerType === 'R' && index === right) color = "bg-destructive/20 text-destructive border border-destructive/30";
       if (pointerType === 'M' && index === mid) color = "bg-primary/20 text-primary border border-primary/30";
 
        const isVisible = (searchStatus === 'running' || searchStatus === 'found') && index !== -1;
@@ -228,7 +228,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
       {/* Target & Speed */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Target Value</Label>
+          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Target Value</Label>
           <div className="relative">
             <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
             <Input
@@ -240,12 +240,12 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
               className="h-10 sm:h-11 bg-white/5 border-white/10 pl-10 focus:border-primary/50 transition-all text-sm"
             />
           </div>
-          {targetError && <p className="text-[10px] text-red-400">{targetError}</p>}
+          {targetError && <p className="text-[10px] text-destructive">{targetError}</p>}
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Animation Speed</Label>
+            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Animation Speed</Label>
             <span className="text-[10px] font-mono text-primary">{calculateDelay(speedValue)}ms</span>
           </div>
           <Slider
@@ -261,12 +261,12 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
 
       {/* Main Actions */}
       <div className="flex flex-col gap-3">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Simulation Controls</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Simulation Controls</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={binarySearch}
             disabled={searchStatus === 'running' || target === "" || isGenerating}
-            className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-black font-bold text-xs sm:text-sm"
+            className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-primary-foreground font-bold text-xs sm:text-sm"
           >
             {searchStatus === 'running' ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <PlayCircle className="mr-2 h-4 w-4" />}
             {searchStatus === 'running' ? "Searching" : "Start"}
@@ -292,7 +292,7 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
 
       {/* Custom Input */}
       <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Custom Array</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Custom Array</Label>
         <div className="flex gap-2">
           <Input
             value={customArrayInput}
@@ -310,8 +310,8 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        {arrayError && <p className="text-[10px] text-red-400">{arrayError}</p>}
-        <p className="text-[10px] text-gray-500 italic">Sorted numbers only, max 50.</p>
+        {arrayError && <p className="text-[10px] text-destructive">{arrayError}</p>}
+        <p className="text-[10px] text-muted-foreground italic">Sorted numbers only, max 50.</p>
       </div>
     </div>
   );
@@ -357,8 +357,8 @@ const BinarySearchVisualizer: React.FC<BinarySearchVisualizerProps> = ({ onBack 
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold ${
-                    searchStatus === "found" ? "bg-green-500/10 border-green-500/50 text-green-400" :
-                    searchStatus === "not_found" ? "bg-red-500/10 border-red-500/50 text-red-400" :
+                    searchStatus === "found" ? "bg-viz-found/10 border-viz-found/50 text-viz-found" :
+                    searchStatus === "not_found" ? "bg-destructive/10 border-destructive/50 text-destructive" :
                     "bg-primary/10 border-primary/50 text-primary"
                   }`}
                 >

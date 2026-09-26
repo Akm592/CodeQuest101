@@ -19,7 +19,7 @@ import {
 
 type TraversalType = "in-order" | "pre-order" | "post-order";
 
-const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
+const TreeVisualizer: React.FC = () => {
   const [treeType, setTreeType] = useState<TreeType>("binary");
   const [root, setRoot] = useState<TreeNodeType | null>(null);
   const [highlightedNode, setHighlightedNode] = useState<number | null>(null);
@@ -253,13 +253,10 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
 
   return (
     // Main Container: Dark background, light text
-    <div className="flex flex-col items-center p-4 sm:p-8 bg-gray-900 text-gray-100 min-h-screen w-screen">
+    <div className="flex w-full flex-col items-center">
       {/* Heading: Light text */}
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-white">
-        Tree Visualizer
-      </h1>
       {/* Controls & Visualization Container: Darker background, lighter border */}
-      <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700 items-center">
+      <div className="w-full max-w-6xl bg-muted text-foreground rounded-xl shadow-lg p-6 border border-border items-center">
         {/* TreeControls already adapted */}
         <TreeControls
           treeType={treeType}
@@ -270,7 +267,7 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
           handleOperation={handleOperation}
         />
         {/* Traversal Controls */}
-        <div className="mt-6 flex flex-wrap gap-4 justify-center items-center border-t border-gray-700 pt-6">
+        <div className="mt-6 flex flex-wrap gap-4 justify-center items-center border-t border-border pt-6">
            {/* Traversal Select: Dark theme styles */}
           <Select
             value={traversalType}
@@ -279,10 +276,10 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
               resetTraversal(); // Reset if type changes mid-traversal
             }}
           >
-             <SelectTrigger className="w-full sm:w-[180px] border-gray-600 text-white bg-gray-700 hover:bg-gray-600 focus:ring-blue-500 focus:border-blue-500">
+             <SelectTrigger className="w-full sm:w-[180px] border-border text-white bg-muted hover:bg-muted/70 focus:ring-blue-500 focus:border-viz-pointer">
                <SelectValue placeholder="Select traversal" />
              </SelectTrigger>
-             <SelectContent className="bg-gray-700 text-white border border-gray-600">
+             <SelectContent className="bg-muted text-white border border-border">
               <SelectItem value="in-order">In-order</SelectItem>
               <SelectItem value="pre-order">Pre-order</SelectItem>
               <SelectItem value="post-order">Post-order</SelectItem>
@@ -292,7 +289,7 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
           <Button
             onClick={startTraversal}
             disabled={isTraversing || !root} // Disable if no root
-            className="w-full sm:w-auto bg-green-600 text-white hover:bg-green-500 disabled:opacity-50"
+            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             Start
           </Button>
@@ -312,7 +309,7 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
         </div>
 
         {/* SVG Visualization Area */}
-         <div className="mt-8 w-full h-[400px] sm:h-[500px] border border-gray-700 rounded-lg shadow-inner bg-gray-900 overflow-hidden"> {/* Fixed height, dark bg */}
+         <div className="mt-8 w-full h-[400px] sm:h-[500px] border border-border rounded-lg shadow-inner bg-gray-900 overflow-hidden"> {/* Fixed height, dark bg */}
           <svg
             width="100%"
             height="100%"
@@ -326,7 +323,7 @@ const TreeVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) 
           </svg>
         </div>
          {/* Explanation Area */}
-         <div className="mt-6 p-4 bg-gray-700 rounded min-h-[60px] text-sm text-gray-200 border border-gray-600">
+         <div className="mt-6 p-4 bg-muted rounded min-h-[60px] text-sm text-foreground border border-border">
             <p className="font-mono">{explanation || "Perform an operation or start traversal."}</p>
          </div>
       </div>

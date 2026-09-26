@@ -349,7 +349,7 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
       {/* Selection & Speed */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Algorithm</Label>
+          <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Algorithm</Label>
           <Select value={sortingAlgorithm} onValueChange={handleAlgorithmChange} disabled={isRunning}>
             <SelectTrigger className="bg-white/5 border-white/10 h-10 sm:h-11">
               <SelectValue />
@@ -364,7 +364,7 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold text-glow">Animation Speed</Label>
+            <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold text-glow">Animation Speed</Label>
             <span className="text-[10px] font-mono text-primary">{calculateDelay(speedValue)}ms</span>
           </div>
           <Slider
@@ -380,10 +380,10 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
 
       {/* Playback Controls */}
       <div className="flex flex-col gap-3">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Playback</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Playback</Label>
         <div className="grid grid-cols-2 gap-2">
           {!isRunning ? (
-            <Button onClick={startSorting} className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-black font-bold col-span-2 text-xs sm:text-sm">
+            <Button onClick={startSorting} className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-primary-foreground font-bold col-span-2 text-xs sm:text-sm">
               <PlayCircle className="mr-2 h-4 w-4" /> Start Sorting
             </Button>
           ) : (
@@ -405,7 +405,7 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
 
       {/* Custom Input */}
       <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold">Custom Data</Label>
+        <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Custom Data</Label>
         <div className="flex gap-2">
           <Input
             placeholder="e.g. 5, 2, 8, 1..."
@@ -428,13 +428,13 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
           </Button>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-primary" /> Comparing
            </div>
-           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-red-500" /> Swapping
            </div>
-           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400">
+           <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-green-500" /> Sorted
            </div>
         </div>
@@ -473,7 +473,7 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  exit={{ opacity: 0, y: 20 }}
-                 className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 glass-panel rounded-full text-[10px] font-bold tracking-widest uppercase text-primary border-primary/20"
+                 className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-card/80 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-bold tracking-widest uppercase text-primary border-primary/20"
                >
                  {currentStep}
                </motion.div>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles } from "lucide-react";
+import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
@@ -113,44 +113,13 @@ const sessionReducer = (state: SessionState, action: SessionAction): SessionStat
   }
 };
 
-// --- Custom Hooks ---
-const useTheme = () => {
-  const [theme, setTheme] = useState<string>("system");
-
-  const applyTheme = useCallback((newTheme: string) => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-
-    if (newTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(newTheme);
-    }
-  }, []);
-
-  const handleThemeChange = useCallback((newTheme: string) => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
-  }, [applyTheme]);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "system";
-    setTheme(savedTheme);
-    applyTheme(savedTheme);
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      if (savedTheme === "system") applyTheme("system");
-    };
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, [applyTheme]);
-
-  return { theme, handleThemeChange };
-};
+// The theme hook that used to live here has been removed along with light mode.
+//
+// It ran `documentElement.classList.remove('light', 'dark')` and then re-added a
+// class based on `localStorage` or `prefers-color-scheme`. Because it only ran
+// on this route, it stripped the app-wide `dark` class set in index.html and
+// left the chat pale while every other page stayed dark — the inconsistency
+// this pass exists to remove. The app is dark-only; index.html owns the class.
 
 // The shared instance in lib/api.ts attaches the Supabase access token and
 // retries once on 401 with a refreshed one.
@@ -165,8 +134,7 @@ SuggestionsScreen.displayName = 'SuggestionsScreen';
 // --- Main ChatInterface Component ---
 const ChatInterface = () => {
   // --- Hooks and Context ---
-  const { user, getChatSession, createChatSession, signOut } = useAuth();
-  const { theme, handleThemeChange } = useTheme();
+  const { user, getChatSession, createChatSession, signOut, authDegraded } = useAuth();
   const api = useAPI();
 
   // --- State Management ---
@@ -630,7 +598,7 @@ const ChatInterface = () => {
   return (
     <div className="flex h-[100dvh] w-screen overflow-hidden bg-gray-50 dark:bg-[#050a14] relative transition-colors duration-300">
       {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-500/10 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <ChatSidebar
@@ -650,15 +618,15 @@ const ChatInterface = () => {
         {/* Floating Header */}
         <header className="absolute top-4 left-4 right-4 z-20 mx-auto max-w-5xl bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex justify-between items-center shadow-lg">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-teal-500/10 border border-teal-500/20">
-              <Sparkles className="w-4 h-4 text-teal-400" />
+            <div className="p-2 rounded-full bg-primary/10 border border-primary/20">
+              <Sparkles className="w-4 h-4 text-primary" />
             </div>
             <h1 className="text-sm font-semibold text-white tracking-wide">
               AI ARCHITECT <span className="text-white/40 font-normal ml-2">| v2.0</span>
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-gray-400">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span>System Online</span>
             </div>
@@ -666,27 +634,41 @@ const ChatInterface = () => {
             <button
               onClick={handleNewChat}
               disabled={sessionState.isCreatingSession}
-              className="group p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-all disabled:opacity-50"
+              className="group p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-all disabled:opacity-50"
               title="New Chat"
             >
               {sessionState.isCreatingSession ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <MessageSquarePlus className="w-5 h-5 group-hover:text-teal-400 transition-colors" />
+                <MessageSquarePlus className="w-5 h-5 group-hover:text-primary transition-colors" />
               )}
             </button>
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="group p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+              className="group p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-all"
               title="Settings"
             >
-              <Settings className="w-5 h-5 group-hover:text-teal-400 transition-colors" />
+              <Settings className="w-5 h-5 group-hover:text-primary transition-colors" />
             </button>
           </div>
         </header>
 
         <main className="flex-1 overflow-hidden flex justify-center items-center pt-20 pb-4 px-4">
           <div className="flex flex-col h-full w-full max-w-5xl mx-auto">
+            {/* Account state, not message state: this must sit alongside the
+                conversation rather than replacing it. */}
+            {authDegraded && (
+              <div
+                role="status"
+                className="mx-4 mb-2 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                <CloudOff className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>
+                  Can&apos;t reach the sign-in service. You can keep chatting, but this
+                  conversation won&apos;t be saved.
+                </span>
+              </div>
+            )}
             <div
               ref={chatWindowRef}
               className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-teal-500/50"
@@ -701,9 +683,9 @@ const ChatInterface = () => {
                     className="flex items-center justify-center h-full"
                   >
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-full border-4 border-teal-500/20 border-t-teal-500 animate-spin" />
+                      <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-teal-500 animate-spin" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-teal-500 animate-pulse" />
+                        <Sparkles className="w-6 h-6 text-primary animate-pulse" />
                       </div>
                     </div>
                   </motion.div>
@@ -739,7 +721,7 @@ const ChatInterface = () => {
 
             {/* Floating Input Area */}
             <div className="p-4 pt-2">
-              <div className="relative bg-[#0F1117]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl focus-within:border-teal-500/50 focus-within:ring-1 focus-within:ring-teal-500/50 transition-all duration-300">
+              <div className="relative bg-[#0F1117]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all duration-300">
                 <textarea
                   ref={(el) => {
                     if (el) {
@@ -760,7 +742,7 @@ const ChatInterface = () => {
                   }}
                   placeholder="Ask anything about code..."
                   rows={1}
-                  className="w-full bg-transparent text-gray-200 placeholder-gray-500 px-5 py-4 pr-14 focus:outline-none resize-none scrollbar-thin scrollbar-thumb-white/10 rounded-2xl min-h-[56px] text-base leading-relaxed"
+                  className="w-full bg-transparent text-foreground placeholder-gray-500 px-5 py-4 pr-14 focus:outline-none resize-none scrollbar-thin scrollbar-thumb-white/10 rounded-2xl min-h-[56px] text-base leading-relaxed"
                   disabled={chatState.isTyping || (!sessionState.session?.id)}
                 />
 
@@ -768,7 +750,7 @@ const ChatInterface = () => {
                   <button
                     onClick={() => handleSendMessage()}
                     disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
-                    className="p-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-black shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                    className="p-2.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
                   >
                     {chatState.isTyping ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -779,7 +761,7 @@ const ChatInterface = () => {
                 </div>
               </div>
               <div className="text-center mt-3">
-                <p className="text-[10px] text-gray-600 uppercase tracking-widest font-medium">
+                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                   Powered by Advanced AI • Capable of Mistakes
                 </p>
               </div>
@@ -816,8 +798,6 @@ const ChatInterface = () => {
         <AnimatePresence>
           {showSettingsModal && (
             <SettingsModal
-              currentTheme={theme}
-              onThemeChange={handleThemeChange}
               onClose={() => setShowSettingsModal(false)}
               userEmail={user?.email ?? null}
               onSignOut={handleSignOut}

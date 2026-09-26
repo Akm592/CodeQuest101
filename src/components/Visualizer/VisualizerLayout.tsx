@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  MoveLeftIcon, 
-  ChevronRight, 
-  ChevronLeft,
-  BookOpen
-} from "lucide-react";
+import { ChevronLeft, BookOpen, PanelLeftOpen } from "lucide-react";
 import { Button } from "../ui/button";
+import VisualizerHeader from "./VisualizerHeader";
 import { ScrollArea } from "../ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
@@ -53,7 +49,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
               animate={{ x: 0 }}
               exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed lg:relative w-[280px] sm:w-80 h-full glass-panel border-r border-white/10 z-40 lg:z-20 flex flex-col"
+              className="fixed lg:relative w-[280px] sm:w-80 h-full bg-card/80 backdrop-blur-xl border-r border-white/10 z-40 lg:z-20 flex flex-col"
             >
               <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between">
                 <h2 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
@@ -82,7 +78,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
                         <h3 className="text-xs font-semibold text-primary mb-2 flex items-center gap-2">
                           <BookOpen className="h-4 w-4" /> Description
                         </h3>
-                        <div className="text-xs sm:text-sm text-gray-400 leading-relaxed">
+                        <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                           {description}
                         </div>
                       </div>
@@ -90,11 +86,11 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
                       {complexity && (
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-2 sm:p-3 rounded-xl bg-white/5 border border-white/10 text-center">
-                            <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-1">Time</p>
+                            <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Time</p>
                             <p className="font-mono text-xs text-primary">{complexity.time}</p>
                           </div>
                           <div className="p-2 sm:p-3 rounded-xl bg-white/5 border border-white/10 text-center">
-                            <p className="text-[9px] uppercase tracking-wider text-gray-500 mb-1">Space</p>
+                            <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Space</p>
                             <p className="font-mono text-xs text-secondary">{complexity.space}</p>
                           </div>
                         </div>
@@ -103,7 +99,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
 
                     <TabsContent value="code">
                       <div className="rounded-xl bg-black/40 border border-white/10 p-3 overflow-x-auto">
-                        <pre className="text-[10px] sm:text-xs font-mono text-gray-300 leading-relaxed">
+                        <pre className="text-[10px] sm:text-xs font-mono text-muted-foreground leading-relaxed">
                           <code>{pseudocode || "// Pseudocode coming soon..."}</code>
                         </pre>
                       </div>
@@ -112,16 +108,6 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
                 </div>
               </ScrollArea>
 
-              <div className="p-4 border-t border-white/10 mt-auto">
-                <Button 
-                  onClick={onBack}
-                  variant="outline"
-                  className="w-full text-xs border-white/10 hover:bg-white/5 hover:text-primary transition-all flex items-center justify-center gap-2"
-                >
-                  <MoveLeftIcon className="h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-              </div>
             </motion.aside>
           </>
         )}
@@ -129,29 +115,25 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
 
       {/* Main Visualizer Area */}
       <main className="flex-grow flex flex-col relative h-full w-full min-w-0">
-        {/* Top Header */}
-        <header className="h-14 sm:h-16 px-4 sm:px-8 flex items-center justify-between border-b border-white/10 glass-panel shrink-0">
-          <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
-            {!isSidebarOpen && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
+        {/* Top header. Back lives here rather than in the sidebar footer: the
+            sidebar starts collapsed, so the exit used to be invisible. */}
+        <VisualizerHeader
+          title={title}
+          onBack={onBack}
+          leading={
+            !isSidebarOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsSidebarOpen(true)}
-                className="hover:bg-white/5 shrink-0"
+                aria-label="Show algorithm info"
+                className="shrink-0 hover:bg-white/5"
               >
-                <ChevronRight className="h-4 w-4" />
+                <PanelLeftOpen className="h-4 w-4" />
               </Button>
-            )}
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight truncate">{title}</h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-widest text-primary animate-pulse">
-              Interactive Simulation
-            </div>
-            <div className="sm:hidden w-2 h-2 rounded-full bg-primary animate-pulse" />
-          </div>
-        </header>
+            )
+          }
+        />
 
         {/* Canvas Area */}
         <div className="flex-grow p-4 sm:p-8 flex items-center justify-center overflow-auto bg-black/20">
@@ -161,7 +143,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
         </div>
 
         {/* Controls Bar */}
-        <footer className="h-auto p-4 sm:p-6 border-t border-white/10 glass-panel shrink-0">
+        <footer className="h-auto shrink-0 border-t border-white/10 bg-card/80 p-4 backdrop-blur-xl sm:p-6">
            <div className="container mx-auto max-w-7xl">
               {controls}
            </div>

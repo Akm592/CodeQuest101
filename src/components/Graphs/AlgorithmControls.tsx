@@ -80,21 +80,21 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
   };
 
   return (
-    <div className="space-y-6 p-6 bg-gray-800 rounded-lg border border-gray-700/50 shadow-lg">
+    <div className="space-y-6 p-6 bg-muted text-foreground rounded-lg border border-border shadow-lg">
       {/* Header: Algorithm and Node Settings */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Algorithm Selection */}
         <div>
-          <Label htmlFor="algo-select" className="text-xs text-gray-400 mb-1">Algorithm</Label>
+          <Label htmlFor="algo-select" className="text-xs text-muted-foreground mb-1">Algorithm</Label>
           <Select 
             value={algorithmType} 
             onValueChange={(v) => setAlgorithmType(v as AlgorithmType)} 
             disabled={isRunning && !isPaused}
           >
-            <SelectTrigger id="algo-select" className="w-full bg-gray-700 border-gray-600 text-gray-200">
+            <SelectTrigger id="algo-select" className="w-full bg-muted border-border text-foreground">
               <SelectValue placeholder="Algorithm" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-700 border-gray-600 text-gray-200">
+            <SelectContent className="bg-muted border-border text-foreground">
               <SelectItem value="bfs">BFS</SelectItem>
               <SelectItem value="dfs">DFS</SelectItem>
               <SelectItem value="dijkstra">Dijkstra</SelectItem>
@@ -105,16 +105,16 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
 
         {/* Start Node Selection */}
         <div>
-          <Label htmlFor="start-node-select" className="text-xs text-gray-400 mb-1">Start Node</Label>
+          <Label htmlFor="start-node-select" className="text-xs text-muted-foreground mb-1">Start Node</Label>
           <Select 
             value={startNode ?? ""} 
             onValueChange={(v) => setStartNode(v || null)} 
             disabled={isRunning && !isPaused}
           >
-            <SelectTrigger id="start-node-select" className="w-full bg-gray-700 border-gray-600 text-gray-200">
+            <SelectTrigger id="start-node-select" className="w-full bg-muted border-border text-foreground">
               <SelectValue placeholder="Select Start" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-700 border-gray-600 text-gray-200 max-h-60">
+            <SelectContent className="bg-muted border-border text-foreground max-h-60">
               {nodes.map(node => (
                 <SelectItem key={node} value={node} disabled={node === endNode}>
                   {node}
@@ -127,16 +127,16 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
         {/* End Node Selection for Pathfinding */}
         {isPathfinding && (
           <div>
-            <Label htmlFor="end-node-select" className="text-xs text-gray-400 mb-1">End Node</Label>
+            <Label htmlFor="end-node-select" className="text-xs text-muted-foreground mb-1">End Node</Label>
             <Select 
               value={endNode ?? ""} 
               onValueChange={(v) => setEndNode(v || null)} 
               disabled={isRunning && !isPaused}
             >
-              <SelectTrigger id="end-node-select" className="w-full bg-gray-700 border-gray-600 text-gray-200">
+              <SelectTrigger id="end-node-select" className="w-full bg-muted border-border text-foreground">
                 <SelectValue placeholder="Select End" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-700 border-gray-600 text-gray-200 max-h-60">
+              <SelectContent className="bg-muted border-border text-foreground max-h-60">
                 {nodes.map(node => (
                   <SelectItem key={node} value={node} disabled={node === startNode}>
                     {node}
@@ -158,19 +158,19 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600"
           aria-label="Toggle Directed Mode"
         />
-        <Label htmlFor="directed-mode" className="text-sm font-medium text-gray-300">
+        <Label htmlFor="directed-mode" className="text-sm font-medium text-muted-foreground">
           Directed Graph
         </Label>
       </div>
 
       {/* Playback Controls */}
-      <div className="flex flex-wrap justify-center items-center gap-4 bg-gray-700 p-4 rounded-lg border border-gray-600">
+      <div className="flex flex-wrap justify-center items-center gap-4 bg-muted text-foreground p-4 rounded-lg border border-border">
         <Button
           variant="outline"
           size="icon"
           onClick={resetAlgorithm}
           title="Reset Algorithm"
-          className="border-gray-600 hover:bg-gray-600 text-gray-300 hover:text-white"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white"
         >
           <RotateCcw className="h-5 w-5"/>
         </Button>
@@ -180,7 +180,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           onClick={stepBackward}
           disabled={!isRunning || currentStep <= 0}
           title="Step Backward"
-          className="border-gray-600 hover:bg-gray-600 text-gray-300 hover:text-white disabled:opacity-50"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
         >
           <SkipBack className="h-5 w-5"/>
         </Button>
@@ -190,10 +190,10 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           onClick={isRunning ? pauseResume : startAlgorithm}
           disabled={!canStart && !isRunning}
           title={isRunning ? (isPaused ? "Resume" : "Pause") : "Start"}
-          className={`border-gray-600 disabled:opacity-50 ${
+          className={`border-border disabled:opacity-50 ${
             isRunning && !isPaused
-              ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-green-600 hover:bg-green-700 text-white'
+              ? 'border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           }`}
         >
           {isRunning && !isPaused ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
@@ -204,7 +204,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           onClick={stepForward}
           disabled={!isRunning || isFinished}
           title="Step Forward"
-          className="border-gray-600 hover:bg-gray-600 text-gray-300 hover:text-white disabled:opacity-50"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
         >
           <SkipForward className="h-5 w-5"/>
         </Button>
@@ -212,7 +212,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
 
       {/* Speed Slider */}
       <div className="flex items-center gap-3">
-        <Label htmlFor="speed-slider" className="text-xs text-gray-400">Speed</Label>
+        <Label htmlFor="speed-slider" className="text-xs text-muted-foreground">Speed</Label>
         <Slider
           id="speed-slider"
           min={0}
@@ -223,7 +223,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           className="w-full [&>span:first-child]:h-1 [&>span>span]:bg-blue-500 [&>span>span]:h-1"
           disabled={isRunning && !isPaused}
         />
-        <FastForward className="h-5 w-5 text-gray-400" />
+        <FastForward className="h-5 w-5 text-muted-foreground" />
       </div>
     </div>
   );

@@ -1,12 +1,10 @@
 // SettingsModal.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Monitor, Check, LogOut, LogIn, Code2 } from 'lucide-react';
+import { X, LogOut, LogIn, Code2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface SettingsModalProps {
-    currentTheme: string;
-    onThemeChange: (theme: string) => void;
     onClose: () => void;
     userEmail?: string | null;
     onSignOut?: () => void;
@@ -28,20 +26,12 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
-    currentTheme,
-    onThemeChange,
     onClose,
     userEmail,
     onSignOut,
     preferredLanguage = '',
     onPreferredLanguageChange,
 }) => {
-
-    const themeOptions = [
-        { name: 'Light', value: 'light', icon: Sun },
-        { name: 'Dark', value: 'dark', icon: Moon },
-        { name: 'System', value: 'system', icon: Monitor },
-    ];
 
     return (
         <AnimatePresence>
@@ -61,7 +51,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Background Glow */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none -mr-32 -mt-32" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -mr-32 -mt-32" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none -ml-32 -mb-32" />
 
                     {/* Header */}
@@ -71,7 +61,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         </h2>
                         <button
                             onClick={onClose}
-                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors"
+                            className="p-2 rounded-full text-muted-foreground dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors"
                             aria-label="Close settings"
                         >
                             <X className="w-5 h-5" />
@@ -80,38 +70,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* Content */}
                     <div className="p-6 relative z-10 space-y-6">
-                        {/* Theme Selection */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">
-                                Appearance
-                            </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {themeOptions.map((option) => {
-                                    const isActive = currentTheme === option.value;
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            onClick={() => onThemeChange(option.value)}
-                                            className={`group relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300
-                                                ${isActive
-                                                    ? 'bg-teal-500/10 border-teal-500/50 text-teal-600 dark:text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.15)]'
-                                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:border-gray-300 dark:hover:border-white/10 hover:text-gray-900 dark:hover:text-gray-200'
-                                                }`}
-                                        >
-                                            {isActive && (
-                                                <div className="absolute top-2 right-2">
-                                                    <Check className="w-3.5 h-3.5" />
-                                                </div>
-                                            )}
-                                            <option.icon className={`w-6 h-6 mb-3 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-                                            <span className="text-sm font-medium">
-                                                {option.name}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
 
 
                         {/* Solution language: setting this lets the tutor answer
@@ -119,17 +77,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         <div>
                             <label
                                 htmlFor="preferred-language"
-                                className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider"
+                                className="block text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-3 uppercase tracking-wider"
                             >
                                 Solution language
                             </label>
                             <div className="relative">
-                                <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                 <select
                                     id="preferred-language"
                                     value={preferredLanguage}
                                     onChange={(e) => onPreferredLanguageChange?.(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-gray-200 focus:outline-none focus:border-teal-500/50"
+                                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-foreground focus:outline-none focus:border-primary/50"
                                 >
                                     {LANGUAGE_OPTIONS.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -138,21 +96,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     ))}
                                 </select>
                             </div>
-                            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                            <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                                 Pick one and solutions arrive in a single step.
                             </p>
                         </div>
 
                         {/* Account. Until now the app had no sign-out anywhere. */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+                            <label className="block text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-3 uppercase tracking-wider">
                                 Account
                             </label>
                             {userEmail ? (
                                 <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                     <div className="min-w-0">
-                                        <p className="text-sm text-gray-900 dark:text-gray-200 truncate">{userEmail}</p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">Chats are saved to your account</p>
+                                        <p className="text-sm text-gray-900 dark:text-foreground truncate">{userEmail}</p>
+                                        <p className="text-xs text-muted-foreground dark:text-muted-foreground">Chats are saved to your account</p>
                                     </div>
                                     <button
                                         onClick={onSignOut}
@@ -165,13 +123,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             ) : (
                                 <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                     <div className="min-w-0">
-                                        <p className="text-sm text-gray-900 dark:text-gray-200">Browsing as a guest</p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">Sign in to save your chat history</p>
+                                        <p className="text-sm text-gray-900 dark:text-foreground">Browsing as a guest</p>
+                                        <p className="text-xs text-muted-foreground dark:text-muted-foreground">Sign in to save your chat history</p>
                                     </div>
                                     <Link
                                         to="/login"
                                         onClick={onClose}
-                                        className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 transition-colors"
+                                        className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-primary dark:text-primary hover:bg-primary/10 transition-colors"
                                     >
                                         <LogIn className="w-4 h-4" />
                                         Sign in
@@ -180,7 +138,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             )}
                         </div>
 
-                        <div className="pt-2 text-center text-xs text-gray-400 dark:text-gray-600">
+                        <div className="pt-2 text-center text-xs text-muted-foreground dark:text-gray-600">
                             CodeQuest101 v2.0
                         </div>
                     </div>

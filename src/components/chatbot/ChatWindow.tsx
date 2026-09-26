@@ -49,10 +49,10 @@ const EmptyState = React.memo(() => (
     <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400"
+        className="flex items-center justify-center h-full text-muted-foreground dark:text-muted-foreground"
     >
         <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-muted text-foreground flex items-center justify-center">
                 💬
             </div>
             <p className="text-sm font-medium">No messages yet</p>

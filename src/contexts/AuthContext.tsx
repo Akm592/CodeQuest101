@@ -2,12 +2,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
+import { isAuthDegraded, loadInitialSession, onAuthDegradedChange, reportAuthFailure } from "../lib/api";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  /** True when the Supabase auth service cannot be reached right now. */
+  authDegraded: boolean;
   signInWithOAuth: (provider: "google") => Promise<void>;
   signInWithPassword: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -23,15 +26,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authDegraded, setAuthDegraded] = useState(isAuthDegraded);
+
+  useEffect(() => onAuthDegradedChange(setAuthDegraded), []);
 
   useEffect(() => {
-    // Fetch the initial session
+    // Fetch the initial session.
     const initializeAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) console.error("Error fetching session:", error);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      try {
+        // Goes through the shared timeout and breaker, so an unreachable auth
+        // service is noticed here rather than on the user's first message.
+        const session = await loadInitialSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (err) {
+        // Must not leave the app stuck on a spinner. Treat it as signed-out.
+        console.error("Could not initialise auth:", err);
+        reportAuthFailure(err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initializeAuth();
@@ -134,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     isLoading,
     setIsLoading,
+    authDegraded,
     signInWithOAuth,
     signInWithPassword,
     signUpWithEmail,

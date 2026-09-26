@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "./ui/button"; // Adjust path
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
 import { PlayCircle, PauseCircle, RotateCcw, Loader2 } from "lucide-react"; // Added Loader2
@@ -11,7 +11,7 @@ const MIN_SPEED_MS = 100;
 const MAX_SPEED_MS = 1500;
 const DEFAULT_SPEED_MS = 500;
 
-const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => {
+const SpiralMatrixAnimation = () => {
   // Convert the default flat matrix into a square matrix
   const defaultDimension = Math.sqrt(DEFAULT_FLAT_MATRIX.length);
   const DEFAULT_MATRIX = [];
@@ -127,26 +127,21 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
     const baseClass =
       "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center border rounded-md text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out";
     if (isCurrent) {
-      return `${baseClass} bg-teal-500 border-teal-300 text-white scale-110 shadow-lg z-10`;
+      return `${baseClass} bg-primary border-primary text-primary-foreground scale-110 shadow-lg z-10`;
     } else if (isVisited) {
-      return `${baseClass} bg-gray-700 border-gray-600 text-gray-300`;
+      return `${baseClass} bg-muted border-border text-muted-foreground`;
     } else {
-      return `${baseClass} bg-gray-800 border-gray-600 text-gray-400 hover:bg-gray-700/50`;
+      return `${baseClass} bg-muted border-border text-muted-foreground hover:bg-muted/50`;
     }
   };
 
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-gray-950 to-black p-4 text-gray-300">
-      <Card className="w-full max-w-3xl mx-auto bg-gray-900 border border-gray-700/50 shadow-xl rounded-lg overflow-hidden">
-        <CardHeader className="bg-gray-800 border-b border-gray-700/50 text-gray-100 p-4 sm:p-5">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-            Spiral Matrix Traversal
-          </CardTitle>
-        </CardHeader>
+    <div className="flex w-full items-center justify-center">
+      <Card className="w-full max-w-3xl mx-auto shadow-xl overflow-hidden">
         <CardContent className="p-4 sm:p-6 space-y-5">
           {/* Input Area */}
           <div className="space-y-3">
-            <label htmlFor="matrixInput" className="text-sm font-medium text-gray-400 block mb-1">
+            <label htmlFor="matrixInput" className="text-sm font-medium text-muted-foreground block mb-1">
               Matrix (Enter a one-line flat array, e.g. [1,2,3,4,12,13,14,5,11,16,15,6,10,9,8,7]):
             </label>
             <Input
@@ -155,13 +150,13 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
               onChange={handleMatrixInputChange}
               placeholder='[1,2,3,...]'
               disabled={isRunning}
-              className="w-full font-mono text-sm bg-gray-800 border border-gray-600 text-gray-100 placeholder:text-gray-500 rounded-md p-2 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 disabled:opacity-70"
+              className="w-full font-mono text-sm bg-muted border border-border text-foreground placeholder:text-muted-foreground rounded-md p-2 focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-70"
             />
-            {inputError && <p className="text-xs text-red-400 mt-1">{inputError}</p>}
+            {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
             <Button
               onClick={applyMatrixInput}
               disabled={isRunning || !matrixInput.trim()}
-              className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm px-4 py-1.5 disabled:opacity-60"
+              className="w-full sm:w-auto bg-muted hover:bg-muted/70 text-foreground text-sm px-4 py-1.5 disabled:opacity-60"
             >
               Apply Matrix
             </Button>
@@ -169,30 +164,32 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
 
           {/* Speed Control */}
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-3">
-            <span className="text-sm font-medium text-gray-400 shrink-0">Animation Speed:</span>
+            <span className="text-sm font-medium text-muted-foreground shrink-0">Animation Speed:</span>
             <Slider
               value={[speedValue]}
               onValueChange={(value) => setSpeedValue(value[0])}
               min={MIN_SPEED_MS}
               max={MAX_SPEED_MS}
               step={50}
-              className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-teal-500 [&>span:first-child]:bg-gray-700"
+              className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
               disabled={isRunning}
               aria-label="Animation Speed Control"
             />
-            <span className="text-xs font-mono text-gray-500 w-16 text-right">
+            <span className="text-xs font-mono text-muted-foreground w-16 text-right">
               {`${calculateDelay(speedValue)} ms`}
             </span>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-gray-700/50">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-border">
             <Button
               onClick={toggleRunning}
               disabled={isResetting || (isRunning && currentStep >= traversalOrder.length) || traversalOrder.length === 0}
               className={`flex items-center justify-center gap-2 font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60 ${
-                isRunning ? "bg-yellow-600 hover:bg-yellow-700" : "bg-teal-600 hover:bg-teal-700"
-              } text-white`}
+                isRunning
+                  ? "bg-warning text-background hover:bg-warning/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
             >
               {isRunning ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
               <span>{isRunning ? "Pause" : currentStep >= traversalOrder.length && currentStep > 0 ? "Replay" : "Start"}</span>
@@ -200,7 +197,7 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
             <Button
               onClick={resetAnimation}
               disabled={isResetting || (!isRunning && currentStep === 0)}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
+              className="flex items-center justify-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
             >
               {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw size={18} />}
               <span>Reset</span>
@@ -227,15 +224,15 @@ const SpiralMatrixAnimation = ({ onBack: _onBack }: { onBack?: () => void }) => 
               </div>
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-10">Enter a valid matrix to visualize.</p>
+            <p className="text-center text-muted-foreground py-10">Enter a valid matrix to visualize.</p>
           )}
 
           {/* Status Display */}
-          <div className="text-center space-y-1 pt-4 border-t border-gray-700/50">
-            <p className="text-sm font-medium text-gray-400">
+          <div className="text-center space-y-1 pt-4 border-t border-border">
+            <p className="text-sm font-medium text-muted-foreground">
               Step: {currentStep} / {traversalOrder.length}
             </p>
-            <p className="text-xs sm:text-sm text-teal-300 font-mono break-all h-10 overflow-y-auto p-1 bg-black/20 rounded">
+            <p className="text-xs sm:text-sm text-primary font-mono break-all h-10 overflow-y-auto p-1 bg-black/20 rounded">
               {traversalOrder
                 .slice(0, currentStep)
                 .map(([r, c]) => matrix?.[r]?.[c] ?? "?")

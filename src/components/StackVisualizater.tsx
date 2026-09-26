@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-const StackAndQueueVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _onBack }) => {
+const StackAndQueueVisualizer: React.FC = () => {
   const [stack, setStack] = useState<number[]>([1, 2, 3, 4]);
   const [queue, setQueue] = useState<number[]>([5, 6, 7, 8]);
   const [inputValue, setInputValue] = useState<string>("");
@@ -45,9 +45,6 @@ const StackAndQueueVisualizer: React.FC<{ onBack?: () => void }> = ({ onBack: _o
 
   return (
     <div className="container mx-auto px-4 py-8 w-full max-w-full lg:max-w-[90%] xl:max-w-[80%] 2xl:max-w-[70%]">
-      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6">
-        Stack & Queue Visualizer
-      </h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <Tabs

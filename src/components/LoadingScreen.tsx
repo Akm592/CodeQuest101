@@ -63,19 +63,18 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
     }, []);
 
     return (
-        <div ref={containerRef} className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden">
+        <div ref={containerRef} data-loading-screen className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden">
             {/* Background Aesthetic Elements */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-secondary/10 rounded-full blur-[80px] animate-pulse delay-700" />
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+                <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px] loader-breathe" />
+                <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/10 blur-[80px] loader-breathe loader-breathe-delayed" />
             </div>
 
             <div className="relative z-10 flex flex-col items-center gap-8">
                 {/* Logo */}
                 <div ref={logoRef} className="text-4xl sm:text-6xl font-black tracking-tighter flex items-center gap-2">
-                    <span className="text-white">CodeQuest</span>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                    <span className="text-foreground">CodeQuest</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]">
                         101
                     </span>
                 </div>
@@ -83,35 +82,42 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
                 {/* Progress Group */}
                 <div className="w-64 sm:w-80 space-y-3">
                     <div className="flex justify-between items-end">
-                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">System Initializing</span>
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">System Initializing</span>
                         <span className="text-xs font-mono text-primary">{Math.min(percent, 100)}%</span>
                     </div>
                     <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden">
                         <div 
                             ref={progressRef}
-                            className="h-full w-0 bg-gradient-to-r from-primary to-secondary shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-100"
+                            className="h-full w-0 bg-gradient-to-r from-primary to-secondary shadow-[0_0_10px_hsl(var(--primary)/0.5)] transition-all duration-100"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Bottom Tech Text */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 text-gray-600">
-                <div className="h-[1px] w-8 bg-gray-800" />
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 text-muted-foreground">
+                <div className="h-[1px] w-8 bg-muted" />
                 <span className="text-[9px] uppercase tracking-widest font-medium">Visualization Engine v2.0.4</span>
-                <div className="h-[1px] w-8 bg-gray-800" />
+                <div className="h-[1px] w-8 bg-muted" />
             </div>
 
+            {/* Scoped names. This block used to redefine @keyframes pulse and
+                .animate-pulse unscoped, so while the loader was mounted every
+                animate-pulse in the app — skeletons included — ran at 4s and
+                scaled by 10%. */}
             <style>{`
-                @keyframes pulse {
-                    0%, 100% { opacity: 0.5; scale: 1; }
-                    50% { opacity: 0.8; scale: 1.1; }
+                @keyframes loader-breathe {
+                    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+                    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
                 }
-                .animate-pulse {
-                    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                .loader-breathe {
+                    animation: loader-breathe 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
                 }
-                .delay-700 {
+                .loader-breathe-delayed {
                     animation-delay: 700ms;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .loader-breathe { animation: none; }
                 }
             `}</style>
         </div>

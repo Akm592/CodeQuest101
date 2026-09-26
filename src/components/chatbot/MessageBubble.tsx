@@ -120,7 +120,7 @@ const TypewriterMarkdown: React.FC<{
         </ReactMarkdown>
       </div>
       {showCursor && !isStreaming && (
-        <span className="inline-block w-0.5 h-3 sm:h-4 bg-teal-400 ml-0.5 animate-pulse" />
+        <span className="inline-block w-0.5 h-3 sm:h-4 bg-primary ml-0.5 animate-pulse" />
       )}
     </div>
   );
@@ -183,8 +183,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       return (
         <code
           className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-all ${isUserMessage
-            ? 'bg-white/20 text-teal-50'
-            : 'bg-black/40 text-teal-300 border border-teal-500/20'
+            ? 'bg-white/20 text-foreground'
+            : 'bg-black/40 text-primary border border-primary/20'
             }`}
           {...props}
         >
@@ -196,14 +196,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     return (
       <div className="relative group my-3 sm:my-4 text-xs sm:text-sm rounded-xl overflow-hidden border border-white/10 shadow-lg bg-[#0F1117] w-full">
         <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-white/5 border-b border-white/5">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide truncate">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate">
             {language}
           </span>
           <button
             onClick={handleCopy}
             className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${codeCopied
               ? 'bg-green-500/20 text-green-400'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+              : 'bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white'
               }`}
             aria-label={codeCopied ? "Copied" : "Copy code"}
           >
@@ -243,51 +243,51 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const memoizedComponents = useMemo((): Components => ({
     code: CodeBlock,
     h1: ({ node, ...props }) => (
-      <h1 className="text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-3 sm:mb-4 pb-2 border-b border-teal-500/30 text-teal-300" {...props} />
+      <h1 className="text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-3 sm:mb-4 pb-2 border-b border-primary/30 text-primary" {...props} />
     ),
     h2: ({ node, ...props }) => (
-      <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 mb-2 sm:mb-3 text-teal-200" {...props} />
+      <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 mb-2 sm:mb-3 text-primary" {...props} />
     ),
     h3: ({ node, ...props }) => (
       <h3 className="text-base sm:text-lg font-semibold mt-3 sm:mt-4 mb-2 text-white" {...props} />
     ),
     h4: ({ node, ...props }) => (
-      <h4 className="text-sm sm:text-base font-semibold mt-3 mb-2 text-gray-200" {...props} />
+      <h4 className="text-sm sm:text-base font-semibold mt-3 mb-2 text-foreground" {...props} />
     ),
     h5: ({ node, ...props }) => (
-      <h5 className="text-sm font-semibold mt-2 sm:mt-3 mb-2 text-gray-300" {...props} />
+      <h5 className="text-sm font-semibold mt-2 sm:mt-3 mb-2 text-muted-foreground" {...props} />
     ),
     h6: ({ node, ...props }) => (
-      <h6 className="text-xs sm:text-sm font-semibold mt-2 mb-2 text-gray-400" {...props} />
+      <h6 className="text-xs sm:text-sm font-semibold mt-2 mb-2 text-muted-foreground" {...props} />
     ),
     p: ({ node, ...props }) => (
-      <p className="my-2 sm:my-3 leading-6 sm:leading-7 text-sm sm:text-base text-gray-200" {...props} />
+      <p className="my-2 sm:my-3 leading-6 sm:leading-7 text-sm sm:text-base text-foreground" {...props} />
     ),
     ul: ({ node, ...props }) => (
-      <ul className="list-disc list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-300" {...props} />
+      <ul className="list-disc list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground" {...props} />
     ),
     ol: ({ node, ...props }) => (
-      <ol className="list-decimal list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-300" {...props} />
+      <ol className="list-decimal list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base text-muted-foreground" {...props} />
     ),
     li: ({ node, ...props }) => (
       <li className="pl-1 leading-5 sm:leading-6" {...props} />
     ),
     a: ({ node, ...props }) => (
       <a
-        className="text-teal-400 hover:text-teal-300 underline font-medium transition-colors duration-200 break-words"
+        className="text-primary hover:text-primary underline font-medium transition-colors duration-200 break-words"
         target="_blank"
         rel="noopener noreferrer"
         {...props}
       />
     ),
     strong: ({ node, ...props }) => (
-      <strong className="font-semibold text-teal-200" {...props} />
+      <strong className="font-semibold text-primary" {...props} />
     ),
     em: ({ node, ...props }) => (
-      <em className="italic text-gray-400" {...props} />
+      <em className="italic text-muted-foreground" {...props} />
     ),
     blockquote: ({ node, ...props }) => (
-      <blockquote className="border-l-4 border-teal-500/50 pl-4 sm:pl-6 py-2 sm:py-3 my-3 sm:my-4 bg-teal-500/10 rounded-r-lg italic text-sm sm:text-base text-gray-300" {...props} />
+      <blockquote className="border-l-4 border-primary/50 pl-4 sm:pl-6 py-2 sm:py-3 my-3 sm:my-4 bg-primary/10 rounded-r-lg italic text-sm sm:text-base text-muted-foreground" {...props} />
     ),
     hr: ({ node, ...props }) => (
       <hr className="my-4 sm:my-6 border-white/10" {...props} />
@@ -301,10 +301,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <thead className="bg-white/5" {...props} />
     ),
     th: ({ node, ...props }) => (
-      <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-white/10" {...props} />
+      <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-white/10" {...props} />
     ),
     td: ({ node, ...props }) => (
-      <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-300 border-b border-white/10" {...props} />
+      <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground border-b border-white/10" {...props} />
     ),
   }), [resolvedTheme, isUserMessage]);
 
@@ -318,8 +318,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       : 'max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-xl lg:max-w-2xl';
 
     const styleClass = isUserMessage
-      ? 'bg-gradient-to-br from-teal-500 to-blue-600 text-white border-transparent ml-auto rounded-br-none shadow-teal-500/20'
-      : 'bg-white/90 dark:bg-[#151922]/90 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-white/10 mr-auto rounded-bl-none shadow-gray-200/50 dark:shadow-black/20';
+      ? 'bg-gradient-to-br from-primary to-blue-600 text-white border-transparent ml-auto rounded-br-none shadow-primary/20'
+      : 'bg-white/90 dark:bg-[#151922]/90 text-gray-800 dark:text-foreground border-gray-200 dark:border-white/10 mr-auto rounded-bl-none shadow-gray-200/50 dark:shadow-black/20';
 
     return `${baseStyle} ${sizeClass} ${styleClass}`;
   }, [isUserMessage, isComplexContent]);
@@ -363,7 +363,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               {currentText}
             </ReactMarkdown>
             {/* Show typing cursor during streaming */}
-            <span className="inline-block w-1.5 h-4 bg-teal-400 ml-1 animate-pulse" />
+            <span className="inline-block w-1.5 h-4 bg-primary ml-1 animate-pulse" />
           </div>
         );
       }
@@ -395,7 +395,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
     }
 
-    return <span className="italic text-gray-500 text-sm">(Empty message)</span>;
+    return <span className="italic text-muted-foreground text-sm">(Empty message)</span>;
   };
 
 
@@ -410,10 +410,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         className={containerClassName}
       >
         <div className={`flex items-end gap-2 mb-1 ${isUserMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-lg ${isUserMessage ? 'bg-teal-500 text-white' : 'bg-white dark:bg-[#1a1f2e] text-teal-600 dark:text-teal-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-lg ${isUserMessage ? 'bg-primary text-primary-foreground' : 'bg-white dark:bg-[#1a1f2e] text-primary dark:text-primary'}`}>
             {isUserMessage ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
           </div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-widest font-medium opacity-0 group-hover:opacity-100 transition-opacity">
             {isUserMessage ? 'You' : 'AI Architect'}
           </span>
         </div>
@@ -421,7 +421,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className={bubbleClassName}>
           {renderContent()}
         </div>
-        <span className={`text-gray-500 text-[10px] mt-1.5 px-1 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
+        <span className={`text-muted-foreground text-[10px] mt-1.5 px-1 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
           {message.timestamp}
         </span>
       </motion.div>

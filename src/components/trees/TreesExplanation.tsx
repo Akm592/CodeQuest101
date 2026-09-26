@@ -122,47 +122,47 @@ function insertIntoAVL(root, value):
 
   return (
     // Container: Dark background, light text
-    <div className="mt-8 p-6 bg-gray-800 text-gray-200 rounded-lg shadow-md max-w-7xl">
+    <div className="mt-8 p-6 bg-muted text-foreground rounded-lg shadow-md max-w-7xl">
       {/* Heading: Light text */}
       <h2 className="text-2xl font-bold mb-4 text-white">{treeType.toUpperCase()} Tree</h2>
       <p className="mb-4">{treeInfo.description}</p>
       {/* Sub-heading: Light text */}
-      <h3 className="text-xl font-semibold mb-2 text-gray-100">Properties:</h3>
+      <h3 className="text-xl font-semibold mb-2 text-foreground">Properties:</h3>
       <ul className="list-disc pl-5 mb-4 space-y-1">
         {treeInfo.properties.map((prop, index) => (
           <li key={index}>{prop}</li>
         ))}
       </ul>
       {/* Sub-heading: Light text */}
-      <h3 className="text-xl font-semibold mb-2 text-gray-100">Time Complexities:</h3>
+      <h3 className="text-xl font-semibold mb-2 text-foreground">Time Complexities:</h3>
       <ul className="list-none pl-5 mb-4 space-y-1">
         <li>
           Insertion:{" "}
-          <code className="bg-gray-700 px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.insertion}
           </code>
         </li>
         <li>
           Deletion:{" "}
-          <code className="bg-gray-700 px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.deletion}
           </code>
         </li>
         <li>
           Search:{" "}
-          <code className="bg-gray-700 px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.search}
           </code>
         </li>
       </ul>
       {/* Sub-heading: Light text */}
-      <h3 className="text-xl font-semibold mb-2 text-gray-100">Pseudocode:</h3>
+      <h3 className="text-xl font-semibold mb-2 text-foreground">Pseudocode:</h3>
       {/* Code Block: Darker background, appropriate text color */}
-      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-green-400 overflow-x-auto">
+      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-viz-found overflow-x-auto">
         <code>{treeInfo.pseudocode}</code>
       </pre>
       {/* Sub-heading: Light text */}
-      <h3 className="text-xl font-semibold mb-2 text-gray-100">References:</h3>
+      <h3 className="text-xl font-semibold mb-2 text-foreground">References:</h3>
       <ul className="list-disc pl-5 space-y-1">
         {treeInfo.references.map((ref, index) => (
           <li key={index}>
@@ -171,7 +171,7 @@ function insertIntoAVL(root, value):
               href={ref.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 hover:underline"
+              className="text-viz-pointer hover:text-blue-300 hover:underline"
             >
               {ref.text}
             </a>

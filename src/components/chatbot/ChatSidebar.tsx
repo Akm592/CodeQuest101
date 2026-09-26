@@ -81,7 +81,7 @@ const SessionItem = React.memo<{
     <div
       className={`group relative rounded-xl transition-all duration-200 mb-2
         ${isSelected
-          ? "bg-teal-500/10 border border-teal-500/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]"
+          ? "bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]"
           : "hover:bg-gray-100/50 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/5"
         }
         ${isDeleting ? "opacity-50 scale-95" : "opacity-100"}
@@ -94,14 +94,14 @@ const SessionItem = React.memo<{
         className="w-full flex items-center p-3 text-left focus:outline-none rounded-xl"
         title={displayName}
       >
-        <div className={`mr-3 p-2 rounded-lg transition-colors ${isSelected ? "bg-teal-500/20 text-teal-400" : "bg-gray-200/50 dark:bg-white/5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"}`}>
+        <div className={`mr-3 p-2 rounded-lg transition-colors ${isSelected ? "bg-primary/20 text-primary" : "bg-gray-200/50 dark:bg-white/5 text-muted-foreground group-hover:text-gray-700 dark:group-hover:text-muted-foreground"}`}>
           <MessageCircle className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isSelected ? "text-teal-600 dark:text-teal-50" : "text-gray-700 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200"}`}>
+          <p className={`text-sm font-medium truncate ${isSelected ? "text-foreground" : "text-gray-700 dark:text-muted-foreground group-hover:text-gray-900 dark:group-hover:text-foreground"}`}>
             {displayName}
           </p>
-          <div className="flex items-center text-[10px] text-gray-500 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-500 mt-0.5">
+          <div className="mt-0.5 flex items-center text-[10px] text-muted-foreground">
             <CalendarDays className="w-3 h-3 mr-1" />
             <span>{relativeTime}</span>
           </div>
@@ -112,7 +112,7 @@ const SessionItem = React.memo<{
         onClick={handleDelete}
         disabled={isDeleting}
         className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg
-                  text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-all
+                  text-muted-foreground dark:text-muted-foreground opacity-0 group-hover:opacity-100 transition-all
                   hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400
                   focus:opacity-100 focus:outline-none"
         title="Delete Chat"
@@ -187,7 +187,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-white/5">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-br from-teal-500 to-blue-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-primary to-blue-600 rounded-lg">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <h2 className="font-bold text-gray-800 dark:text-white tracking-wide">CodeQuest</h2>
@@ -199,9 +199,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
             className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-700 dark:text-white flex items-center justify-center gap-2 transition-all group"
           >
             {isCreatingSession ? (
-              <Loader2 className="w-4 h-4 animate-spin text-teal-600 dark:text-teal-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-primary dark:text-primary" />
             ) : (
-              <Plus className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
+              <Plus className="w-4 h-4 text-primary dark:text-primary group-hover:scale-110 transition-transform" />
             )}
             <span>New Chat</span>
           </button>
@@ -209,14 +209,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
 
         {/* Sessions List */}
         <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/5 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-white/10">
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider mb-4 px-2">History</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-4 px-2">History</h3>
 
           {sortedSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3">
-                <FolderOpen className="w-5 h-5 text-gray-400 dark:text-gray-600" />
+                <FolderOpen className="w-5 h-5 text-muted-foreground dark:text-gray-600" />
               </div>
-              <p className="text-sm text-gray-500">No history yet</p>
+              <p className="text-sm text-muted-foreground">No history yet</p>
             </div>
           ) : (
             sortedSessions.map((session, index) => (
