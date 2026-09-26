@@ -216,19 +216,30 @@ const rowValue = (y) => {
   return vals.length % 2 ? vals[m] : (vals[m - 1] + vals[m]) / 2;
 };
 
-// Compare across a 5px window rather than adjacent rows. A 1px rule (the
-// footer's border-t, a card edge) is a spike that reverts; a band is a step
-// that persists, and only the second one is what this is looking for.
-const SPAN = 2;
+// Compare the median of five rows on each side, with a three-row gap in the
+// middle. A 1px rule -- the footer's border-t, a card edge -- is then one
+// outlier in a five-row median and moves nothing, while a band shifts every
+// row on one side. Comparing single rows either side of a gap is not enough:
+// the rule simply lands on one of the two rows being compared, which is how
+// the footer's border read as a 12-level step.
+const GAP = 3;
+const BAND = 5;
 const THRESHOLD = 4;
+const bandValue = (from) => {
+  const vals = [];
+  for (let i = 0; i < BAND; i++) vals.push(rowValue(from + i));
+  vals.sort((a, b) => a - b);
+  return vals[BAND >> 1];
+};
+
 let biggest = { step: 0, y: 0 };
 const steps = [];
-for (let y = SPAN; y < shot.height - SPAN; y++) {
-  const step = Math.abs(rowValue(y + SPAN) - rowValue(y - SPAN));
+for (let y = GAP + BAND; y < shot.height - GAP - BAND; y++) {
+  const step = Math.abs(bandValue(y + GAP) - bandValue(y - GAP - BAND + 1));
   if (step > biggest.step) biggest = { step, y };
   if (step > THRESHOLD) steps.push({ y, step: Number(step.toFixed(1)) });
 }
-console.log(`\nBackground continuity (${shot.width}x${shot.height}): largest step across ${SPAN * 2}px is ${biggest.step.toFixed(1)} at y=${biggest.y}`);
+console.log(`\nBackground continuity (${shot.width}x${shot.height}): largest step is ${biggest.step.toFixed(1)} levels at y=${biggest.y}`);
 if (steps.length) {
   console.log('  steps over', THRESHOLD, 'levels:', steps.slice(0, 10).map((s) => `y=${s.y} (${s.step})`).join(', '));
   failures.push(`background banding: ${steps.length} row(s) step by more than ${THRESHOLD} levels, worst ${biggest.step.toFixed(1)} at y=${biggest.y}`);
