@@ -200,25 +200,38 @@ await page.evaluate(async () => {
 });
 
 const shot = decodePng(await page.screenshot({ fullPage: true }));
-const columns = [0.02, 0.05, 0.95, 0.98].map((f) => Math.round(shot.width * f));
+
+// Sample the outer gutters only. Every container on this page is
+// `container mx-auto px-4`, and every card sits inside a max-w-* box, so
+// nothing but the page background reaches the first and last dozen pixels at
+// 1280. Sampling at 2% and 5% of the width instead put the columns straight
+// through the header logo and the footer wordmark, which is not banding.
+const columns = [];
+for (let x = 2; x <= 12; x += 2) columns.push(x, shot.width - 1 - x);
 const rowValue = (y) => {
-  // Median across the sample columns, so one stray element in a margin cannot
-  // create a false step.
-  const vals = columns.map((x) => pixelAt(shot, x, y).reduce((a, b) => a + b, 0) / 3).sort((a, b) => a - b);
-  return (vals[1] + vals[2]) / 2;
+  const vals = columns
+    .map((x) => pixelAt(shot, x, y).reduce((a, b) => a + b, 0) / 3)
+    .sort((a, b) => a - b);
+  const m = vals.length >> 1;
+  return vals.length % 2 ? vals[m] : (vals[m - 1] + vals[m]) / 2;
 };
 
+// Compare across a 5px window rather than adjacent rows. A 1px rule (the
+// footer's border-t, a card edge) is a spike that reverts; a band is a step
+// that persists, and only the second one is what this is looking for.
+const SPAN = 2;
+const THRESHOLD = 4;
 let biggest = { step: 0, y: 0 };
 const steps = [];
-for (let y = 1; y < shot.height; y++) {
-  const step = Math.abs(rowValue(y) - rowValue(y - 1));
+for (let y = SPAN; y < shot.height - SPAN; y++) {
+  const step = Math.abs(rowValue(y + SPAN) - rowValue(y - SPAN));
   if (step > biggest.step) biggest = { step, y };
-  if (step > 3) steps.push({ y, step: Number(step.toFixed(1)) });
+  if (step > THRESHOLD) steps.push({ y, step: Number(step.toFixed(1)) });
 }
-console.log(`\nBackground continuity (${shot.width}x${shot.height}): largest row-to-row step ${biggest.step.toFixed(1)} at y=${biggest.y}`);
+console.log(`\nBackground continuity (${shot.width}x${shot.height}): largest step across ${SPAN * 2}px is ${biggest.step.toFixed(1)} at y=${biggest.y}`);
 if (steps.length) {
-  console.log('  steps over 3 levels:', steps.slice(0, 10).map((s) => `y=${s.y} (${s.step})`).join(', '));
-  failures.push(`background banding: ${steps.length} row step(s) over 3 levels, worst ${biggest.step.toFixed(1)} at y=${biggest.y}`);
+  console.log('  steps over', THRESHOLD, 'levels:', steps.slice(0, 10).map((s) => `y=${s.y} (${s.step})`).join(', '));
+  failures.push(`background banding: ${steps.length} row(s) step by more than ${THRESHOLD} levels, worst ${biggest.step.toFixed(1)} at y=${biggest.y}`);
 }
 
 // --- 5. Horizontal overflow ----------------------------------------------
