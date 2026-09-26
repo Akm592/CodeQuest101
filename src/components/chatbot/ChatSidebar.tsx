@@ -98,10 +98,10 @@ const SessionItem = React.memo<{
           <MessageCircle className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isSelected ? "text-primary dark:text-primary-foreground" : "text-gray-700 dark:text-muted-foreground group-hover:text-gray-900 dark:group-hover:text-foreground"}`}>
+          <p className={`text-sm font-medium truncate ${isSelected ? "text-foreground" : "text-gray-700 dark:text-muted-foreground group-hover:text-gray-900 dark:group-hover:text-foreground"}`}>
             {displayName}
           </p>
-          <div className="flex items-center text-[10px] text-muted-foreground dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-muted-foreground mt-0.5">
+          <div className="mt-0.5 flex items-center text-[10px] text-muted-foreground">
             <CalendarDays className="w-3 h-3 mr-1" />
             <span>{relativeTime}</span>
           </div>

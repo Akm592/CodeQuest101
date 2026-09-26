@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import GraphVisualization from "./Graphs/GraphVisualization";
 import AlgorithmControls from "./Graphs/AlgorithmControls"; // Renamed Control component
 import ExplanationPanel from "./Graphs/ExplanationPanel";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Assuming shadcn/ui
+import { Card, CardContent } from "./ui/card";
 
 // Import Types and Sample Graph Data
 import {
@@ -573,13 +573,7 @@ const GraphTraversalVisualizer: React.FC = () => {
 
     return (
         <div className="flex w-full flex-col items-center">
-            <Card className="w-full max-w-7xl bg-gray-900/80 backdrop-blur-sm border border-border shadow-xl rounded-lg overflow-hidden my-4">
-                <CardHeader className="bg-muted/70 border-b border-border p-4 sm:p-5">
-                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-foreground tracking-tight">
-                        Graph Algorithm Visualizer
-                    </CardTitle>
-                    {/* Optional: Add subtitle or description here */}
-                </CardHeader>
+            <Card className="w-full max-w-7xl shadow-xl overflow-hidden my-4">
                 <CardContent className="p-3 sm:p-4 md:p-6">
                     {/* Controls */}
                     <div className="mb-4 sm:mb-6">

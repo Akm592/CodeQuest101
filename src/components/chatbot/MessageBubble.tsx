@@ -183,7 +183,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       return (
         <code
           className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-all ${isUserMessage
-            ? 'bg-white/20 text-primary-foreground'
+            ? 'bg-white/20 text-foreground'
             : 'bg-black/40 text-primary border border-primary/20'
             }`}
           {...props}
@@ -410,7 +410,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         className={containerClassName}
       >
         <div className={`flex items-end gap-2 mb-1 ${isUserMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-lg ${isUserMessage ? 'bg-primary text-white' : 'bg-white dark:bg-[#1a1f2e] text-primary dark:text-primary'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-lg ${isUserMessage ? 'bg-primary text-primary-foreground' : 'bg-white dark:bg-[#1a1f2e] text-primary dark:text-primary'}`}>
             {isUserMessage ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
           </div>
           <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-widest font-medium opacity-0 group-hover:opacity-100 transition-opacity">

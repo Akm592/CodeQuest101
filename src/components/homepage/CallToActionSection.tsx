@@ -19,7 +19,7 @@ export const CallToActionSection: React.FC = () => {
         >
           <div className="flex justify-center gap-1 mb-6">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+              <Star key={i} className="w-6 h-6 text-warning fill-yellow-500" />
             ))}
           </div>
 
@@ -34,7 +34,7 @@ export const CallToActionSection: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
               size="lg"
-              className="bg-primary hover:bg-primary text-black font-bold h-14 px-10 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105"
+              className="bg-primary hover:bg-primary text-primary-foreground font-bold h-14 px-10 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105"
               onClick={() => window.location.href = "/chat"}
             >
               Get Started Now

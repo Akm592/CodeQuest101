@@ -355,7 +355,7 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
             <h2 className="text-xl sm:text-2xl font-bold text-foreground">Heap Operations Explained</h2>
             <button
               onClick={toggleExplanations}
-              className="bg-muted hover:bg-gray-600 text-foreground font-medium text-xs sm:text-sm py-1.5 px-3 rounded-md transition duration-150 ease-in-out flex items-center gap-1.5"
+              className="bg-muted hover:bg-muted/70 text-foreground font-medium text-xs sm:text-sm py-1.5 px-3 rounded-md transition duration-150 ease-in-out flex items-center gap-1.5"
             >
               {showExplanations ? <EyeOff size={16} /> : <Eye size={16} />}
               {showExplanations ? "Hide Details" : "Show Details"}

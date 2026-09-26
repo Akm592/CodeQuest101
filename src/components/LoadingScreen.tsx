@@ -63,7 +63,7 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
     }, []);
 
     return (
-        <div ref={containerRef} className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden">
+        <div ref={containerRef} data-loading-screen className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden">
             {/* Background Aesthetic Elements */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
@@ -97,9 +97,9 @@ const LoadingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) => 
 
             {/* Bottom Tech Text */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 text-gray-600">
-                <div className="h-[1px] w-8 bg-muted" />
+                <div className="h-[1px] w-8 bg-muted text-foreground" />
                 <span className="text-[9px] uppercase tracking-widest font-medium">Visualization Engine v2.0.4</span>
-                <div className="h-[1px] w-8 bg-muted" />
+                <div className="h-[1px] w-8 bg-muted text-foreground" />
             </div>
 
             <style>{`

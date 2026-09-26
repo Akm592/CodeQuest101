@@ -55,7 +55,7 @@ export const HeroSection: React.FC = () => {
           >
             <Button
               size="lg"
-              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-black font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-all duration-500 group"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-all duration-500 group"
               onClick={() => window.location.href = '/chat'}
             >
               Start Learning Now

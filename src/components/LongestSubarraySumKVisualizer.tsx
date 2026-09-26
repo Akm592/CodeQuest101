@@ -179,7 +179,7 @@ const LongestSubarraySumKVisualizer = () => {
 
         // Highlight the best found subarray when finished
         if (status === "finished" && resultIndices && index >= resultIndices.start && index <= resultIndices.end) {
-             colorClass = "bg-green-800/50 border-green-500 text-green-300 ring-1 ring-green-500/50";
+             colorClass = "bg-green-800/50 border-viz-found text-green-300 ring-1 ring-green-500/50";
         }
 
         // Pointer indicators (can use borders or pseudo-elements)
@@ -236,7 +236,7 @@ const LongestSubarraySumKVisualizer = () => {
                             min={MIN_SPEED_MS}
                             max={MAX_SPEED_MS}
                             step={50}
-                             className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+                             className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             disabled={status === 'running' || status === 'paused'}
                             aria-label="Animation Speed Control"
                         />
@@ -246,7 +246,7 @@ const LongestSubarraySumKVisualizer = () => {
                     </div>
                </div>
             </div>
-            {inputError && <p className="text-xs text-red-400 mt-1">{inputError}</p>}
+            {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
           </div>
 
            {/* Control Buttons */}
@@ -255,17 +255,17 @@ const LongestSubarraySumKVisualizer = () => {
               onClick={handleStartPause}
               disabled={arr.length === 0 || k === "" || inputError !== null} // Disable if inputs are invalid
                className={`flex items-center justify-center gap-2 font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60 ${
-                    status === 'running' ? 'bg-yellow-600 hover:bg-yellow-700'
-                    : status === 'paused' ? 'bg-blue-600 hover:bg-blue-700'
-                    : 'bg-primary hover:bg-primary'
-               } text-white`}
+                    status === 'running' ? 'bg-warning text-background hover:bg-warning/90'
+                    : status === 'paused' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+               }`}
             >
               {status === 'running' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
               <span>{status === 'running' ? "Pause" : status === 'paused' ? "Resume" : status === 'finished' ? "Restart" : "Start"}</span>
             </Button>
             <Button
               onClick={reset}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
+              className="flex items-center justify-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
               disabled={status === 'idle' && left === -1} // Disable if already reset
             >
               <RotateCcw size={18} />
@@ -286,14 +286,14 @@ const LongestSubarraySumKVisualizer = () => {
           <div className="text-center space-y-1 pt-3">
              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
                 <span>Current Sum: <span className="font-bold text-primary font-mono">{currentSum}</span></span>
-                <span>Max Length: <span className="font-bold text-yellow-400 font-mono">{maxLength}</span></span>
+                <span>Max Length: <span className="font-bold text-warning font-mono">{maxLength}</span></span>
                 <span>Target (K): <span className="font-bold text-foreground font-mono">{k}</span></span>
-                <span>L Index: <span className={`font-bold font-mono ${left !== -1 ? 'text-blue-400' : 'text-muted-foreground'}`}>{left !== -1 ? left : '-'}</span></span>
-                <span>R Index: <span className={`font-bold font-mono ${right !== -1 ? 'text-red-400' : 'text-muted-foreground'}`}>{right !== -1 ? right : '-'}</span></span>
+                <span>L Index: <span className={`font-bold font-mono ${left !== -1 ? 'text-viz-pointer' : 'text-muted-foreground'}`}>{left !== -1 ? left : '-'}</span></span>
+                <span>R Index: <span className={`font-bold font-mono ${right !== -1 ? 'text-destructive' : 'text-muted-foreground'}`}>{right !== -1 ? right : '-'}</span></span>
             </div>
              {/* Final Result */}
             {status === 'finished' && (
-              <div className={`font-semibold mt-3 text-base flex items-center justify-center gap-2 ${resultIndices ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`font-semibold mt-3 text-base flex items-center justify-center gap-2 ${resultIndices ? 'text-viz-found' : 'text-destructive'}`}>
                 {resultIndices ? (
                      <>
                         <CheckCircle size={18}/>

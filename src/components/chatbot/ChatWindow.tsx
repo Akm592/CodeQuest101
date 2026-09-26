@@ -52,7 +52,7 @@ const EmptyState = React.memo(() => (
         className="flex items-center justify-center h-full text-muted-foreground dark:text-muted-foreground"
     >
         <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-muted flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-muted text-foreground flex items-center justify-center">
                 💬
             </div>
             <p className="text-sm font-medium">No messages yet</p>

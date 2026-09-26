@@ -1,12 +1,10 @@
 // SettingsModal.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Monitor, Check, LogOut, LogIn, Code2 } from 'lucide-react';
+import { X, LogOut, LogIn, Code2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface SettingsModalProps {
-    currentTheme: string;
-    onThemeChange: (theme: string) => void;
     onClose: () => void;
     userEmail?: string | null;
     onSignOut?: () => void;
@@ -28,20 +26,12 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
-    currentTheme,
-    onThemeChange,
     onClose,
     userEmail,
     onSignOut,
     preferredLanguage = '',
     onPreferredLanguageChange,
 }) => {
-
-    const themeOptions = [
-        { name: 'Light', value: 'light', icon: Sun },
-        { name: 'Dark', value: 'dark', icon: Moon },
-        { name: 'System', value: 'system', icon: Monitor },
-    ];
 
     return (
         <AnimatePresence>
@@ -80,38 +70,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* Content */}
                     <div className="p-6 relative z-10 space-y-6">
-                        {/* Theme Selection */}
-                        <div>
-                            <label className="block text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-4 uppercase tracking-wider">
-                                Appearance
-                            </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {themeOptions.map((option) => {
-                                    const isActive = currentTheme === option.value;
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            onClick={() => onThemeChange(option.value)}
-                                            className={`group relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300
-                                                ${isActive
-                                                    ? 'bg-primary/10 border-primary/50 text-primary dark:text-primary shadow-[0_0_15px_rgba(20,184,166,0.15)]'
-                                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/5 text-muted-foreground dark:text-muted-foreground hover:bg-gray-100 dark:hover:bg-white/10 hover:border-gray-300 dark:hover:border-white/10 hover:text-gray-900 dark:hover:text-foreground'
-                                                }`}
-                                        >
-                                            {isActive && (
-                                                <div className="absolute top-2 right-2">
-                                                    <Check className="w-3.5 h-3.5" />
-                                                </div>
-                                            )}
-                                            <option.icon className={`w-6 h-6 mb-3 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-                                            <span className="text-sm font-medium">
-                                                {option.name}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
 
 
                         {/* Solution language: setting this lets the tutor answer

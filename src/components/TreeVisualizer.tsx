@@ -256,7 +256,7 @@ const TreeVisualizer: React.FC = () => {
     <div className="flex w-full flex-col items-center">
       {/* Heading: Light text */}
       {/* Controls & Visualization Container: Darker background, lighter border */}
-      <div className="w-full max-w-6xl bg-muted rounded-xl shadow-lg p-6 border border-border items-center">
+      <div className="w-full max-w-6xl bg-muted text-foreground rounded-xl shadow-lg p-6 border border-border items-center">
         {/* TreeControls already adapted */}
         <TreeControls
           treeType={treeType}
@@ -276,7 +276,7 @@ const TreeVisualizer: React.FC = () => {
               resetTraversal(); // Reset if type changes mid-traversal
             }}
           >
-             <SelectTrigger className="w-full sm:w-[180px] border-border text-white bg-muted hover:bg-gray-600 focus:ring-blue-500 focus:border-blue-500">
+             <SelectTrigger className="w-full sm:w-[180px] border-border text-white bg-muted hover:bg-muted/70 focus:ring-blue-500 focus:border-viz-pointer">
                <SelectValue placeholder="Select traversal" />
              </SelectTrigger>
              <SelectContent className="bg-muted text-white border border-border">
@@ -289,7 +289,7 @@ const TreeVisualizer: React.FC = () => {
           <Button
             onClick={startTraversal}
             disabled={isTraversing || !root} // Disable if no root
-            className="w-full sm:w-auto bg-green-600 text-white hover:bg-green-500 disabled:opacity-50"
+            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             Start
           </Button>

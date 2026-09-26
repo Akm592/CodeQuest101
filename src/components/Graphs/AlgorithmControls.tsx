@@ -80,7 +80,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
   };
 
   return (
-    <div className="space-y-6 p-6 bg-muted rounded-lg border border-border shadow-lg">
+    <div className="space-y-6 p-6 bg-muted text-foreground rounded-lg border border-border shadow-lg">
       {/* Header: Algorithm and Node Settings */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Algorithm Selection */}
@@ -164,13 +164,13 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
       </div>
 
       {/* Playback Controls */}
-      <div className="flex flex-wrap justify-center items-center gap-4 bg-muted p-4 rounded-lg border border-border">
+      <div className="flex flex-wrap justify-center items-center gap-4 bg-muted text-foreground p-4 rounded-lg border border-border">
         <Button
           variant="outline"
           size="icon"
           onClick={resetAlgorithm}
           title="Reset Algorithm"
-          className="border-border hover:bg-gray-600 text-muted-foreground hover:text-white"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white"
         >
           <RotateCcw className="h-5 w-5"/>
         </Button>
@@ -180,7 +180,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           onClick={stepBackward}
           disabled={!isRunning || currentStep <= 0}
           title="Step Backward"
-          className="border-border hover:bg-gray-600 text-muted-foreground hover:text-white disabled:opacity-50"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
         >
           <SkipBack className="h-5 w-5"/>
         </Button>
@@ -192,8 +192,8 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           title={isRunning ? (isPaused ? "Resume" : "Pause") : "Start"}
           className={`border-border disabled:opacity-50 ${
             isRunning && !isPaused
-              ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-green-600 hover:bg-green-700 text-white'
+              ? 'border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           }`}
         >
           {isRunning && !isPaused ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
@@ -204,7 +204,7 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
           onClick={stepForward}
           disabled={!isRunning || isFinished}
           title="Step Forward"
-          className="border-border hover:bg-gray-600 text-muted-foreground hover:text-white disabled:opacity-50"
+          className="border-border hover:bg-muted/70 text-muted-foreground hover:text-white disabled:opacity-50"
         >
           <SkipForward className="h-5 w-5"/>
         </Button>

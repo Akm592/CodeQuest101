@@ -166,9 +166,9 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                             {React.cloneElement(viz.icon as React.ReactElement, { className: 'w-5 h-5' })}
                           </div>
                           <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            viz.level === "Easy" ? "bg-green-500/10 text-green-500" :
+                            viz.level === "Easy" ? "bg-viz-found/10 text-viz-found" :
                             viz.level === "Medium" ? "bg-amber-500/10 text-amber-500" :
-                            "bg-red-500/10 text-red-500"
+                            "bg-destructive/10 text-destructive"
                           }`}>
                             {viz.level}
                           </div>

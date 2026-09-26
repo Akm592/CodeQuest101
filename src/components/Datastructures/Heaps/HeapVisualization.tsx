@@ -398,7 +398,7 @@ const HeapVisualization: React.FC = () => {
           disabled={isBuilding}
           className="h-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70"
         />
-        <Button onClick={handleInsert} disabled={isBuilding || !inputValue} className="h-9 text-sm bg-primary hover:bg-primary text-white disabled:opacity-60">
+        <Button onClick={handleInsert} disabled={isBuilding || !inputValue} className="h-9 text-sm bg-primary hover:bg-primary text-primary-foreground disabled:opacity-60">
           <Plus size={16} className="mr-1" /> Insert
         </Button>
       </div>
@@ -411,14 +411,14 @@ const HeapVisualization: React.FC = () => {
           disabled={isBuilding}
           className="h-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70 font-mono text-xs"
         />
-        <Button onClick={handleBuildHeap} disabled={isBuilding || !initialArrayInput.trim()} className="h-9 text-sm bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60">
+        <Button onClick={handleBuildHeap} disabled={isBuilding || !initialArrayInput.trim()} className="h-9 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 text-white disabled:opacity-60">
           {isBuilding ? <Loader2 size={16} className="mr-1 animate-spin" /> : <Settings size={16} className="mr-1" />}
           {isBuilding ? "Building..." : "Build Heap"}
         </Button>
       </div>
-      {inputError && <p className="text-xs text-red-400 mt-1 self-center">{inputError}</p>}
+      {inputError && <p className="text-xs text-destructive mt-1 self-center">{inputError}</p>}
       <div className="flex flex-wrap justify-center gap-2 mt-2">
-        <Button onClick={handleToggleHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-muted hover:bg-gray-600 disabled:opacity-60">
+        <Button onClick={handleToggleHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
           <ArrowDownUp size={14} className="mr-1" /> Toggle <span className='font-mono ml-1'>{isMinHeap ? '[MIN]' : '[MAX]'}</span>
         </Button>
         <Button onClick={handleResetHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-red-700 hover:bg-red-600 text-white disabled:opacity-60">

@@ -99,7 +99,7 @@ export const SignUpPage = () => {
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="pb-6">
             <div className="flex justify-center mb-4">
-              <CheckCircle className="h-16 w-16 text-green-400" /> {/* Adjusted color */}
+              <CheckCircle className="h-16 w-16 text-viz-found" /> {/* Adjusted color */}
             </div>
             <CardTitle className="text-2xl md:text-3xl font-bold text-center text-foreground">
               Check Your Email
@@ -151,8 +151,8 @@ export const SignUpPage = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {authError && (
-            <div className="p-3 text-sm text-red-400 bg-red-900/30 border border-red-500/30 rounded-md flex items-start gap-2">
-              <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
+            <div className="p-3 text-sm text-destructive bg-red-900/30 border border-destructive/30 rounded-md flex items-start gap-2">
+              <AlertCircle size={18} className="mt-0.5 shrink-0 text-destructive" />
               <span>{authError}</span>
             </div>
           )}
@@ -234,7 +234,7 @@ export const SignUpPage = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-primary-foreground font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
               disabled={isSubmitting || isLoading}
             >
               {isSubmitting ? "Creating Account..." : "Create Account"}

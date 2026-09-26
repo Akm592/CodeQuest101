@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
@@ -93,7 +93,7 @@ const RotateImageVisualizer = () => {
           ((i === currentStep.i && j === currentStep.j) ||
             (i === currentStep.i2 && j === currentStep.j2))
         ) {
-          return "bg-gray-200 border-gray-500";
+          return "bg-muted border-border";
         }
       }
       return "border-gray-300";
@@ -117,7 +117,7 @@ const RotateImageVisualizer = () => {
                 key={`${isRotated ? "rotated-" : ""}${i}-${j}`}
                 className={`w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-md text-xs sm:text-sm md:text-base font-medium transition-all duration-300 ${
                   isRotated && step >= rotationSteps.length
-                    ? "bg-gray-100 border-gray-500"
+                    ? "bg-muted border-border"
                     : getCellStyle(i, j)
                 }`}
               >
@@ -133,12 +133,7 @@ const RotateImageVisualizer = () => {
 
   return (
     <div className="w-full">
-    <Card className="w-full  mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <CardHeader className="bg-black text-white p-4 sm:p-6">
-        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-          Rotate Image Visualizer
-        </CardTitle>
-      </CardHeader>
+    <Card className="mx-auto w-full overflow-hidden shadow-lg">
       <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="space-y-4">
           <Input
@@ -171,7 +166,7 @@ const RotateImageVisualizer = () => {
           </Button>
           <Button
             onClick={reset}
-            className="flex items-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white"
+            className="flex items-center space-x-2 bg-gray-500 hover:bg-muted/70 text-white"
           >
             <RotateCcw size={20} />
             <span>Reset</span>

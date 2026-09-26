@@ -34,7 +34,7 @@ const VisualizationModal: React.FC<VisualizationModalProps> = ({ visualizationDa
         transition={{ duration: 0.2 }}
       >
         <motion.div
-          className="bg-white/80 dark:bg-muted/80 backdrop-blur-xl border border-white/20 dark:border-white/10
+          className="bg-white/80 dark:bg-muted text-foreground/80 backdrop-blur-xl border border-white/20 dark:border-white/10
                      rounded-2xl shadow-2xl w-full max-w-5xl h-full max-h-[90vh] 
                      flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal content

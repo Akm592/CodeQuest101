@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card"; // Adjust path
 import { Button } from "./ui/button"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
 import {
@@ -341,12 +341,12 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
                         let borderColor = "border-border"; // Default
                         if (isDetect) borderColor = "border-yellow-400 ring-2 ring-yellow-400/50";
                         else if (isTortoise && isHare) borderColor = "border-purple-500 ring-2 ring-purple-500/50"; // Met
-                        else if (isTortoise) borderColor = "border-blue-500";
-                        else if (isHare) borderColor = "border-red-500";
-                        else if (isMiddle) borderColor = "border-green-500";
+                        else if (isTortoise) borderColor = "border-viz-pointer";
+                        else if (isHare) borderColor = "border-destructive";
+                        else if (isMiddle) borderColor = "border-viz-found";
 
                          let bgColor = "bg-muted"; // Default
-                         if (isDetect) bgColor = "bg-yellow-600/50";
+                         if (isDetect) bgColor = "bg-warning/50";
 
                          let shadowClass = "";
                          if (isTortoise) shadowClass += " shadow-lg shadow-blue-500/30";
@@ -408,11 +408,6 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
     <div className="flex w-full items-center justify-center">
       {/* Dark Card */}
       <Card className="w-full max-w-5xl mx-auto shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-border bg-white/[0.03] text-foreground p-4 sm:p-5">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
-            {mode === "cycle" ? "Floyd's Cycle Detection (Tortoise & Hare)" : "Find Middle Node (Tortoise & Hare)"}
-          </CardTitle>
-        </CardHeader>
         <CardContent className="p-4 sm:p-6 space-y-5">
           {/* Mode Selection */}
           <div className="flex justify-center">
@@ -438,14 +433,14 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
 
           {/* Node Manipulation Controls */}
            <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
-             <Button onClick={addNode} disabled={isRunning || nodes.length >= 10} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
+             <Button onClick={addNode} disabled={isRunning || nodes.length >= 10} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
                <Plus size={14} className="mr-1" /> Add Node
              </Button>
-             <Button onClick={removeNode} disabled={isRunning || nodes.length <= 1} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
+             <Button onClick={removeNode} disabled={isRunning || nodes.length <= 1} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
                <Minus size={14} className="mr-1" /> Remove Node
              </Button>
              {mode === "cycle" && (
-               <Button onClick={toggleCycle} disabled={isRunning || nodes.length < 2} className="text-sm bg-muted hover:bg-gray-600 disabled:opacity-60">
+               <Button onClick={toggleCycle} disabled={isRunning || nodes.length < 2} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
                  {nodes[nodes.length - 1]?.next !== null ? "Remove Cycle" : "Create Cycle"}
                </Button>
              )}
@@ -453,17 +448,17 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
 
           {/* Simulation Controls */}
           <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
-            <Button onClick={runAlgorithm} disabled={isRunning || nodes.length === 0} className="text-sm bg-primary hover:bg-primary text-white disabled:opacity-60">
+            <Button onClick={runAlgorithm} disabled={isRunning || nodes.length === 0} className="text-sm bg-primary hover:bg-primary text-primary-foreground disabled:opacity-60">
               <PlayCircle size={16} className="mr-1" /> Start/Restart
             </Button>
-            <Button onClick={pauseResume} disabled={!isRunning} className={`text-sm disabled:opacity-60 ${isPaused ? 'bg-blue-600 hover:bg-blue-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-white`}>
+            <Button onClick={pauseResume} disabled={!isRunning} className={`text-sm disabled:opacity-60 ${isPaused ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90' : 'bg-warning text-background hover:bg-warning/90'}`}>
               {isPaused ? <PlayCircle size={16} className="mr-1" /> : <PauseCircle size={16} className="mr-1" />}
               {isPaused ? "Resume" : "Pause"}
             </Button>
              <Button onClick={handleStepForward} disabled={isRunning && !isPaused} className="text-sm bg-gray-600 hover:bg-gray-500 disabled:opacity-60">
                <ChevronRight size={16} className="mr-1" /> Step Forward
              </Button>
-            <Button onClick={resetSimulation} className="text-sm bg-red-600 hover:bg-red-700 text-white disabled:opacity-60">
+            <Button onClick={resetSimulation} className="text-sm border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground text-white disabled:opacity-60">
               <RotateCcw size={16} className="mr-1" /> Reset
             </Button>
            {/* Step Backward might be complex to implement accurately, omitting for now */}
@@ -483,14 +478,14 @@ const FloydsAlgorithmVisualizer: React.FC = () => {
               step={50}
               value={[speedValue]}
               onValueChange={(value) => setSpeedValue(value[0])}
-              className="w-full max-w-xs mx-auto [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+              className="w-full max-w-xs mx-auto [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
               disabled={isRunning && !isPaused}
             />
           </div>
 
           {/* Explanation Panel */}
           <motion.div
-            className="mt-4 p-4 bg-muted border border-border rounded-lg min-h-[100px]"
+            className="mt-4 p-4 bg-muted text-foreground border border-border rounded-lg min-h-[100px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}

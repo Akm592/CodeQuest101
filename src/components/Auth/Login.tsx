@@ -79,8 +79,8 @@ export const LoginPage = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {error && (
-            <div className="p-3 text-sm text-red-400 bg-red-900/30 border border-red-500/30 rounded-md flex items-start gap-2">
-              <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
+            <div className="p-3 text-sm text-destructive bg-red-900/30 border border-destructive/30 rounded-md flex items-start gap-2">
+              <AlertCircle size={18} className="mt-0.5 shrink-0 text-destructive" />
               <span>{error}</span>
             </div>
           )}
@@ -134,7 +134,7 @@ export const LoginPage = () => {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-white font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 mt-2 bg-primary hover:bg-primary text-primary-foreground font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>

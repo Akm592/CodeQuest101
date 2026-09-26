@@ -127,7 +127,7 @@ const SpiralMatrixAnimation = () => {
     const baseClass =
       "w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center border rounded-md text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out";
     if (isCurrent) {
-      return `${baseClass} bg-primary border-primary text-white scale-110 shadow-lg z-10`;
+      return `${baseClass} bg-primary border-primary text-primary-foreground scale-110 shadow-lg z-10`;
     } else if (isVisited) {
       return `${baseClass} bg-muted border-border text-muted-foreground`;
     } else {
@@ -152,11 +152,11 @@ const SpiralMatrixAnimation = () => {
               disabled={isRunning}
               className="w-full font-mono text-sm bg-muted border border-border text-foreground placeholder:text-muted-foreground rounded-md p-2 focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-70"
             />
-            {inputError && <p className="text-xs text-red-400 mt-1">{inputError}</p>}
+            {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
             <Button
               onClick={applyMatrixInput}
               disabled={isRunning || !matrixInput.trim()}
-              className="w-full sm:w-auto bg-muted hover:bg-gray-600 text-foreground text-sm px-4 py-1.5 disabled:opacity-60"
+              className="w-full sm:w-auto bg-muted hover:bg-muted/70 text-foreground text-sm px-4 py-1.5 disabled:opacity-60"
             >
               Apply Matrix
             </Button>
@@ -171,7 +171,7 @@ const SpiralMatrixAnimation = () => {
               min={MIN_SPEED_MS}
               max={MAX_SPEED_MS}
               step={50}
-              className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+              className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
               disabled={isRunning}
               aria-label="Animation Speed Control"
             />
@@ -186,8 +186,10 @@ const SpiralMatrixAnimation = () => {
               onClick={toggleRunning}
               disabled={isResetting || (isRunning && currentStep >= traversalOrder.length) || traversalOrder.length === 0}
               className={`flex items-center justify-center gap-2 font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60 ${
-                isRunning ? "bg-yellow-600 hover:bg-yellow-700" : "bg-primary hover:bg-primary"
-              } text-white`}
+                isRunning
+                  ? "bg-warning text-background hover:bg-warning/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
             >
               {isRunning ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
               <span>{isRunning ? "Pause" : currentStep >= traversalOrder.length && currentStep > 0 ? "Replay" : "Start"}</span>
@@ -195,7 +197,7 @@ const SpiralMatrixAnimation = () => {
             <Button
               onClick={resetAnimation}
               disabled={isResetting || (!isRunning && currentStep === 0)}
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
+              className="flex items-center justify-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
             >
               {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw size={18} />}
               <span>Reset</span>

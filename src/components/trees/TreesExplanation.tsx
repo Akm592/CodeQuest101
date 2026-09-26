@@ -138,19 +138,19 @@ function insertIntoAVL(root, value):
       <ul className="list-none pl-5 mb-4 space-y-1">
         <li>
           Insertion:{" "}
-          <code className="bg-muted px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.insertion}
           </code>
         </li>
         <li>
           Deletion:{" "}
-          <code className="bg-muted px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.deletion}
           </code>
         </li>
         <li>
           Search:{" "}
-          <code className="bg-muted px-1 rounded text-sm">
+          <code className="bg-muted text-foreground px-1 rounded text-sm">
             {treeInfo.timeComplexity.search}
           </code>
         </li>
@@ -158,7 +158,7 @@ function insertIntoAVL(root, value):
       {/* Sub-heading: Light text */}
       <h3 className="text-xl font-semibold mb-2 text-foreground">Pseudocode:</h3>
       {/* Code Block: Darker background, appropriate text color */}
-      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-green-400 overflow-x-auto">
+      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-viz-found overflow-x-auto">
         <code>{treeInfo.pseudocode}</code>
       </pre>
       {/* Sub-heading: Light text */}
@@ -171,7 +171,7 @@ function insertIntoAVL(root, value):
               href={ref.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 hover:underline"
+              className="text-viz-pointer hover:text-blue-300 hover:underline"
             >
               {ref.text}
             </a>

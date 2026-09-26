@@ -257,7 +257,7 @@ const BinaryTreeTraversalVisualizer = () => {
              <Button
                 onClick={animateTraversal}
                 disabled={isAnimating || currentStepIndex >= traversalSteps.length -1} // Disable if finished
-                className="flex items-center gap-2 bg-primary hover:bg-primary text-white font-semibold px-4 py-2 disabled:opacity-60"
+                className="flex items-center gap-2 bg-primary hover:bg-primary text-primary-foreground font-semibold px-4 py-2 disabled:opacity-60"
             >
                 <Play size={18} />
                 <span>Animate All</span>
@@ -265,7 +265,7 @@ const BinaryTreeTraversalVisualizer = () => {
             <Button
               onClick={stepForward}
               disabled={isAnimating || currentStepIndex >= traversalSteps.length - 1}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 disabled:opacity-60"
+              className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90 text-white font-semibold px-4 py-2 disabled:opacity-60"
             >
               <StepForward size={18} />
               <span>Next Step</span>
@@ -273,7 +273,7 @@ const BinaryTreeTraversalVisualizer = () => {
             <Button
               onClick={resetTraversal}
               disabled={isAnimating && currentStepIndex === -1} // Disable only if animating or already reset
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 disabled:opacity-60"
+              className="flex items-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold px-4 py-2 disabled:opacity-60"
             >
               <RotateCcw size={18} />
               <span>Reset</span>
@@ -343,7 +343,7 @@ const BinaryTreeTraversalVisualizer = () => {
                         key={index}
                         className={`font-mono px-2 py-0.5 rounded text-xs transition-colors duration-300 ${
                             index <= currentStepIndex
-                                ? "bg-primary text-white"
+                                ? "bg-primary text-primary-foreground"
                                 : "bg-muted text-muted-foreground"
                         }`}
                     >

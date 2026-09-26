@@ -74,14 +74,14 @@ export const AuthCallback = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 to-black text-muted-foreground w-screen p-4">
         <div className="text-center max-w-md p-6 bg-gray-900 border border-border rounded-lg shadow-xl">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-foreground mb-2">Authentication Failed</h1>
             <p className="text-muted-foreground mb-6">
                 Something went wrong during the authentication process. Please try signing in again.
             </p>
             <Link
                 to="/login"
-                className="inline-block bg-primary hover:bg-primary text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
+                className="inline-block bg-primary hover:bg-primary text-primary-foreground px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
             >
                 Return to Sign In
             </Link>

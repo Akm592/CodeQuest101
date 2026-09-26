@@ -179,7 +179,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
       : "Select algorithm, start/end nodes (if applicable), and run.";
      return (
        <div className="h-full mt-4 lg:mt-0 p-4 bg-muted rounded-lg border border-border flex flex-col items-center justify-center text-center text-muted-foreground">
-         <AlertCircle className="mb-3 h-8 w-8 text-yellow-500" />
+         <AlertCircle className="mb-3 h-8 w-8 text-warning" />
          <p>{message}</p>
        </div>
      );
@@ -289,8 +289,8 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
       <h3 className="text-base sm:text-lg font-semibold mb-2 border-b border-border pb-2 flex items-center justify-between">
         <div className="flex items-center">
             {/* Icon based on algorithm */}
-            {(algorithm === 'bfs' || algorithm === 'dfs') && <BrainCircuit className="mr-2 h-5 w-5 text-blue-400 flex-shrink-0"/>}
-            {algorithm === 'dijkstra' && <Sigma className="mr-2 h-5 w-5 text-green-400 flex-shrink-0"/>}
+            {(algorithm === 'bfs' || algorithm === 'dfs') && <BrainCircuit className="mr-2 h-5 w-5 text-viz-pointer flex-shrink-0"/>}
+            {algorithm === 'dijkstra' && <Sigma className="mr-2 h-5 w-5 text-viz-found flex-shrink-0"/>}
             {algorithm === 'astar' && <Target className="mr-2 h-5 w-5 text-purple-400 flex-shrink-0"/>}
             Explanation
         </div>
@@ -300,7 +300,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
       {/* Status Message / Explanation */}
       <div className="mb-2 text-sm min-h-[40px] flex items-start">
         {isFinished ? (
-           <CheckCircle className="mr-2 h-5 w-5 text-green-400 flex-shrink-0 mt-0.5"/>
+           <CheckCircle className="mr-2 h-5 w-5 text-viz-found flex-shrink-0 mt-0.5"/>
         ) : (
            <div className="w-5 h-5 mr-2 flex-shrink-0"></div> // Placeholder for alignment
         )}
@@ -312,7 +312,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
        {path && path.length > 0 && (
            <div className="mb-3 text-sm">
                <span className="font-medium text-yellow-300">Path Found: </span>
-               <span className="font-mono text-yellow-400">{path.join(' → ')}</span>
+               <span className="font-mono text-warning">{path.join(' → ')}</span>
                {/* Show total cost for pathfinding */}
                {isPathfinding && goalNode && (state as PathfindingStepState).distances?.get(goalNode) !== undefined && (state as PathfindingStepState).distances.get(goalNode) !== Infinity &&
                    <span className="ml-2 text-muted-foreground">(Cost: {(state as PathfindingStepState).distances.get(goalNode)?.toFixed(1)})</span>

@@ -32,7 +32,7 @@ const Explanation: React.FC = () => {
             href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:underline ml-1"
+            className="text-viz-pointer hover:underline ml-1"
           >
             Wikipedia: Graph (Discrete Mathematics)
           </a>
@@ -74,7 +74,7 @@ const Explanation: React.FC = () => {
             href="https://en.wikipedia.org/wiki/Breadth-first_search"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:underline ml-1"
+            className="text-viz-pointer hover:underline ml-1"
           >
             Wikipedia: Breadth-First Search
           </a>
@@ -104,7 +104,7 @@ const Explanation: React.FC = () => {
             href="https://en.wikipedia.org/wiki/Depth-first_search"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:underline ml-1"
+            className="text-viz-pointer hover:underline ml-1"
           >
             Wikipedia: Depth-First Search
           </a>
@@ -139,7 +139,7 @@ const Explanation: React.FC = () => {
               href="https://visualgo.net/en/dfsbfs"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-viz-pointer hover:underline"
             >
               Visualizing BFS and DFS on VisuAlgo
             </a>
@@ -149,7 +149,7 @@ const Explanation: React.FC = () => {
               href="https://www.geeksforgeeks.org/graph-data-structure-and-algorithms/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-viz-pointer hover:underline"
             >
               GeeksforGeeks: Graph Data Structure and Algorithms
             </a>
@@ -159,7 +159,7 @@ const Explanation: React.FC = () => {
               href="https://opendsa-server.cs.vt.edu/OpenDSA/Books/CS3/html/GraphTraversal.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-viz-pointer hover:underline"
             >
               OPEN DSA Notes: Graph Algorithms
             </a>

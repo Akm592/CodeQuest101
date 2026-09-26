@@ -113,44 +113,13 @@ const sessionReducer = (state: SessionState, action: SessionAction): SessionStat
   }
 };
 
-// --- Custom Hooks ---
-const useTheme = () => {
-  const [theme, setTheme] = useState<string>("system");
-
-  const applyTheme = useCallback((newTheme: string) => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-
-    if (newTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(newTheme);
-    }
-  }, []);
-
-  const handleThemeChange = useCallback((newTheme: string) => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
-  }, [applyTheme]);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "system";
-    setTheme(savedTheme);
-    applyTheme(savedTheme);
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      if (savedTheme === "system") applyTheme("system");
-    };
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, [applyTheme]);
-
-  return { theme, handleThemeChange };
-};
+// The theme hook that used to live here has been removed along with light mode.
+//
+// It ran `documentElement.classList.remove('light', 'dark')` and then re-added a
+// class based on `localStorage` or `prefers-color-scheme`. Because it only ran
+// on this route, it stripped the app-wide `dark` class set in index.html and
+// left the chat pale while every other page stayed dark — the inconsistency
+// this pass exists to remove. The app is dark-only; index.html owns the class.
 
 // The shared instance in lib/api.ts attaches the Supabase access token and
 // retries once on 401 with a refreshed one.
@@ -166,7 +135,6 @@ SuggestionsScreen.displayName = 'SuggestionsScreen';
 const ChatInterface = () => {
   // --- Hooks and Context ---
   const { user, getChatSession, createChatSession, signOut, authDegraded } = useAuth();
-  const { theme, handleThemeChange } = useTheme();
   const api = useAPI();
 
   // --- State Management ---
@@ -782,7 +750,7 @@ const ChatInterface = () => {
                   <button
                     onClick={() => handleSendMessage()}
                     disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
-                    className="p-2.5 rounded-xl bg-primary hover:bg-primary text-black shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                    className="p-2.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
                   >
                     {chatState.isTyping ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -793,7 +761,7 @@ const ChatInterface = () => {
                 </div>
               </div>
               <div className="text-center mt-3">
-                <p className="text-[10px] text-gray-600 uppercase tracking-widest font-medium">
+                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                   Powered by Advanced AI • Capable of Mistakes
                 </p>
               </div>
@@ -830,8 +798,6 @@ const ChatInterface = () => {
         <AnimatePresence>
           {showSettingsModal && (
             <SettingsModal
-              currentTheme={theme}
-              onThemeChange={handleThemeChange}
               onClose={() => setShowSettingsModal(false)}
               userEmail={user?.email ?? null}
               onSignOut={handleSignOut}

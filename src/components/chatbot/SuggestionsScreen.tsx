@@ -225,7 +225,7 @@ const SuggestionsScreen = React.memo(({
                     <div className={`p-3 rounded-xl bg-gray-100 dark:bg-white/5 w-fit mb-4 ${category.color} group-hover:scale-110 transition-transform duration-300`}>
                       {category.icon}
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary dark:group-hover:text-primary-foreground transition-colors">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors">
                       {category.title}
                     </h3>
                     <p className="text-sm text-muted-foreground dark:text-muted-foreground group-hover:text-gray-600 dark:group-hover:text-muted-foreground mb-4 transition-colors">

@@ -383,7 +383,7 @@ const SortingAlgorithmVisualizer: React.FC<SortingAlgorithmVisualizerProps> = ({
         <Label className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-bold">Playback</Label>
         <div className="grid grid-cols-2 gap-2">
           {!isRunning ? (
-            <Button onClick={startSorting} className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-black font-bold col-span-2 text-xs sm:text-sm">
+            <Button onClick={startSorting} className="h-10 sm:h-11 bg-primary hover:bg-primary/80 text-primary-foreground font-bold col-span-2 text-xs sm:text-sm">
               <PlayCircle className="mr-2 h-4 w-4" /> Start Sorting
             </Button>
           ) : (

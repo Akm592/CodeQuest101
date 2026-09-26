@@ -35,7 +35,7 @@ const AboutPage = () => {
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <Code size={48} className="text-primary" /> {/* Accent color */}
-                <Sparkles size={24} className="text-yellow-400 absolute -top-2 -right-2" /> {/* Keep sparkles bright */}
+                <Sparkles size={24} className="text-warning absolute -top-2 -right-2" /> {/* Keep sparkles bright */}
               </div>
             </div>
             <h1 className="text-5xl font-bold text-foreground mb-4">
@@ -75,7 +75,7 @@ const AboutPage = () => {
             {/* Smart Chatbot Card */}
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-lg ring-1 ring-blue-600/30 p-8 text-foreground transform transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-800/20 duration-300">
               <h3 className="text-2xl font-bold mb-4 flex items-center text-foreground">
-                <MessageSquare className="mr-3 text-blue-400" size={24} /> {/* Different accent for variety */}
+                <MessageSquare className="mr-3 text-viz-pointer" size={24} /> {/* Different accent for variety */}
                 Smart Chatbot Assistance
               </h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -145,7 +145,7 @@ const AboutPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                 className="bg-primary hover:bg-primary text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transform transition hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-950"
+                 className="bg-primary hover:bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transform transition hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-950"
                  onClick={() => window.open('https://github.com/Akm592/CodeQuest101', '_blank')}
                  aria-label="Contribute on GitHub"
                >
@@ -165,7 +165,7 @@ const AboutPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {/* Changed link to internal navigation for consistency, assuming '/' is the main viz page */}
               <Link to="/" className="inline-block">
-                  <button className="w-full sm:w-auto bg-primary hover:bg-primary text-white px-8 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transform transition hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-950">
+                  <button className="w-full sm:w-auto bg-primary hover:bg-primary text-primary-foreground px-8 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transform transition hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-950">
                     <Sparkles size={20} /> {/* Changed icon */}
                     Start Exploring
                   </button>

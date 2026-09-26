@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"; // Adjust path
+import { Card, CardContent } from "./ui/card"; // Adjust path
 import { Button } from "./ui/button"; // Adjust path
 import { Label } from "./ui/label"; // Adjust path
 import { Slider } from "./ui/slider"; // Adjust path
@@ -218,11 +218,6 @@ const NeuralNetworkVisualizer: React.FC = () => {
         <div className="flex w-full flex-col items-center">
             {/* Dark Card */}
             <Card className="w-full max-w-6xl mx-auto shadow-xl overflow-hidden mb-6">
-                <CardHeader className="border-b border-border bg-white/[0.03] text-foreground p-4 sm:p-5">
-                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center flex items-center justify-center gap-2">
-                        <Network size={28} /> Neural Network Visualizer
-                    </CardTitle>
-                </CardHeader>
                 <CardContent className="p-4 sm:p-6">
                     {/* Controls */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5 border-b border-border pb-5">
@@ -235,7 +230,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                                 id="numHiddenLayers" min={1} max={MAX_LAYERS - 2} step={1}
                                 value={[numHiddenLayers]}
                                 onValueChange={(val) => setNumHiddenLayers(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                         {/* Neurons per Hidden Layer */}
@@ -247,7 +242,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                                 id="neuronsPerHidden" min={1} max={MAX_NEURONS_PER_LAYER} step={1}
                                 value={[neuronsPerHiddenLayer]}
                                 onValueChange={(val) => setNeuronsPerHiddenLayer(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                         {/* Output Layer Control */}
@@ -259,7 +254,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                                 id="numOutputs" min={1} max={MAX_OUTPUTS} step={1}
                                 value={[numOutputs]}
                                 onValueChange={(val) => setNumOutputs(val[0])}
-                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted"
+                                className="w-full [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
                             />
                         </div>
                     </div>
@@ -269,7 +264,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                         <Button
                             onClick={animateDataFlow}
                             disabled={isAnimating}
-                            className="w-full sm:w-auto flex items-center gap-2 bg-primary hover:bg-primary text-white font-semibold px-5 py-2 disabled:opacity-60"
+                            className="w-full sm:w-auto flex items-center gap-2 bg-primary hover:bg-primary text-primary-foreground font-semibold px-5 py-2 disabled:opacity-60"
                         >
                             {isAnimating ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
                             {isAnimating ? "Animating..." : "Animate Data Flow"}
@@ -279,7 +274,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                                 id="showExplanation"
                                 checked={showExplanationComponent}
                                 onCheckedChange={setShowExplanationComponent}
-                                className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted [&>span]:bg-gray-300"
+                                className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted text-foreground [&>span]:bg-gray-300"
                             />
                             <Label htmlFor="showExplanation" className="text-sm text-muted-foreground cursor-pointer flex items-center gap-1">
                                 <Eye size={14} /> Show Detailed Explanation
@@ -296,7 +291,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                     <AnimatePresence>
                         {hoverExplanation && (
                             <motion.div
-                                className="mt-4 p-3 bg-muted border border-border rounded-lg text-center"
+                                className="mt-4 p-3 bg-muted text-foreground border border-border rounded-lg text-center"
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
@@ -320,7 +315,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                             initial={{ scale: 0.7, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.7, opacity: 0 }}
-                            className="bg-muted p-6 rounded-lg max-w-md border border-border shadow-xl"
+                            className="bg-muted text-foreground p-6 rounded-lg max-w-md border border-border shadow-xl"
                             onClick={e => e.stopPropagation()} // Prevent closing when clicking inside popup
                         >
                             <h3 className="text-lg font-semibold mb-2 text-primary">Layer {activeLayerInfo.index}: {
@@ -331,7 +326,7 @@ const NeuralNetworkVisualizer: React.FC = () => {
                             <p className="text-sm text-muted-foreground mb-4">{activeLayerInfo.explanation}</p>
                             <Button
                                 onClick={() => setShowPopup(false)}
-                                className="w-full bg-primary hover:bg-primary text-white text-sm"
+                                className="w-full bg-primary hover:bg-primary text-primary-foreground text-sm"
                                 size="sm"
                             >
                                 Close

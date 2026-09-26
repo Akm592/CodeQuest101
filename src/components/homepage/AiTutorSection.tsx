@@ -99,7 +99,7 @@ function optimizeAlgorithm(code) {
                   <code className="text-muted-foreground">
                     {codeSnippet.split('\n').map((line, i) => (
                       <div key={i} className="table-row">
-                        <span className="table-cell text-gray-700 select-none pr-4 text-right w-8">{i + 1}</span>
+                        <span className="table-cell w-8 select-none pr-4 text-right text-muted-foreground/60">{i + 1}</span>
                         <span className="table-cell">
                           {line
                             .replace('function', 'FUNCTION_KEYWORD')
@@ -112,7 +112,7 @@ function optimizeAlgorithm(code) {
                               if (token.includes('RETURN_KEYWORD')) return <span key={j} className="text-purple-400">return </span>;
                               if (token.includes('IF_KEYWORD')) return <span key={j} className="text-purple-400">if </span>;
                               if (token.includes('//')) return <span key={j} className="text-muted-foreground">{token} </span>;
-                              if (token.match(/"[^"]*"/)) return <span key={j} className="text-green-400">{token} </span>;
+                              if (token.match(/"[^"]*"/)) return <span key={j} className="text-viz-found">{token} </span>;
                               if (token.match(/[0-9]+/)) return <span key={j} className="text-orange-400">{token} </span>;
                               return <span key={j} className="text-foreground">{token} </span>;
                             })}

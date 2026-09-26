@@ -98,7 +98,7 @@ const Header = () => {
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                   >
                     <LogOut className="h-5 w-5" />
                   </button>
@@ -109,7 +109,7 @@ const Header = () => {
                     Log in
                   </Link>
                   <Link to="/signup">
-                    <button className="bg-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all duration-300">
+                    <button className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:bg-primary hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all duration-300">
                       Sign Up
                     </button>
                   </Link>
@@ -154,7 +154,7 @@ const Header = () => {
             {user ? (
               <button
                 onClick={() => { handleSignOut(); setIsMenuOpen(false); }}
-                className="w-full flex items-center justify-center gap-2 p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 p-3 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
               >
                 <LogOut className="h-5 w-5" />
                 Sign Out
@@ -165,7 +165,7 @@ const Header = () => {
                   <button className="w-full py-3 rounded-xl text-muted-foreground bg-white/5 hover:bg-white/10 transition-colors">Log In</button>
                 </Link>
                 <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-black bg-primary hover:bg-primary font-medium transition-colors">Sign Up</button>
+                  <button className="w-full py-3 rounded-xl text-primary-foreground bg-primary hover:bg-primary font-medium transition-colors">Sign Up</button>
                 </Link>
               </div>
             )}
