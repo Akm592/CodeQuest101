@@ -25,6 +25,20 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # The algorithm step generators are pure functions with known-correct
+      # answers, so correctness is checkable here rather than by watching an
+      # animation. A visualizer that animates smoothly and computes garbage is
+      # worse than none.
+      - name: Test
+        run: npm test
+
+      # A grep, not a browser test, so it can run here. Fails if a component
+      # starts hand-rolling playback controls again instead of using
+      # VisualizerControls. ui-consistency-check.mjs stays manual: it needs a
+      # preview build and a real Chromium.
+      - name: Controls
+        run: node scripts/controls-lint.mjs
+
       - name: Build
         # Build-time env vars only need to be present, not valid.
         env:
