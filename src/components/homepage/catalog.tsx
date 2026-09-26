@@ -9,14 +9,18 @@ import {
   Brain,
   Code2,
   Cpu,
+  Crown,
   Database,
   GitBranch,
   Grid,
   Layers,
+  ListTree,
   Network,
   RotateCw,
   Search,
   SortDesc,
+  Table2,
+  Workflow,
 } from "lucide-react";
 import * as React from "react";
 
@@ -71,6 +75,9 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Sorting Algorithms", description: "Compare efficiency of sorts", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
     { title: "Binary Search", description: "Divide and conquer strategy", icon: <Search />, key: "binarySearch", level: "Easy" },
     { title: "Floyd's Algorithm", description: "Cycle detection in linked lists", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
+    { title: "Dynamic Programming", description: "Fill the table, then trace the answer back", icon: <Table2 />, key: "dynamicProgramming", level: "Hard" },
+    { title: "Topological Sort", description: "Kahn's ordering and union-find", icon: <Workflow />, key: "topologicalSort", level: "Hard" },
+    { title: "N-Queens", description: "Backtracking: place, conflict, undo", icon: <Crown />, key: "nQueens", level: "Hard" },
   ],
   dataStructures: [
     { title: "Binary Tree Traversal", description: "DFS & BFS animations", icon: <Network />, key: "binaryTree", level: "Easy" },
@@ -79,11 +86,26 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Tree Structures", description: "Hierarchical data modeling", icon: <Network />, key: "tree", level: "Medium" },
     { title: "Graph Theory", description: "Nodes and edges exploration", icon: <Network />, key: "graph", level: "Hard" },
     { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
+    { title: "Trie", description: "Prefix tree: insert, search, autocomplete", icon: <ListTree />, key: "trie", level: "Medium" },
   ],
   machineLearning: [
     { title: "Neural Networks", description: "Backpropagation visualized", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
   ],
 };
+
+/**
+ * Every route key the catalogue offers.
+ *
+ * `App.tsx` builds its route table as a Record over this, so a catalogue entry
+ * with no route — or a route whose path is misspelled — is a compile error
+ * rather than a blank page.
+ */
+export type VisualizationKey =
+  | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
+  | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
+  | "nQueens"
+  | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
+  | "neuralNetwork";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

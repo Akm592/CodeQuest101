@@ -34,6 +34,7 @@ const VISUALIZERS = [
   'binarySearch', 'sortingAlgorithms', 'linkedList', 'longestSubarray',
   'spiralMatrix', 'rotateImage', 'binaryTree', 'stack', 'hareTortoise',
   'tree', 'neuralNetwork', 'graph', 'heap',
+  'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie',
 ];
 
 const PAGES = ['/', '/chat', '/login', '/about', '/no-such-page',
@@ -249,7 +250,13 @@ if (steps.length) {
 console.log('\nHorizontal overflow:');
 for (const [w, h] of [[390, 844], [768, 1024], [1280, 900]]) {
   await page.setViewportSize({ width: w, height: h });
-  for (const path of ['/', '/chat']) {
+  for (const path of [
+    '/', '/chat',
+    // The new routes draw wide fixed-size grids, so they are exactly the ones
+    // at risk here. This loop used to cover only the two pages above.
+    '/visualize/dynamicProgramming', '/visualize/nQueens',
+    '/visualize/topologicalSort', '/visualize/trie',
+  ]) {
     currentPath = path;
     await page.goto(`${ORIGIN}${path}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2600);
