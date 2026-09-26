@@ -100,7 +100,8 @@ const Header = () => {
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                    aria-label="Sign out"
+                    className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <LogOut className="h-5 w-5" />
                   </button>
@@ -124,7 +125,9 @@ const Header = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-muted-foreground hover:text-foreground"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

@@ -25,24 +25,24 @@ const DeleteSessionModal: React.FC<DeleteSessionModalProps> = ({ isOpen, onClose
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
                         transition={{ type: "spring", stiffness: 350, damping: 25 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-white dark:bg-[#0F1117] border border-gray-200 dark:border-white/10 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
+                        className="bg-background border border-white/10 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
                     >
                         {/* Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-red-500/10 rounded-full blur-3xl pointer-events-none -mt-16" />
 
                         <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6 relative z-10 border border-red-500/20">
-                            <Trash2 className="w-7 h-7 text-red-600 dark:text-red-500" />
+                            <Trash2 className="w-7 h-7 text-red-500" />
                         </div>
 
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 relative z-10">Delete Session?</h3>
-                        <p className="text-gray-600 dark:text-muted-foreground text-sm mb-8 leading-relaxed relative z-10">
+                        <h3 className="text-2xl font-bold text-white mb-2 relative z-10">Delete Session?</h3>
+                        <p className="text-muted-foreground text-sm mb-8 leading-relaxed relative z-10">
                             This conversation will be permanently removed from your history. This action cannot be undone.
                         </p>
 
                         <div className="flex gap-3 relative z-10">
                             <button
                                 onClick={onClose}
-                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-muted-foreground font-medium transition-colors border border-transparent dark:border-white/5"
+                                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-muted-foreground font-medium transition-colors border border-white/5"
                             >
                                 Cancel
                             </button>

@@ -23,12 +23,12 @@ const TypingIndicator = () => {
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
     >
       {/* Bot Avatar */}
-      <div className="w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-lg bg-white dark:bg-[#1a1f2e] text-primary dark:text-primary">
-        <div className="w-2 h-2 bg-primary dark:bg-primary rounded-full animate-pulse" />
+      <div className="w-8 h-8 rounded-full flex items-center justify-center border border-white/10 shadow-lg bg-popover text-primary">
+        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
       </div>
 
-      <div className="bg-white/90 dark:bg-[#151922]/90 backdrop-blur-lg border border-gray-200 dark:border-white/10
-                      text-gray-800 dark:text-foreground rounded-3xl rounded-bl-none px-5 py-4 shadow-lg min-w-[80px] flex items-center justify-center">
+      <div className="bg-card/90 backdrop-blur-lg border border-white/10
+                      text-foreground rounded-3xl rounded-bl-none px-5 py-4 shadow-lg min-w-[80px] flex items-center justify-center">
         <div className="flex space-x-1.5 items-center h-4">
           <motion.span
             className="w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(20,184,166,0.5)]"
@@ -38,7 +38,7 @@ const TypingIndicator = () => {
             transition={dotTransition(0)}
           />
           <motion.span
-            className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            className="w-2 h-2 bg-secondary rounded-full shadow-[0_0_10px_hsl(var(--secondary)/0.5)]"
             variants={dotVariants}
             initial="initial"
             animate="animate"

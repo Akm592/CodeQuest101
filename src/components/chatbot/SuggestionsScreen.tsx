@@ -40,8 +40,8 @@ const SuggestionsScreen = React.memo(({
     {
       title: "Array Algorithms",
       icon: <BarChart3 className="w-6 h-6" />,
-      color: "text-blue-400",
-      gradient: "from-blue-500/20 to-primary/20",
+      color: "text-viz-pointer",
+      gradient: "from-secondary/20 to-primary/20",
       suggestions: [
         {
           text: "Two Sum problem with array [2, 7, 11, 15] and target 9",
@@ -138,7 +138,7 @@ const SuggestionsScreen = React.memo(({
       title: "Data Structures",
       icon: <Hash className="w-6 h-6" />,
       color: "text-primary",
-      gradient: "from-primary/20 to-blue-500/20",
+      gradient: "from-primary/20 to-secondary/20",
       suggestions: [
         {
           text: "Stack operations: push(10), push(20), push(30), pop(), pop()",
@@ -184,7 +184,7 @@ const SuggestionsScreen = React.memo(({
     [selectedCategory, categories]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full p-6 text-gray-900 dark:text-white overflow-y-auto">
+    <div className="flex h-full w-full flex-col items-center justify-center overflow-y-auto p-3 text-foreground sm:p-6">
       <AnimatePresence mode="wait">
         {!selectedCategory ? (
           <motion.div
@@ -193,23 +193,23 @@ const SuggestionsScreen = React.memo(({
             exit={{ opacity: 0, scale: 0.95 }}
             className="w-full max-w-5xl"
           >
-            <div className="text-center mb-10">
+            <div className="mb-6 text-center sm:mb-10">
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4 border border-primary/20 shadow-[0_0_20px_rgba(20,184,166,0.2)]"
+                className="mb-3 inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/10 p-2.5 shadow-[0_0_20px_hsl(var(--primary)/0.2)] sm:mb-4 sm:p-3"
               >
-                <Sparkles className="w-8 h-8 text-primary dark:text-primary" />
+                <Sparkles className="h-6 w-6 text-primary sm:h-8 sm:w-8" />
               </motion.div>
-              <h2 className="text-4xl font-bold mb-3 tracking-tight text-gray-900 dark:text-white">
-                Algorithm <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600 dark:from-primary dark:to-blue-500">Visualizer</span>
+              <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground sm:mb-3 sm:text-4xl">
+                Algorithm <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Visualizer</span>
               </h2>
-              <p className="text-gray-600 dark:text-muted-foreground max-w-xl mx-auto text-lg">
+              <p className="mx-auto max-w-xl text-sm text-muted-foreground sm:text-lg">
                 Choose a category to explore interactive visualizations and master complex concepts.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
               {categories.map((category, index) => (
                 <motion.button
                   key={category.title}
@@ -217,23 +217,25 @@ const SuggestionsScreen = React.memo(({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedCategory(category.title)}
-                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F1117] border border-gray-200 dark:border-white/5 hover:border-primary/50 p-6 text-left transition-all duration-300 hover:shadow-[0_0_20px_rgba(20,184,166,0.15)] hover:-translate-y-1"
+                  className="group relative overflow-hidden rounded-2xl border border-white/5 bg-card p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.15)] sm:p-6"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
-                  <div className="relative z-10">
-                    <div className={`p-3 rounded-xl bg-gray-100 dark:bg-white/5 w-fit mb-4 ${category.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <div className="relative z-10 flex items-center gap-3 sm:block">
+                    <div className={`w-fit shrink-0 rounded-xl bg-white/5 p-2.5 transition-transform duration-300 group-hover:scale-110 sm:mb-4 sm:p-3 ${category.color}`}>
                       {category.icon}
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors">
-                      {category.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground dark:text-muted-foreground group-hover:text-gray-600 dark:group-hover:text-muted-foreground mb-4 transition-colors">
-                      {category.suggestions.length} Visualizations
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="mb-0.5 text-base font-semibold text-foreground transition-colors group-hover:text-primary sm:mb-2 sm:text-xl">
+                        {category.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground transition-colors sm:mb-4 sm:text-sm">
+                        {category.suggestions.length} Visualizations
+                      </p>
 
-                    <div className="flex items-center text-xs font-medium text-muted-foreground dark:text-gray-600 group-hover:text-primary dark:group-hover:text-primary uppercase tracking-wider transition-colors">
-                      Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
+                      <div className="mt-1 flex items-center text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors group-hover:text-primary sm:mt-0">
+                        Explore <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                      </div>
                     </div>
                   </div>
                 </motion.button>
@@ -249,21 +251,21 @@ const SuggestionsScreen = React.memo(({
           >
             <button
               onClick={() => setSelectedCategory(null)}
-              className="mb-8 flex items-center text-sm text-muted-foreground dark:text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors group"
+              className="mb-8 flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors group"
             >
-              <div className="p-1 rounded-full bg-gray-200 dark:bg-white/5 group-hover:bg-gray-300 dark:group-hover:bg-white/10 mr-2 border border-gray-200 dark:border-white/5 group-hover:border-gray-300 dark:group-hover:border-white/20 transition-all">
+              <div className="p-1 rounded-full bg-white/5 group-hover:bg-border group-hover:bg-white/10 mr-2 border border-white/5 group-hover:border-border group-hover:border-white/20 transition-all">
                 <ArrowRight className="w-4 h-4 rotate-180" />
               </div>
               Back to Categories
             </button>
 
             <div className="flex items-center gap-4 mb-8">
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${activeCategory?.gradient} border border-gray-200 dark:border-white/10`}>
+              <div className={`p-3 rounded-xl bg-gradient-to-br ${activeCategory?.gradient} border border-white/10`}>
                 {activeCategory?.icon}
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{activeCategory?.title}</h2>
-                <p className="text-gray-600 dark:text-muted-foreground">Select a visualization to begin</p>
+                <h2 className="text-3xl font-bold text-white mb-1">{activeCategory?.title}</h2>
+                <p className="text-muted-foreground">Select a visualization to begin</p>
               </div>
             </div>
 
@@ -276,18 +278,18 @@ const SuggestionsScreen = React.memo(({
                   transition={{ delay: index * 0.05 }}
                   onClick={() => !isLoading && onSuggestionClick(suggestion.text)}
                   disabled={isLoading}
-                  className="text-left p-5 rounded-xl bg-white dark:bg-[#0F1117]/80 border border-gray-200 dark:border-white/5 hover:border-primary/30 hover:bg-gray-50 dark:hover:bg-[#13161f] transition-all group relative overflow-hidden shadow-sm hover:shadow-md"
+                  className="text-left p-5 rounded-xl bg-background/80 border border-white/5 hover:border-primary/30 hover:bg-white/5 transition-all group relative overflow-hidden shadow-sm hover:shadow-md"
                 >
                   <div className="relative z-10">
-                    <h4 className="font-semibold text-gray-900 dark:text-foreground group-hover:text-primary dark:group-hover:text-primary mb-2 transition-colors pr-6">
+                    <h4 className="font-semibold text-foreground group-hover:text-primary mb-2 transition-colors pr-6">
                       {suggestion.text}
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-muted-foreground group-hover:text-gray-800 dark:group-hover:text-muted-foreground transition-colors mb-3 line-clamp-2">
+                    <p className="text-sm text-muted-foreground group-hover:text-muted-foreground transition-colors mb-3 line-clamp-2">
                       {suggestion.description}
                     </p>
 
                     {suggestion.complexity && (
-                      <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-xs text-muted-foreground dark:text-muted-foreground group-hover:border-primary/20 group-hover:text-primary dark:group-hover:text-primary/80 transition-colors">
+                      <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-xs text-muted-foreground group-hover:border-primary/20 group-hover:text-primary/80 transition-colors">
                         <Info className="w-3 h-3 mr-1.5" />
                         {suggestion.complexity}
                       </div>

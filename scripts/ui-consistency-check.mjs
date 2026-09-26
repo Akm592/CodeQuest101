@@ -16,6 +16,9 @@
 //   6. No page scrolls horizontally at phone, tablet or desktop width. `body {
 //      overflow-x: hidden }` hides the symptom without fixing it, and does not
 //      stop panning on every mobile browser.
+//   7. On a phone, every control is at least 44px and no two overlap. The chat
+//      page shipped a sidebar toggle at `fixed left-4 top-4` sitting exactly on
+//      top of the header pill, and four controls between 36 and 40px.
 //
 // Run against a local preview build:
 //   npm run build && npx vite preview --port 4173 &
@@ -288,7 +291,71 @@ for (const [w, h] of [[390, 844], [768, 1024], [1280, 900]]) {
 }
 await page.setViewportSize({ width: 1280, height: 900 });
 
-// --- 6. Style sprawl -----------------------------------------------------
+// --- 6. Touch affordances on a phone --------------------------------------
+// Rendered-text contrast and page overflow both passed on /chat while its
+// controls overlapped each other and sat below the minimum touch size, because
+// nothing was looking at control geometry.
+console.log('\nTouch affordances at 360px:');
+await page.setViewportSize({ width: 360, height: 740 });
+for (const path of ['/', '/chat']) {
+  currentPath = path;
+  await page.goto(`${ORIGIN}${path}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3000);
+
+  const touch = await page.evaluate(() => {
+    const visible = (el) => {
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.1) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+    };
+    const controls = [...document.querySelectorAll('button,a,[role="button"],input,textarea,select')].filter(visible);
+
+    const name = (el) =>
+      (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || '').trim().slice(0, 28)
+      || `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 20)}`;
+
+    // WCAG 2.5.5 asks for 44x44, but 2.5.8 — the AA criterion — sets 24x24 and
+    // exempts links inline in text. A 237x32 wordmark link is genuinely easy to
+    // hit; a 40x40 icon button is the shape that actually gets missed. So:
+    // flag anything thinner than 24px in either direction, and anything under
+    // 44px in BOTH. That keeps the icon buttons honest without failing every
+    // wide, short text link.
+    const tooSmall = controls
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        if (Math.min(r.width, r.height) < 24) return true;
+        return r.width < 44 && r.height < 44;
+      })
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return `${Math.round(r.width)}x${Math.round(r.height)} ${name(el)}`;
+      });
+
+    // Two controls sitting on top of each other is always a mistake; the chat
+    // page had a drawer toggle pinned over its own header.
+    const overlaps = [];
+    const positioned = controls.filter((el) => ['fixed', 'absolute'].includes(getComputedStyle(el).position));
+    for (const a of positioned) {
+      for (const b of controls) {
+        if (a === b || a.contains(b) || b.contains(a)) continue;
+        const ra = a.getBoundingClientRect();
+        const rb = b.getBoundingClientRect();
+        const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+        const oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+        if (ox > 4 && oy > 4) overlaps.push(`${name(a)} over ${name(b)} (${Math.round(ox)}x${Math.round(oy)}px)`);
+      }
+    }
+    return { count: controls.length, tooSmall, overlaps: [...new Set(overlaps)] };
+  });
+
+  console.log(`  ${path.padEnd(6)} ${touch.count} controls, ${touch.tooSmall.length} under 44px, ${touch.overlaps.length} overlapping`);
+  for (const t of touch.tooSmall) failures.push(`${path}: control ${t} is under the 44px touch minimum`);
+  for (const o of touch.overlaps) failures.push(`${path}: overlapping controls — ${o}`);
+}
+await page.setViewportSize({ width: 1280, height: 900 });
+
+// --- 7. Style sprawl -----------------------------------------------------
 const css = await page.evaluate(async () => {
   const link = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .map((l) => l.href).find((h) => h.includes('.css'));
