@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff } from "lucide-react";
+import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff, PanelLeft } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
@@ -172,6 +172,15 @@ const ChatInterface = () => {
       // A blocked localStorage must not break the setting for this session.
     }
   }, []);
+
+  // The drawer's open state lives here so the header can own its control. It
+  // used to be private to ChatSidebar, which is why the toggle had to be a
+  // fixed-position button floating over the header.
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches,
+  );
+  const toggleSidebar = useCallback(() => setIsSidebarOpen((v) => !v), []);
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -596,10 +605,11 @@ const ChatInterface = () => {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden bg-gray-50 dark:bg-[#050a14] relative transition-colors duration-300">
+    // w-full, not w-screen: 100vw includes the scrollbar gutter.
+    <div className="relative flex h-[100dvh] w-full overflow-hidden bg-background">
       {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="pointer-events-none absolute left-0 top-0 h-[500px] w-full bg-gradient-to-b from-primary/10 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-secondary/5 blur-[100px]" />
 
       <ChatSidebar
         sessions={sessionState.sessions}
@@ -611,56 +621,81 @@ const ChatInterface = () => {
           setShowDeleteConfirm(true);
         }}
         isCreatingSession={sessionState.isCreatingSession}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
       />
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+      {/* h-full, not h-screen. The parent is 100dvh and clips its overflow; on
+          Android, 100vh is the viewport with the URL bar HIDDEN, so an h-screen
+          child is ~60-110px taller than the box clipping it and the composer at
+          its bottom gets cut off whenever the URL bar is showing. */}
+      <div className="relative z-10 flex h-full min-h-0 flex-1 flex-col">
 
-        {/* Floating Header */}
-        <header className="absolute top-4 left-4 right-4 z-20 mx-auto max-w-5xl bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 flex justify-between items-center shadow-lg">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-primary/10 border border-primary/20">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <h1 className="text-sm font-semibold text-white tracking-wide">
-              AI ARCHITECT <span className="text-white/40 font-normal ml-2">| v2.0</span>
-            </h1>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span>System Online</span>
+        {/* A normal flex child rather than an absolutely-positioned bar. The old
+            version was `absolute top-4` with the main region clearing it via a
+            magic pt-20, which broke as soon as the title wrapped at 360px. */}
+        <header className="z-20 shrink-0 px-3 pt-3 sm:px-4 sm:pt-4">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-white/10 bg-card/80 px-2 py-2 shadow-lg backdrop-blur-md sm:px-4">
+            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+              {/* Lives here rather than floating over the header. It used to be
+                  `fixed left-4 top-4`, landing exactly on top of this bar. */}
+              <button
+                onClick={toggleSidebar}
+                aria-label="Open chat history"
+                aria-expanded={isSidebarOpen}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground lg:hidden"
+              >
+                <PanelLeft className="h-5 w-5" />
+              </button>
+
+              <div className="hidden shrink-0 rounded-full border border-primary/20 bg-primary/10 p-2 sm:block">
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <h1 className="truncate text-sm font-semibold tracking-wide text-foreground">
+                AI Architect
+                <span className="ml-2 hidden font-normal text-muted-foreground sm:inline">| v2.0</span>
+              </h1>
             </div>
 
-            <button
-              onClick={handleNewChat}
-              disabled={sessionState.isCreatingSession}
-              className="group p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-all disabled:opacity-50"
-              title="New Chat"
-            >
-              {sessionState.isCreatingSession ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <MessageSquarePlus className="w-5 h-5 group-hover:text-primary transition-colors" />
-              )}
-            </button>
-            <button
-              onClick={() => setShowSettingsModal(true)}
-              className="group p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-all"
-              title="Settings"
-            >
-              <Settings className="w-5 h-5 group-hover:text-primary transition-colors" />
-            </button>
+            <div className="flex shrink-0 items-center">
+              <div className="mr-2 hidden items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground md:flex">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-viz-found" />
+                <span>System Online</span>
+              </div>
+
+              <button
+                onClick={handleNewChat}
+                disabled={sessionState.isCreatingSession}
+                className="group grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground disabled:opacity-50"
+                title="New Chat"
+                aria-label="New chat"
+              >
+                {sessionState.isCreatingSession ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <MessageSquarePlus className="h-5 w-5 transition-colors group-hover:text-primary" />
+                )}
+              </button>
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="group grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
+                title="Settings"
+                aria-label="Settings"
+              >
+                <Settings className="h-5 w-5 transition-colors group-hover:text-primary" />
+              </button>
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden flex justify-center items-center pt-20 pb-4 px-4">
+        <main className="flex min-h-0 flex-1 justify-center overflow-hidden px-2 pb-0 pt-2 sm:px-4">
           <div className="flex flex-col h-full w-full max-w-5xl mx-auto">
             {/* Account state, not message state: this must sit alongside the
                 conversation rather than replacing it. */}
             {authDegraded && (
               <div
                 role="status"
-                className="mx-4 mb-2 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                className="mx-2 mb-2 flex items-start gap-3 rounded-xl border border-viz-compare/30 bg-viz-compare/10 px-4 py-3 text-sm text-viz-compare sm:mx-4"
               >
                 <CloudOff className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>
@@ -671,7 +706,7 @@ const ChatInterface = () => {
             )}
             <div
               ref={chatWindowRef}
-              className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-teal-500/50"
+              className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent min-h-0 flex-1 space-y-6 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6"
             >
               <AnimatePresence mode="wait">
                 {chatState.isLoading && chatState.messages.length === 0 ? (
@@ -719,9 +754,13 @@ const ChatInterface = () => {
               </AnimatePresence>
             </div>
 
-            {/* Floating Input Area */}
-            <div className="p-4 pt-2">
-              <div className="relative bg-[#0F1117]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all duration-300">
+            {/* Composer. pb allows for the Android gesture bar / iOS home
+                indicator, which otherwise sit on top of the send button. */}
+            <div
+              className="shrink-0 px-2 pb-2 pt-2 sm:px-4 sm:pb-4"
+              style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+            >
+              <div className="relative rounded-2xl border border-white/10 bg-card/80 shadow-2xl backdrop-blur-xl transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50">
                 <textarea
                   ref={(el) => {
                     if (el) {
@@ -742,15 +781,16 @@ const ChatInterface = () => {
                   }}
                   placeholder="Ask anything about code..."
                   rows={1}
-                  className="w-full bg-transparent text-foreground placeholder-gray-500 px-5 py-4 pr-14 focus:outline-none resize-none scrollbar-thin scrollbar-thumb-white/10 rounded-2xl min-h-[56px] text-base leading-relaxed"
+                  className="scrollbar-thin scrollbar-thumb-white/10 min-h-[56px] w-full resize-none rounded-2xl bg-transparent px-4 py-4 pr-16 text-base leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5"
                   disabled={chatState.isTyping || (!sessionState.session?.id)}
                 />
 
-                <div className="absolute bottom-2 right-2">
+                <div className="absolute bottom-1.5 right-1.5">
                   <button
                     onClick={() => handleSendMessage()}
                     disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
-                    className="p-2.5 rounded-xl bg-primary hover:bg-primary text-primary-foreground shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                    aria-label="Send message"
+                    className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {chatState.isTyping ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -760,11 +800,9 @@ const ChatInterface = () => {
                   </button>
                 </div>
               </div>
-              <div className="text-center mt-3">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Powered by Advanced AI • Capable of Mistakes
-                </p>
-              </div>
+              <p className="mt-2 text-center text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                AI-generated • may be wrong
+              </p>
             </div>
 
           </div>
@@ -776,12 +814,12 @@ const ChatInterface = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-              className="absolute top-20 left-1/2 -translate-x-1/2 w-auto max-w-md bg-red-500/10 backdrop-blur-md border border-red-500/50 text-red-200 px-4 py-3 rounded-lg shadow-xl z-50 flex items-center gap-3"
+              className="absolute left-1/2 top-20 z-50 flex w-auto max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive-foreground shadow-xl backdrop-blur-md sm:max-w-md"
             >
               <span>{chatState.error}</span>
               <button
                 onClick={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
-                className="text-red-400 hover:text-white transition-colors"
+                className="shrink-0 text-destructive transition-colors hover:text-foreground"
               >
                 <X className="w-4 h-4" />
               </button>

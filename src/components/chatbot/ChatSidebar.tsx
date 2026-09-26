@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { MessageCircle, Plus, CalendarDays, X, ChevronRight, Loader2, Sparkles, FolderOpen } from "lucide-react";
+import { MessageCircle, Plus, CalendarDays, X, Loader2, Sparkles, FolderOpen } from "lucide-react";
 
 interface ChatSessionInfo {
   id: string;
@@ -15,6 +15,9 @@ interface ChatSidebarProps {
   onCreateNewSession: () => void;
   onDeleteSession: (sessionId: string) => void;
   isCreatingSession?: boolean;
+  /** Owned by the parent so the open control can live in the header. */
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const formatRelativeTime = (dateString: string): string => {
@@ -79,26 +82,26 @@ const SessionItem = React.memo<{
 
   return (
     <div
-      className={`group relative rounded-xl transition-all duration-200 mb-2
+      className={`group mb-2 grid grid-cols-[1fr_auto] items-center rounded-xl transition-all duration-200
         ${isSelected
-          ? "bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(20,184,166,0.1)]"
-          : "hover:bg-gray-100/50 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/5"
+          ? "border border-primary/20 bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.1)]"
+          : "border border-transparent hover:border-border hover:bg-white/5"
         }
-        ${isDeleting ? "opacity-50 scale-95" : "opacity-100"}
+        ${isDeleting ? "scale-95 opacity-50" : "opacity-100"}
       `}
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <button
         onClick={handleSelect}
         disabled={isDeleting}
-        className="w-full flex items-center p-3 text-left focus:outline-none rounded-xl"
+        className="flex min-h-[56px] min-w-0 items-center rounded-xl p-3 text-left focus:outline-none"
         title={displayName}
       >
-        <div className={`mr-3 p-2 rounded-lg transition-colors ${isSelected ? "bg-primary/20 text-primary" : "bg-gray-200/50 dark:bg-white/5 text-muted-foreground group-hover:text-gray-700 dark:group-hover:text-muted-foreground"}`}>
+        <div className={`mr-3 rounded-lg p-2 transition-colors ${isSelected ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground"}`}>
           <MessageCircle className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isSelected ? "text-foreground" : "text-gray-700 dark:text-muted-foreground group-hover:text-gray-900 dark:group-hover:text-foreground"}`}>
+          <p className={`truncate text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}>
             {displayName}
           </p>
           <div className="mt-0.5 flex items-center text-[10px] text-muted-foreground">
@@ -111,11 +114,13 @@ const SessionItem = React.memo<{
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg
-                  text-muted-foreground dark:text-muted-foreground opacity-0 group-hover:opacity-100 transition-all
-                  hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400
-                  focus:opacity-100 focus:outline-none"
+        className="mr-1 grid h-11 w-11 shrink-0 place-items-center rounded-lg
+                  text-muted-foreground opacity-100 transition-all
+                  hover:bg-destructive/10 hover:text-destructive
+                  focus:opacity-100 focus:outline-none
+                  sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         title="Delete Chat"
+        aria-label={`Delete ${displayName}`}
       >
         {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
       </button>
@@ -124,6 +129,31 @@ const SessionItem = React.memo<{
 });
 SessionItem.displayName = 'SessionItem';
 
+/**
+ * True at the lg breakpoint and up.
+ *
+ * Deliberately matchMedia rather than a window resize listener: on Android,
+ * resize fires when the soft keyboard opens and when the URL bar hides during
+ * scroll, and the previous implementation reset the drawer's open state on
+ * every one of those events.
+ */
+function useIsDesktop(): boolean {
+  const query = "(min-width: 1024px)";
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", onChange);
+    setIsDesktop(mql.matches);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isDesktop;
+}
+
 const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
   sessions,
   onSessionSelect,
@@ -131,90 +161,87 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
   onCreateNewSession,
   onDeleteSession,
   isCreatingSession = false,
+  isOpen,
+  onClose,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(window.innerWidth > 1024);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const isDesktop = useIsDesktop();
 
-  const handleToggleExpanded = useCallback(() => {
-    setIsExpanded(prev => !prev);
-  }, []);
-
-  // Auto-close on mobile selection
+  // Selecting something on a phone should reveal the result, not leave the
+  // drawer covering it.
   const handleSessionSelect = useCallback((sessionId: string) => {
     if (sessionId !== selectedSessionId) onSessionSelect(sessionId);
-    if (window.innerWidth < 1024) setIsExpanded(false);
-  }, [onSessionSelect, selectedSessionId]);
+    if (!isDesktop) onClose();
+  }, [onSessionSelect, selectedSessionId, isDesktop, onClose]);
 
   const handleCreateSession = useCallback(() => {
     if (!isCreatingSession) onCreateNewSession();
-    if (window.innerWidth < 1024) setIsExpanded(false);
-  }, [onCreateNewSession, isCreatingSession]);
+    if (!isDesktop) onClose();
+  }, [onCreateNewSession, isCreatingSession, isDesktop, onClose]);
 
   const sortedSessions = useMemo(() => {
     return [...sessions].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   }, [sessions]);
 
-  // Responsive handling
-  useEffect(() => {
-    const handleResize = () => setIsExpanded(window.innerWidth > 1024);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Scrim behind the drawer on phones. */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-30 transition-opacity duration-300 lg:hidden ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={handleToggleExpanded}
+        className={`fixed inset-0 z-30 bg-black/65 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        onClick={onClose}
+        aria-hidden="true"
       />
 
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={handleToggleExpanded}
-        className={`fixed left-4 top-4 z-40 p-2 rounded-full bg-white dark:bg-[#0F1117] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-white shadow-lg lg:hidden transition-all ${isExpanded ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-
-      {/* Sidebar Container */}
       <aside
         ref={sidebarRef}
-        className={`fixed lg:relative z-40 h-full w-72 bg-white/80 dark:bg-[#050a14]/95 backdrop-blur-xl border-r border-gray-200 dark:border-white/5 flex flex-col transition-transform duration-300 ease-out
-                   ${isExpanded ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:border-none lg:overflow-hidden'}
+        aria-label="Chat history"
+        aria-hidden={!isOpen && !isDesktop}
+        className={`fixed lg:relative z-40 flex h-full w-[min(18rem,85vw)] flex-col border-r border-border bg-card/95 backdrop-blur-xl transition-transform duration-300 ease-out
+                   ${isOpen ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-none'}
         `}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-white/5">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-gradient-to-br from-primary to-blue-600 rounded-lg">
-              <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between gap-2 border-b border-border p-4 sm:p-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
+              <Sparkles className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h2 className="font-bold text-gray-800 dark:text-white tracking-wide">CodeQuest</h2>
+            <h2 className="truncate font-bold tracking-wide text-foreground">CodeQuest</h2>
           </div>
+          {/* Closing from inside the drawer: the header control is covered by
+              the scrim while it is open. */}
+          <button
+            onClick={onClose}
+            aria-label="Close chat history"
+            className="-mr-1 grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
+        <div className="p-4 sm:p-5 pt-0 sm:pt-0">
           <button
             onClick={handleCreateSession}
             disabled={isCreatingSession}
-            className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-gray-700 dark:text-white flex items-center justify-center gap-2 transition-all group"
+            className="group flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-border bg-white/5 px-4 py-3 text-sm font-medium text-foreground transition-all hover:bg-white/10 disabled:opacity-60"
           >
             {isCreatingSession ? (
-              <Loader2 className="w-4 h-4 animate-spin text-primary dark:text-primary" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
-              <Plus className="w-4 h-4 text-primary dark:text-primary group-hover:scale-110 transition-transform" />
+              <Plus className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
             )}
             <span>New Chat</span>
           </button>
         </div>
 
         {/* Sessions List */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/5 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-white/10">
-          <h3 className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-4 px-2">History</h3>
+        <div className="scrollbar-thin scrollbar-thumb-white/5 hover:scrollbar-thumb-white/10 flex-1 overflow-y-auto px-4 py-4">
+          <h3 className="mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">History</h3>
 
           {sortedSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3">
-                <FolderOpen className="w-5 h-5 text-muted-foreground dark:text-gray-600" />
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
+                <FolderOpen className="h-5 w-5 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">No history yet</p>
             </div>
@@ -233,9 +260,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         </div>
 
         {/* User / Footer Area (Optional placeholder) */}
-        <div className="p-4 border-t border-gray-200 dark:border-white/5">
-          {/* Could add user profile snippet here */}
-        </div>
+
       </aside>
     </>
   );

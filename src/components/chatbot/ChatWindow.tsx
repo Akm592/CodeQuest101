@@ -29,7 +29,7 @@ const ErrorMessage = React.memo(({ error, onRetry }: { error: string; onRetry?: 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="flex items-center justify-center p-4 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg mx-4 my-2"
+        className="flex items-center justify-center p-4 text-red-400 bg-red-900/20 rounded-lg mx-4 my-2"
     >
         <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
         <span className="text-sm mr-3">{error}</span>
@@ -49,10 +49,10 @@ const EmptyState = React.memo(() => (
     <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center justify-center h-full text-muted-foreground dark:text-muted-foreground"
+        className="flex items-center justify-center h-full text-muted-foreground"
     >
         <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-muted text-foreground flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted text-foreground flex items-center justify-center">
                 💬
             </div>
             <p className="text-sm font-medium">No messages yet</p>
@@ -202,7 +202,7 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
                     itemSize={120} // Approximate item height
                     itemData={virtualListData}
                     overscanCount={5}
-                    className="scrollbar-thin scrollbar-thumb-gray-400/50 dark:scrollbar-thumb-gray-600/50"
+                    className="scrollbar-thin scrollbar-thumb-gray-600/50"
                 >
                     {VirtualizedMessageItem}
                 </VirtualList>
