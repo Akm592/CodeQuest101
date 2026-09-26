@@ -1,37 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Input } from '../ui/input';
-import {
-  Code2, GitBranch, Grid, SortDesc, Search, RotateCw, Brain, Database, ArrowLeft, ArrowRight, Layers, Cpu, Network, Filter
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Filter, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const categories = [
-  { title: "Algorithms", description: "Master efficient problem solving", icon: <Cpu className="h-6 w-6 text-primary" />, key: "algorithms", gradient: "from-primary/10 to-blue-500/10" },
-  { title: "Data Structures", description: "Build strong foundations", icon: <Database className="h-6 w-6 text-primary" />, key: "dataStructures", gradient: "from-primary/10 to-green-500/10" },
-  { title: "Machine Learning", description: "Explore AI concepts", icon: <Brain className="h-6 w-6 text-purple-400" />, key: "machineLearning", gradient: "from-purple-500/10 to-pink-500/10" },
-];
-
-const visualizations = {
-  algorithms: [
-    { title: "Longest Subarray Sum K", description: "Sliding window technique visualization", icon: <Code2 />, key: "longestSubarray", level: "Medium" },
-    { title: "Spiral Matrix", description: "2D Array traversal animation", icon: <Grid />, key: "spiralMatrix", level: "Medium" },
-    { title: "Rotate Image", description: "Matrix manipulation in-place", icon: <RotateCw />, key: "rotateImage", level: "Medium" },
-    { title: "Sorting Algorithms", description: "Compare efficiency of sorts", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
-    { title: "Binary Search", description: "Divide and conquer strategy", icon: <Search />, key: "binarySearch", level: "Easy" },
-    { title: "Floyd's Algorithm", description: "Cycle detection in linked lists", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
-  ],
-  dataStructures: [
-    { title: "Binary Tree Traversal", description: "DFS & BFS animations", icon: <Network />, key: "binaryTree", level: "Easy" },
-    { title: "Linked List", description: "Pointer manipulation visualizer", icon: <GitBranch />, key: "linkedList", level: "Easy" },
-    { title: "Stack and Queue", description: "LIFO & FIFO operations", icon: <Layers />, key: "stack", level: "Easy" },
-    { title: "Tree Structures", description: "Hierarchical data modeling", icon: <Network />, key: "tree", level: "Medium" },
-    { title: "Graph Theory", description: "Nodes and edges exploration", icon: <Network />, key: "graph", level: "Hard" },
-    { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
-  ],
-  machineLearning: [
-    { title: "Neural Networks", description: "Backpropagation visualized", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
-  ],
-};
+import { allVisualizations, categories, visualizations } from './catalog';
 
 interface VisualizationSectionProps {
   onSelectVisualization: (key: string) => void;
@@ -41,12 +13,6 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const allVisualizations = useMemo(() => [
-    ...visualizations.algorithms,
-    ...visualizations.dataStructures,
-    ...visualizations.machineLearning
-  ], []);
-
   const filteredVisualizations = useMemo(() => {
     if (searchQuery) {
       return allVisualizations.filter(v => 
@@ -55,12 +21,12 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
       );
     }
     return selectedCategory ? visualizations[selectedCategory as keyof typeof visualizations] : [];
-  }, [searchQuery, selectedCategory, allVisualizations]);
+  }, [searchQuery, selectedCategory]);
 
   const isSearching = searchQuery.length > 0;
 
   return (
-    <section id="visualizations" className="py-24 relative bg-black/40">
+    <section id="visualizations" className="relative py-24 scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -99,9 +65,9 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                 <div
                   key={category.key}
                   onClick={() => setSelectedCategory(category.key)}
-                  className={`group relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br ${category.gradient} p-8 cursor-pointer transition-all duration-300 hover:border-white/20 hover:shadow-2xl`}
+                  className={`group relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br ${category.gradient} p-6 sm:p-8 cursor-pointer transition-all duration-300 hover:border-white/20 hover:shadow-2xl`}
                 >
-                  <div className="absolute inset-0 bg-black/20 backdrop-blur-3xl -z-10" />
+                  <div className="absolute inset-0 bg-background/40 backdrop-blur-3xl -z-10" />
 
                   <div className="mb-6 p-4 rounded-2xl bg-white/5 w-fit border border-white/10 group-hover:scale-110 transition-transform duration-300">
                     {category.icon}
@@ -110,12 +76,12 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                   <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
                     {category.title}
                   </h3>
-                  <p className="text-muted-foreground group-hover:text-muted-foreground">
+                  <p className="text-muted-foreground group-hover:text-foreground">
                     {category.description}
                   </p>
 
                   <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
-                    <ArrowRight className="text-white/50" />
+                    <ArrowRight className="text-muted-foreground" />
                   </div>
                 </div>
               ))}
@@ -134,7 +100,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                     setSelectedCategory(null);
                     setSearchQuery("");
                   }}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-white transition-colors group"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground group"
                 >
                   <div className="p-2 rounded-full bg-white/5 group-hover:bg-primary/20 transition-colors">
                     <ArrowLeft className="h-4 w-4" />
@@ -158,16 +124,16 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       onClick={() => onSelectVisualization(viz.key)}
-                      className="group flex flex-col justify-between bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-primary/5 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]"
+                      className="group flex flex-col justify-between bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-primary/5 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.1)]"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-4">
-                          <div className="p-3 rounded-xl bg-black/40 text-primary ring-1 ring-white/10 group-hover:ring-primary/50 transition-all">
+                          <div className="p-3 rounded-xl bg-background/60 text-primary ring-1 ring-white/10 group-hover:ring-primary/50 transition-all">
                             {React.cloneElement(viz.icon as React.ReactElement, { className: 'w-5 h-5' })}
                           </div>
                           <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
                             viz.level === "Easy" ? "bg-viz-found/10 text-viz-found" :
-                            viz.level === "Medium" ? "bg-amber-500/10 text-amber-500" :
+                            viz.level === "Medium" ? "bg-viz-compare/10 text-viz-compare" :
                             "bg-destructive/10 text-destructive"
                           }`}>
                             {viz.level}
@@ -177,7 +143,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                         <h3 className="text-lg font-bold text-foreground group-hover:text-primary mb-2">
                           {viz.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground group-hover:text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground group-hover:text-foreground line-clamp-2">
                           {viz.description}
                         </p>
                       </div>
@@ -186,7 +152,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                 </div>
               ) : (
                 <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
-                   <Filter className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                   <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                    <h3 className="text-xl font-bold text-muted-foreground">No visualizations found</h3>
                    <p className="text-muted-foreground">Try searching for something else or browse categories.</p>
                 </div>

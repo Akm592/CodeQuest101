@@ -17,6 +17,7 @@ import { ForgotPassword } from "./components/Auth/ForgotPassword";
 import NotFoundPage from "./components/404";
 import About from "./components/About";
 import LoadingScreen from "./components/LoadingScreen";
+import ScrollToHash from "./components/ScrollToHash";
 
 // Visualizers
 import BinarySearchVisualizer from "./components/BinarySearchVisualizer";
@@ -37,8 +38,9 @@ import VisualizerPage from "./components/Visualizer/VisualizerPage";
 const VisualizeWrapper = () => {
   const navigate = useNavigate();
   // Return to the visualization grid the user launched from, rather than the
-  // top of the home page.
-  const handleBack = () => navigate("/#visualizations");
+  // top of the home page. ScrollToHash performs the scroll — React Router will
+  // put the fragment in the URL but not act on it.
+  const handleBack = () => navigate({ pathname: "/", hash: "visualizations" });
 
   // Three visualizers own their full-screen chrome via VisualizerLayout. The
   // rest are wrapped in VisualizerPage, which supplies the same header and —
@@ -89,6 +91,7 @@ function App() {
       <div style={{ display: loading ? 'none' : 'block' }}>
         <AuthProvider>
           <Router>
+            <ScrollToHash />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />

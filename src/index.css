@@ -34,8 +34,12 @@
     --primary: 172 66% 50%; /* teal-400 — bright enough to read on near-black */
     --primary-foreground: 180 100% 6%;
 
-    --secondary: 262 83% 58%; /* violet, for gradients only */
+    --secondary: 262 83% 58%; /* violet, for gradients and fills only */
     --secondary-foreground: 210 40% 98%;
+    /* The same violet lifted until it is legible as text: --secondary itself
+       measures 3.4:1 on a card, which the contrast check rejects. Use this
+       wherever violet has to be read rather than looked at. */
+    --secondary-bright: 262 83% 72%;
 
     --muted: 217 33% 14%;
     --muted-foreground: 215 20% 70%;

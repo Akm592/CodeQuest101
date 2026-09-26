@@ -3,14 +3,19 @@ import { ArrowRight, Code, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { motion } from 'framer-motion';
 
+import { catalogStats } from './catalog';
+
 export const HeroSection: React.FC = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-secondary/20 rounded-full blur-[120px] animate-pulse delay-1000" />
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.05]" />
+    <section className="relative flex min-h-[85vh] items-center justify-center pt-20">
+      {/* The glow reaches past the bottom of the section (-bottom-40) so it
+          fades out instead of being sliced at the boundary — that slice was a
+          large part of the seam under the hero. It stays at inset-x-0
+          horizontally: overflow-hidden clips this layer's children, not its
+          own box, so a negative inset-x here widens document.scrollWidth. */}
+      <div className="pointer-events-none absolute inset-x-0 -bottom-40 top-0 z-0 overflow-hidden">
+        <div className="absolute left-1/4 top-1/4 h-[600px] w-[600px] animate-pulse rounded-full bg-primary/20 blur-[120px]" />
+        <div className="delay-1000 absolute bottom-1/4 right-1/4 h-[600px] w-[600px] animate-pulse rounded-full bg-secondary/20 blur-[120px]" />
       </div>
 
       <div className="container mx-auto px-4 z-10 relative">
@@ -19,9 +24,9 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-primary mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-primary mb-8 backdrop-blur-md shadow-[0_0_20px_hsl(var(--primary)/0.1)]"
           >
-            <Sparkles className="w-4 h-4 animate-spin-slow" />
+            <Sparkles className="h-4 w-4" />
             <span className="text-xs font-bold uppercase tracking-widest">The Future of Coding Education</span>
           </motion.div>
 
@@ -29,10 +34,10 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-6xl sm:text-8xl font-black tracking-tighter mb-8 leading-tight"
+            className="mb-8 text-4xl font-black leading-tight tracking-tighter sm:text-6xl lg:text-8xl"
           >
             Visualize Code, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-secondary text-glow drop-shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
               Master Concepts
             </span>
           </motion.h1>
@@ -55,7 +60,7 @@ export const HeroSection: React.FC = () => {
           >
             <Button
               size="lg"
-              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-all duration-500 group"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-all duration-500 group"
               onClick={() => window.location.href = '/chat'}
             >
               Start Learning Now
@@ -65,7 +70,7 @@ export const HeroSection: React.FC = () => {
             <Button
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 hover:bg-white/5 hover:border-primary/50 text-white transition-all duration-300 backdrop-blur-sm"
+              className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 hover:bg-white/5 hover:border-primary/50 text-foreground transition-all duration-300 backdrop-blur-sm"
               onClick={() => document.getElementById('visualizations')?.scrollIntoView({ behavior: 'smooth' })}
             >
               <Code className="w-5 h-5 mr-2" />
@@ -80,15 +85,13 @@ export const HeroSection: React.FC = () => {
             transition={{ duration: 1, delay: 1 }}
             className="mt-20 pt-10 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8"
           >
-            {[
-              { label: "Algorithms", value: "20+" },
-              { label: "Data Structures", value: "15+" },
-              { label: "Active Users", value: "10k+" },
-              { label: "Visualizations", value: "50+" },
-            ].map((stat, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-white mb-1">{stat.value}</span>
-                <span className="text-sm text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
+            {/* Counted from the catalogue below, not asserted. See ./catalog.tsx. */}
+            {catalogStats.map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center">
+                <span className="mb-1 text-3xl font-bold text-foreground">{stat.value}</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                  {stat.label}
+                </span>
               </div>
             ))}
           </motion.div>

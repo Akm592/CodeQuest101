@@ -6,21 +6,23 @@ import { motion } from 'framer-motion';
 export const AiTutorSection: React.FC = () => {
   const codeSnippet = `// AI-Powered Analysis
 function optimizeAlgorithm(code) {
-  const complexity = analyze(code);
-  
-  if (complexity > O(n)) {
+  const { order, hotspot } = analyze(code);
+
+  if (order === "quadratic") {
     return suggestImprovements({
       strategy: "Dynamic Programming",
-      confidence: 98.4%
+      target: hotspot
     });
   }
   return "Optimal Solution";
 }`;
 
   return (
-    <section className="py-24 bg-gradient-to-b from-black to-[#050a14] relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative overflow-hidden py-24">
+      {/* Background glow. A radial gradient rather than a blurred circle: a
+          blurred circle inside an overflow-hidden section is sliced flat at
+          the section edge, and that straight line is the banding. */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_70%_at_82%_50%,hsl(var(--primary)/0.10),transparent_70%)]" />
 
       <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-16">
 
@@ -37,9 +39,9 @@ function optimizeAlgorithm(code) {
               <span>Real-time Intelligence</span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="mb-6 text-3xl font-bold leading-tight text-foreground sm:text-4xl md:text-5xl">
               Your Personal <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400">AI Coding Mentor</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">AI Coding Mentor</span>
             </h2>
 
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
@@ -73,13 +75,12 @@ function optimizeAlgorithm(code) {
         </div>
 
         {/* Improved IDE Mockup */}
-        <div className="lg:w-1/2 w-full relative z-10">
+        <div className="relative z-10 w-full lg:w-1/2" style={{ perspective: "1000px" }}>
           <motion.div
             initial={{ opacity: 0, y: 40, rotateX: 10 }}
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{ perspective: "1000px" }}
           >
             <div className="relative rounded-xl bg-card border border-white/10 shadow-2xl overflow-hidden transition-colors duration-300 hover:border-primary/30 group">
               {/* IDE Header */}
@@ -107,13 +108,13 @@ function optimizeAlgorithm(code) {
                             .replace('return', 'RETURN_KEYWORD')
                             .replace('if', 'IF_KEYWORD')
                             .split(' ').map((token, j) => {
-                              if (token.includes('FUNCTION_KEYWORD')) return <span key={j} className="text-purple-400">function </span>;
-                              if (token.includes('CONST_KEYWORD')) return <span key={j} className="text-purple-400">const </span>;
-                              if (token.includes('RETURN_KEYWORD')) return <span key={j} className="text-purple-400">return </span>;
-                              if (token.includes('IF_KEYWORD')) return <span key={j} className="text-purple-400">if </span>;
+                              if (token.includes('FUNCTION_KEYWORD')) return <span key={j} className="text-secondary-bright">function </span>;
+                              if (token.includes('CONST_KEYWORD')) return <span key={j} className="text-secondary-bright">const </span>;
+                              if (token.includes('RETURN_KEYWORD')) return <span key={j} className="text-secondary-bright">return </span>;
+                              if (token.includes('IF_KEYWORD')) return <span key={j} className="text-secondary-bright">if </span>;
                               if (token.includes('//')) return <span key={j} className="text-muted-foreground">{token} </span>;
                               if (token.match(/"[^"]*"/)) return <span key={j} className="text-viz-found">{token} </span>;
-                              if (token.match(/[0-9]+/)) return <span key={j} className="text-orange-400">{token} </span>;
+                              if (token.match(/[0-9]+/)) return <span key={j} className="text-viz-compare">{token} </span>;
                               return <span key={j} className="text-foreground">{token} </span>;
                             })}
                         </span>
@@ -124,11 +125,11 @@ function optimizeAlgorithm(code) {
               </div>
 
               {/* Scanning Effect Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/5 to-primary/0 w-full h-full pointer-events-none animate-[scan_3s_ease-in-out_infinite]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 animate-scan bg-gradient-to-b from-primary/0 via-primary/10 to-primary/0 motion-reduce:hidden" />
             </div>
 
             {/* Decorative Elements around IDE */}
-            <div className="absolute -z-10 -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -z-10 -top-10 -right-10 w-32 h-32 bg-secondary/20 rounded-full blur-3xl animate-pulse" />
             <div className="absolute -z-10 -bottom-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse delay-700" />
           </motion.div>
         </div>

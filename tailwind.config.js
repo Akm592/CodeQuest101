@@ -37,6 +37,7 @@ export default {
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          bright: "hsl(var(--secondary-bright))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -75,10 +76,18 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        // A band sweeping down a panel. `animate-[scan_...]` was used on the
+        // landing page against a keyframe that was never defined.
+        scan: {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "50%": { opacity: "1" },
+          "100%": { transform: "translateY(300%)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        scan: "scan 3s ease-in-out infinite",
       },
     },
   },

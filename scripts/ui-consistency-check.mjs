@@ -9,13 +9,24 @@
 //   3. The number of distinct blur radii, border alphas and corner radii in the
 //      built CSS stays small. That sprawl is what made the app look like three
 //      different products.
+//   4. No page requests an asset that 404s. The landing page asked for
+//      /grid-pattern.svg twice per load; the file has never existed.
+//   5. Adjacent sections on the landing page share a background. Six different
+//      near-blacks were stacked on one page, so every boundary showed a band.
+//   6. No page scrolls horizontally at phone, tablet or desktop width. `body {
+//      overflow-x: hidden }` hides the symptom without fixing it, and does not
+//      stop panning on every mobile browser.
 //
 // Run against a local preview build:
 //   npm run build && npx vite preview --port 4173 &
 //   npm i --no-save playwright && npx playwright install chromium
 //   node scripts/ui-consistency-check.mjs
+//
+// Set CHROME_PATH to reuse a Chromium already installed on the machine.
 
 import { chromium } from 'playwright';
+
+import { decodePng, pixelAt } from './lib/png.mjs';
 
 const ORIGIN = process.env.ORIGIN || 'http://127.0.0.1:4173';
 
@@ -29,6 +40,10 @@ const PAGES = ['/', '/chat', '/login', '/about', '/no-such-page',
   ...VISUALIZERS.map((v) => `/visualize/${v}`)];
 
 const failures = [];
+// Populated by the request listener installed below, keyed by the page under
+// test so a 404 can be attributed to the route that asked for it.
+const badRequests = [];
+let currentPath = '';
 
 function luminance([r, g, b]) {
   const f = (v) => {
@@ -44,12 +59,30 @@ function contrast(fg, bg) {
   return Math.max(a, b) / Math.min(a, b);
 }
 
-const browser = await chromium.launch();
+// CHROME_PATH lets this run against a Chromium that is already on the machine
+// (CI images, this repo's container) instead of one downloaded per Playwright
+// version.
+const browser = await chromium.launch(
+  process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {},
+);
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+
+page.on('response', (res) => {
+  if (res.status() === 404) badRequests.push(`${currentPath} -> 404 ${res.url()}`);
+});
+page.on('requestfailed', (req) => {
+  // Aborted navigations while the harness moves on are not interesting, and
+  // third-party origins (fonts, avatars) fail for reasons that belong to the
+  // machine running this, not to the app.
+  if (req.failure()?.errorText === 'net::ERR_ABORTED') return;
+  if (!req.url().startsWith(ORIGIN)) return;
+  badRequests.push(`${currentPath} -> failed ${req.url()} (${req.failure()?.errorText})`);
+});
 
 // --- 1. Back navigation --------------------------------------------------
 let backOk = 0;
 for (const route of VISUALIZERS) {
+  currentPath = `/visualize/${route}`;
   await page.goto(`${ORIGIN}/visualize/${route}`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1800);
   const back = await page.$('header button:has-text("Back")');
@@ -67,6 +100,7 @@ console.log(`Back navigation: ${backOk}/${VISUALIZERS.length}`);
 // --- 2. Text contrast ----------------------------------------------------
 let worst = { ratio: 99, where: '' };
 for (const path of PAGES) {
+  currentPath = path;
   await page.goto(`${ORIGIN}${path}`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3200);
 
@@ -125,7 +159,105 @@ for (const path of PAGES) {
 }
 console.log(`Worst text contrast: ${worst.ratio.toFixed(2)}:1 (${worst.where})`);
 
-// --- 3. Style sprawl -----------------------------------------------------
+// --- 3. Back lands on the grid, not the top of the page ------------------
+// navigate("/#visualizations") only writes the fragment; React Router does not
+// scroll. Without ScrollToHash this passes the URL check above and still dumps
+// the user at the hero.
+currentPath = '/visualize/binarySearch';
+await page.goto(`${ORIGIN}/visualize/binarySearch`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(2000);
+await page.click('header button:has-text("Back")');
+await page.waitForTimeout(1200);
+const landed = await page.evaluate(() => {
+  const el = document.getElementById('visualizations');
+  return { y: Math.round(window.scrollY), top: el ? Math.round(el.getBoundingClientRect().top) : null };
+});
+if (landed.top === null) failures.push('Back: #visualizations anchor missing');
+else if (Math.abs(landed.top) > 120) {
+  failures.push(`Back: #visualizations is ${landed.top}px off the viewport top (scrollY ${landed.y})`);
+}
+console.log(`Back scroll target: scrollY ${landed.y}, anchor offset ${landed.top}px`);
+
+// --- 4. Background continuity on the landing page ------------------------
+// Measured from the pixels the browser painted, not from computed styles: the
+// bands on this page came from gradient overlays whose top edge landed on a
+// section boundary, and a computed-style walk cannot see those at all.
+//
+// Sampled in the left margin, away from content, and compared row to row. A
+// designed gradient changes by a fraction of a level per row; a seam is a step.
+currentPath = '/';
+await page.goto(`${ORIGIN}/`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(3200);
+// Settle every whileInView animation first, or the shot catches sections
+// mid-transition and their own opacity reads as a band.
+await page.evaluate(async () => {
+  for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight) {
+    window.scrollTo(0, y);
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  window.scrollTo(0, 0);
+  await new Promise((r) => setTimeout(r, 400));
+});
+
+const shot = decodePng(await page.screenshot({ fullPage: true }));
+const columns = [0.02, 0.05, 0.95, 0.98].map((f) => Math.round(shot.width * f));
+const rowValue = (y) => {
+  // Median across the sample columns, so one stray element in a margin cannot
+  // create a false step.
+  const vals = columns.map((x) => pixelAt(shot, x, y).reduce((a, b) => a + b, 0) / 3).sort((a, b) => a - b);
+  return (vals[1] + vals[2]) / 2;
+};
+
+let biggest = { step: 0, y: 0 };
+const steps = [];
+for (let y = 1; y < shot.height; y++) {
+  const step = Math.abs(rowValue(y) - rowValue(y - 1));
+  if (step > biggest.step) biggest = { step, y };
+  if (step > 3) steps.push({ y, step: Number(step.toFixed(1)) });
+}
+console.log(`\nBackground continuity (${shot.width}x${shot.height}): largest row-to-row step ${biggest.step.toFixed(1)} at y=${biggest.y}`);
+if (steps.length) {
+  console.log('  steps over 3 levels:', steps.slice(0, 10).map((s) => `y=${s.y} (${s.step})`).join(', '));
+  failures.push(`background banding: ${steps.length} row step(s) over 3 levels, worst ${biggest.step.toFixed(1)} at y=${biggest.y}`);
+}
+
+// --- 5. Horizontal overflow ----------------------------------------------
+console.log('\nHorizontal overflow:');
+for (const [w, h] of [[390, 844], [768, 1024], [1280, 900]]) {
+  await page.setViewportSize({ width: w, height: h });
+  for (const path of ['/', '/chat']) {
+    currentPath = path;
+    await page.goto(`${ORIGIN}${path}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2600);
+    const over = await page.evaluate(() => ({
+      scrollW: document.documentElement.scrollWidth,
+      clientW: document.documentElement.clientWidth,
+      // Name the culprit: the widest element whose own box sticks out, skipping
+      // anything inside a scroll container (a code block is meant to overflow).
+      widest: [...document.querySelectorAll('body *')]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.width === 0) return false;
+          if (r.right <= window.innerWidth + 2 && r.left >= -2) return false;
+          for (let n = el.parentElement; n; n = n.parentElement) {
+            const o = getComputedStyle(n).overflowX;
+            if (o === 'auto' || o === 'scroll' || o === 'hidden') return false;
+          }
+          return true;
+        })
+        .map((el) => `${el.tagName}.${String(el.className).slice(0, 50)}`)
+        .slice(0, 3),
+    }));
+    const excess = over.scrollW - over.clientW;
+    console.log(`  ${String(w).padStart(4)}px ${path.padEnd(6)} scrollWidth ${over.scrollW} vs ${over.clientW}`);
+    if (excess > 2) {
+      failures.push(`${path} at ${w}px: page scrolls ${excess}px horizontally${over.widest.length ? ' — ' + over.widest.join(', ') : ''}`);
+    }
+  }
+}
+await page.setViewportSize({ width: 1280, height: 900 });
+
+// --- 6. Style sprawl -----------------------------------------------------
 const css = await page.evaluate(async () => {
   const link = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .map((l) => l.href).find((h) => h.includes('.css'));
@@ -136,6 +268,14 @@ console.log('Distinct backdrop-blur values :', count(/--tw-backdrop-blur:\s*blur
 console.log('Distinct border-radius values :', count(/border-radius:\s*[^;}]+/g));
 
 await browser.close();
+
+if (badRequests.length) {
+  console.log(`\n${badRequests.length} failed request(s):`);
+  [...new Set(badRequests)].slice(0, 15).forEach((r) => console.log('  ', r));
+  failures.push(`${badRequests.length} request(s) 404'd or failed`);
+} else {
+  console.log('Failed/404 requests       : none');
+}
 
 if (failures.length) {
   console.log(`\n${failures.length} failure(s):`);
