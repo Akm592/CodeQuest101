@@ -353,6 +353,105 @@ for (const path of ['/', '/chat']) {
   for (const t of touch.tooSmall) failures.push(`${path}: control ${t} is under the 44px touch minimum`);
   for (const o of touch.overlaps) failures.push(`${path}: overlapping controls — ${o}`);
 }
+
+// --- 6b. Android interaction ----------------------------------------------
+// Headless Chromium has no soft keyboard, paints no tap highlight and has no
+// pull-to-refresh, so everything above passed while all three were broken on a
+// real phone. What can be checked is that the settings which prevent them are
+// in place, plus the keyboard approximated as what resizes-content turns it
+// into: the viewport getting shorter.
+console.log('\nAndroid interaction on /chat:');
+currentPath = '/chat';
+await page.goto(`${ORIGIN}/chat`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(3000);
+
+const android = await page.evaluate(() => {
+  const meta = document.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? '';
+  // Not the computed value: desktop Chromium's default is already
+  // rgba(0,0,0,0), so that passes whether or not the app sets anything. Look
+  // for a rule that applies to <html> and declares it.
+  let tapHighlight = 'not declared';
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try { rules = [...sheet.cssRules]; } catch { continue; }
+    // Keep the rule itself as well as anything nested in it: style rules have
+    // a (usually empty) cssRules list too, now that CSS nesting exists.
+    const flat = rules.flatMap((r) => [r, ...(r.cssRules ?? [])]);
+    for (const rule of flat) {
+      // Read from the rule's own cssText: Chromium's style.getPropertyValue
+      // and style.cssText both omit this prefixed property even where the rule
+      // declares it.
+      const value = rule.cssText?.match(/-webkit-tap-highlight-color:\s*([^;]+)/)?.[1];
+      if (value && rule.selectorText && document.documentElement.matches(rule.selectorText)) {
+        tapHighlight = value.trim();
+      }
+    }
+  }
+  const list = document.querySelector('main .overflow-y-auto');
+  return {
+    meta,
+    tapHighlight,
+    listOverscroll: list ? getComputedStyle(list).overscrollBehaviorY : 'no list',
+  };
+});
+const transparent = /^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(android.tapHighlight);
+const resizes = android.meta.includes('interactive-widget=resizes-content');
+const contained = android.listOverscroll === 'contain';
+console.log(`  viewport meta resizes-content : ${resizes ? 'yes' : 'NO'}`);
+console.log(`  tap highlight on <html>       : ${android.tapHighlight}`);
+console.log(`  message list overscroll-y     : ${android.listOverscroll}`);
+if (!resizes) failures.push('/chat: viewport meta lacks interactive-widget=resizes-content — the Android keyboard will cover the composer');
+if (!transparent) failures.push(`/chat: tap highlight is ${android.tapHighlight}, not transparent — Android flashes a box on every tap`);
+if (!contained) failures.push(`/chat: message list overscroll-behavior-y is ${android.listOverscroll} — dragging down at the top triggers pull-to-refresh`);
+
+// Fill the list so it scrolls (no backend means no messages), pin it to the
+// bottom, then "open the keyboard".
+const keyboard = async (pinned) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.evaluate((pinned) => {
+    const list = document.querySelector('main .overflow-y-auto');
+    if (!list) return;
+    if (!list.querySelector('[data-filler]')) {
+      const filler = document.createElement('div');
+      filler.dataset.filler = '';
+      filler.style.height = '3000px';
+      list.append(filler);
+    }
+    list.scrollTop = pinned ? list.scrollHeight : 0;
+  }, pinned);
+  await page.waitForTimeout(200);
+  await page.setViewportSize({ width: 360, height: 420 });
+  await page.waitForTimeout(400);
+  return page.evaluate(() => {
+    const list = document.querySelector('main .overflow-y-auto');
+    const composer = document.querySelector('textarea');
+    if (!list || !composer) return null;
+    return {
+      gap: Math.round(list.scrollHeight - list.scrollTop - list.clientHeight),
+      scrollTop: Math.round(list.scrollTop),
+      composerBottom: Math.round(composer.getBoundingClientRect().bottom),
+      innerHeight: window.innerHeight,
+    };
+  });
+};
+
+const pinnedRun = await keyboard(true);
+const unpinnedRun = await keyboard(false);
+if (!pinnedRun || !unpinnedRun) {
+  failures.push('/chat: could not find the message list or composer for the keyboard check');
+} else {
+  console.log(`  keyboard open, was at bottom  : ${pinnedRun.gap}px from bottom, composer ends at ${pinnedRun.composerBottom}/${pinnedRun.innerHeight}`);
+  console.log(`  keyboard open, was scrolled up: scrollTop ${unpinnedRun.scrollTop}`);
+  if (pinnedRun.composerBottom > pinnedRun.innerHeight) {
+    failures.push(`/chat: composer ends at ${pinnedRun.composerBottom}px in a ${pinnedRun.innerHeight}px viewport — hidden behind the keyboard`);
+  }
+  if (pinnedRun.gap > 2) {
+    failures.push(`/chat: shrinking the viewport left a pinned list ${pinnedRun.gap}px short of the bottom — the newest message is hidden`);
+  }
+  if (unpinnedRun.scrollTop !== 0) {
+    failures.push(`/chat: shrinking the viewport moved a list the reader had scrolled up (scrollTop ${unpinnedRun.scrollTop})`);
+  }
+}
 await page.setViewportSize({ width: 1280, height: 900 });
 
 // --- 7. Style sprawl -----------------------------------------------------

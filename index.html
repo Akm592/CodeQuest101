@@ -5,7 +5,14 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- interactive-widget: since Chrome 108 the Android keyboard only resizes the
+         visual viewport, so a 100dvh layout keeps its height and the keyboard
+         opens over the chat composer. This makes the keyboard shrink the
+         layout instead, so the composer sits directly above it. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
+    />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#030712" />
 

@@ -9,6 +9,7 @@ import SettingsModal from "./SettingsModal";
 import DeleteSessionModal from "./DeleteSessionModal";
 import { supabase } from "../../lib/supabaseClient";
 import { api, postChatStream, PendingContext } from "../../lib/api";
+import { isNearBottom } from "../../lib/scroll";
 import { v4 as uuidv4 } from "uuid";
 import SuggestionsScreen from "./SuggestionsScreen";
 
@@ -198,6 +199,9 @@ const ChatInterface = () => {
 
   // --- Refs ---
   const chatWindowRef = useRef<HTMLDivElement>(null);
+  // Refs, not state: read inside effects and written on every scroll event.
+  const pinnedRef = useRef(true);
+  const firstMessageIdRef = useRef<string | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
   // Context the backend asked us to hold between turns. A ref, not state,
   // because handleSendMessage must read the latest value without re-subscribing.
@@ -587,13 +591,60 @@ const ChatInterface = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, getChatSession, createChatSession]);
 
+  // Track whether the reader is at the bottom of the list, and keep them there
+  // when the list itself shrinks. With interactive-widget=resizes-content the
+  // Android keyboard shrinks the layout, and without the re-pin the newest
+  // message would end up hidden under the composer.
   useEffect(() => {
-    if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTo({
-        top: chatWindowRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
+    const el = chatWindowRef.current;
+    if (!el) return;
+
+    // Height as of the last resize this effect has handled.
+    let handledHeight = el.clientHeight;
+
+    const onScroll = () => {
+      // A resize can move scrollTop by itself — scroll anchoring shifts it when
+      // content sized to the list (the h-full suggestions screen) shrinks with
+      // it — and that scroll event arrives before the ResizeObserver callback.
+      // It is the browser relaying out, not the reader scrolling, so it must
+      // not unpin; the observer below settles the position instead.
+      if (el.clientHeight !== handledHeight) return;
+      pinnedRef.current = isNearBottom(el.scrollTop, el.clientHeight, el.scrollHeight);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+
+    const observer = new ResizeObserver(() => {
+      handledHeight = el.clientHeight;
+      if (pinnedRef.current) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(el);
+
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      observer.disconnect();
+    };
+  }, []);
+
+  // Follow new content only while pinned, so scrolling up to reread something
+  // mid-answer is not yanked back down on every streamed chunk. Sending a
+  // message, or opening a different conversation, always jumps to the end.
+  useEffect(() => {
+    const el = chatWindowRef.current;
+    if (!el) return;
+
+    const messages = chatState.messages;
+    const firstId = messages[0]?.id;
+    const switched = firstId !== firstMessageIdRef.current;
+    firstMessageIdRef.current = firstId;
+    const justSent = messages[messages.length - 1]?.sender === "user";
+
+    if (!pinnedRef.current && !switched && !justSent) return;
+    pinnedRef.current = true;
+    el.scrollTo({
+      top: el.scrollHeight,
+      // Back-to-back smooth scrolls fight each other while a reply streams in.
+      behavior: chatState.isTyping ? "auto" : "smooth",
+    });
   }, [chatState.messages, chatState.isTyping]);
 
   useEffect(() => {
@@ -606,7 +657,7 @@ const ChatInterface = () => {
 
   return (
     // w-full, not w-screen: 100vw includes the scrollbar gutter.
-    <div className="relative flex h-[100dvh] w-full overflow-hidden bg-background">
+    <div className="relative flex h-[100dvh] w-full overflow-hidden overscroll-none bg-background">
       {/* Background Elements */}
       <div className="pointer-events-none absolute left-0 top-0 h-[500px] w-full bg-gradient-to-b from-primary/10 to-transparent" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-secondary/5 blur-[100px]" />
@@ -706,7 +757,7 @@ const ChatInterface = () => {
             )}
             <div
               ref={chatWindowRef}
-              className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent min-h-0 flex-1 space-y-6 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6"
+              className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain px-2 py-4 sm:px-4 sm:py-6"
             >
               <AnimatePresence mode="wait">
                 {chatState.isLoading && chatState.messages.length === 0 ? (

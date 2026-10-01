@@ -235,7 +235,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         </div>
 
         {/* Sessions List */}
-        <div className="scrollbar-thin scrollbar-thumb-white/5 hover:scrollbar-thumb-white/10 flex-1 overflow-y-auto px-4 py-4">
+        <div className="scrollbar-thin scrollbar-thumb-white/5 hover:scrollbar-thumb-white/10 flex-1 overflow-y-auto overscroll-y-contain px-4 py-4">
           <h3 className="mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">History</h3>
 
           {sortedSessions.length === 0 ? (

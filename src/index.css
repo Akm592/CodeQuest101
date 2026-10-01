@@ -88,6 +88,10 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* Android Chrome otherwise flashes a square translucent box over every
+       tapped control. Controls carry their own hover/active states, and the
+       :focus-visible ring is untouched. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
