@@ -408,6 +408,11 @@ if (!contained) failures.push(`/chat: message list overscroll-behavior-y is ${an
 // bottom, then "open the keyboard".
 const keyboard = async (pinned) => {
   await page.setViewportSize({ width: 360, height: 740 });
+  // Let the list's ResizeObserver handle the return to full height before
+  // scrolling. The page deliberately ignores scroll events that land while a
+  // resize is still pending (they are the browser relaying out), so scrolling
+  // in the same frame as the resize would test the guard, not the reader.
+  await page.waitForTimeout(300);
   await page.evaluate((pinned) => {
     const list = document.querySelector('main .overflow-y-auto');
     if (!list) return;
@@ -453,6 +458,45 @@ if (!pinnedRun || !unpinnedRun) {
   }
 }
 await page.setViewportSize({ width: 1280, height: 900 });
+
+// --- 6c. Playground preview cards -------------------------------------------
+// The DP, Topological Sort, N-Queens and Trie cards loop a mini-animation and
+// highlight the stage it is in. Check that they render, that the highlight
+// actually moves, and that reduced motion stops it rather than just slowing it.
+console.log('\nPlayground previews:');
+currentPath = '/';
+const previewStages = async (pg, category) => {
+  // Via about:blank: going to the same URL with only a hash would not reload,
+  // and the previously opened category would still be showing.
+  await pg.goto('about:blank');
+  await pg.goto(`${ORIGIN}/#visualizations`, { waitUntil: 'domcontentloaded' });
+  await pg.waitForTimeout(1500);
+  await pg.getByRole('heading', { name: category, exact: true }).click();
+  await pg.waitForTimeout(1500);
+  const read = () => pg.locator('#visualizations li[aria-current="step"]').allInnerTexts();
+  const before = await read();
+  await pg.waitForTimeout(2500);
+  return { before, after: await read() };
+};
+
+for (const [category, expected] of [['Algorithms', 3], ['Data Structures', 1]]) {
+  const { before, after } = await previewStages(page, category);
+  const moved = before.some((t, i) => t !== after[i]);
+  console.log(`  ${category.padEnd(16)} ${before.length} preview(s), highlight ${moved ? 'moves' : 'STUCK'}`);
+  if (before.length !== expected) {
+    failures.push(`Playground ${category}: ${before.length} preview cards highlight a stage, expected ${expected}`);
+  }
+  if (!moved) failures.push(`Playground ${category}: no preview advanced in 2.5s`);
+}
+
+{
+  const reduced = await browser.newPage({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+  const { before, after } = await previewStages(reduced, 'Algorithms');
+  const still = before.length > 0 && before.every((t, i) => t === after[i]);
+  console.log(`  reduced motion   ${still ? 'static' : 'STILL ANIMATING'}`);
+  if (!still) failures.push('Playground: preview cards keep animating under prefers-reduced-motion');
+  await reduced.close();
+}
 
 // --- 7. Style sprawl -----------------------------------------------------
 const css = await page.evaluate(async () => {

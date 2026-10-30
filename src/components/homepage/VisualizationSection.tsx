@@ -3,7 +3,61 @@ import { Input } from '../ui/input';
 import { ArrowLeft, ArrowRight, Filter, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { allVisualizations, categories, visualizations } from './catalog';
+import { allVisualizations, categories, type Visualization, visualizations } from './catalog';
+import { AlgorithmPreview } from './previews/PreviewCard';
+
+interface VisualizationCardProps {
+  viz: Visualization;
+  delay: number;
+  onSelect: () => void;
+}
+
+const VisualizationCard: React.FC<VisualizationCardProps> = ({ viz, delay, onSelect }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    onClick={onSelect}
+    className="group flex flex-col justify-between bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-primary/5 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.1)]"
+  >
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="p-3 rounded-xl bg-background/60 text-primary ring-1 ring-white/10 group-hover:ring-primary/50 transition-all">
+          {React.cloneElement(viz.icon as React.ReactElement, { className: 'w-5 h-5' })}
+        </div>
+        <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+          viz.level === "Easy" ? "bg-viz-found/10 text-viz-found" :
+          viz.level === "Medium" ? "bg-viz-compare/10 text-viz-compare" :
+          "bg-destructive/10 text-destructive"
+        }`}>
+          {viz.level}
+        </div>
+      </div>
+
+      <h3 className="text-lg font-bold text-foreground group-hover:text-primary mb-2">
+        {viz.title}
+      </h3>
+      {viz.preview && viz.summary ? (
+        <>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground group-hover:text-foreground">
+            {viz.summary}
+          </p>
+          <AlgorithmPreview previewKey={viz.preview} />
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground group-hover:text-foreground line-clamp-2">
+          {viz.description}
+        </p>
+      )}
+    </div>
+
+    {viz.preview && (
+      <p className="mt-4 text-xs font-semibold text-primary">
+        Open the interactive visualizer →
+      </p>
+    )}
+  </motion.div>
+);
 
 interface VisualizationSectionProps {
   onSelectVisualization: (key: string) => void;
@@ -24,6 +78,8 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
   }, [searchQuery, selectedCategory]);
 
   const isSearching = searchQuery.length > 0;
+  const previewCards = filteredVisualizations.filter((v) => v.preview);
+  const plainCards = filteredVisualizations.filter((v) => !v.preview);
 
   return (
     <section id="visualizations" className="relative py-24 scroll-mt-20">
@@ -116,39 +172,27 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
               </div>
 
               {filteredVisualizations.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredVisualizations.map((viz, idx) => (
-                    <motion.div
-                      key={viz.key}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      onClick={() => onSelectVisualization(viz.key)}
-                      className="group flex flex-col justify-between bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-primary/5 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.1)]"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="p-3 rounded-xl bg-background/60 text-primary ring-1 ring-white/10 group-hover:ring-primary/50 transition-all">
-                            {React.cloneElement(viz.icon as React.ReactElement, { className: 'w-5 h-5' })}
-                          </div>
-                          <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            viz.level === "Easy" ? "bg-viz-found/10 text-viz-found" :
-                            viz.level === "Medium" ? "bg-viz-compare/10 text-viz-compare" :
-                            "bg-destructive/10 text-destructive"
-                          }`}>
-                            {viz.level}
-                          </div>
-                        </div>
-
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary mb-2">
-                          {viz.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground group-hover:text-foreground line-clamp-2">
-                          {viz.description}
-                        </p>
+                <div className="space-y-6">
+                  {/* Preview cards are several times taller than the plain
+                      ones, so they get their own grid: mixed into one, every
+                      plain card sharing a row would stretch to match. */}
+                  {[previewCards, plainCards].map((group, g) =>
+                    group.length > 0 ? (
+                      <div
+                        key={g}
+                        className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      >
+                        {group.map((viz, idx) => (
+                          <VisualizationCard
+                            key={viz.key}
+                            viz={viz}
+                            delay={idx * 0.05}
+                            onSelect={() => onSelectVisualization(viz.key)}
+                          />
+                        ))}
                       </div>
-                    </motion.div>
-                  ))}
+                    ) : null,
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
