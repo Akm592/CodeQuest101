@@ -17,6 +17,7 @@ import {
   type UnionFindStep,
 } from "../lib/algorithms/graphOrderingSteps";
 import { useAlgorithmPlayer } from "../hooks/useAlgorithmPlayer";
+import { BASE_DAG, CYCLIC_DAG, WEIGHTED_GRAPH } from "../lib/algorithms/demoInputs";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -28,41 +29,16 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Surface } from "./ui/surface";
+import {
+  topoGuideStepFor,
+  topoSortGuide,
+  unionFindGuide,
+  unionFindGuideStepFor,
+} from "../lib/guides/graphOrderingGuides";
+import AlgorithmGuidePanel from "./Visualizer/AlgorithmGuide";
 import VisualizerControls from "./Visualizer/VisualizerControls";
 
 type Mode = "topo" | "unionFind";
-
-/** A small course-prerequisite DAG: familiar shape, unambiguous ordering. */
-const BASE_DAG: Graph = {
-  nodes: ["intro", "data", "algos", "discrete", "os", "compilers"],
-  edges: [
-    ["intro", "data", 1],
-    ["intro", "discrete", 1],
-    ["data", "algos", 1],
-    ["discrete", "algos", 1],
-    ["data", "os", 1],
-    ["algos", "compilers", 1],
-  ],
-  directed: true,
-};
-
-/** The same graph with one edge reversed, so Kahn's has nothing to start on. */
-const CYCLIC_EDGE: [NodeId, NodeId, number] = ["compilers", "intro", 1];
-
-const WEIGHTED: Graph = {
-  nodes: ["A", "B", "C", "D", "E", "F"],
-  edges: [
-    ["A", "B", 2],
-    ["A", "C", 3],
-    ["B", "C", 1],
-    ["B", "D", 4],
-    ["C", "E", 6],
-    ["D", "E", 5],
-    ["D", "F", 7],
-    ["E", "F", 2],
-  ],
-  directed: false,
-};
 
 const NODE_W = 104;
 const NODE_H = 40;
@@ -86,16 +62,10 @@ const TopologicalSortVisualizer: React.FC = () => {
   const [mode, setMode] = React.useState<Mode>("topo");
   const [withCycle, setWithCycle] = React.useState(false);
 
-  const dag: Graph = React.useMemo(
-    () =>
-      withCycle
-        ? { ...BASE_DAG, edges: [...BASE_DAG.edges, CYCLIC_EDGE] }
-        : BASE_DAG,
-    [withCycle],
-  );
+  const dag: Graph = withCycle ? CYCLIC_DAG : BASE_DAG;
 
   const topo = React.useMemo(() => buildTopoSortSteps(dag), [dag]);
-  const uf = React.useMemo(() => buildUnionFindSteps(WEIGHTED), []);
+  const uf = React.useMemo(() => buildUnionFindSteps(WEIGHTED_GRAPH), []);
 
   // Widened explicitly: TypeScript infers the player's step type from the first
   // arm otherwise, and the two shapes are deliberately different. Both source
@@ -159,8 +129,8 @@ const TopologicalSortVisualizer: React.FC = () => {
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
           {mode === "topo"
-            ? "Kahn's algorithm counts incoming edges, then repeatedly emits a node that has none left. If the output ends up shorter than the node count, the leftovers form a cycle — which is how topological sort doubles as cycle detection."
-            : "Kruskal's takes edges cheapest-first and keeps one only when its endpoints are in different sets. Union-Find answers 'same set?' in near-constant time, so the cycle check is the cheap part."}
+            ? "Order the courses so every prerequisite comes first. The full walkthrough is below."
+            : "Build the cheapest tree connecting every node, using Union-Find to skip edges that would close a cycle."}
         </p>
       </Surface>
 
@@ -255,7 +225,7 @@ const TopologicalSortVisualizer: React.FC = () => {
               Edges, cheapest first
             </h2>
             <div className="flex flex-col gap-1.5">
-              {[...WEIGHTED.edges]
+              {[...WEIGHTED_GRAPH.edges]
                 .sort((a, b) => a[2] - b[2])
                 .map(([from, to, w], i) => {
                   const inTree = ufStep?.tree.some((e) => e[0] === from && e[1] === to);
@@ -306,6 +276,18 @@ const TopologicalSortVisualizer: React.FC = () => {
           {player.current?.explanation ?? "Press Start."}
         </p>
       </Surface>
+
+      {mode === "topo" ? (
+        <AlgorithmGuidePanel
+          guide={topoSortGuide}
+          activeStageId={topoStep ? topoGuideStepFor(topoStep) : null}
+        />
+      ) : (
+        <AlgorithmGuidePanel
+          guide={unionFindGuide}
+          activeStageId={ufStep ? unionFindGuideStepFor(ufStep) : null}
+        />
+      )}
     </div>
   );
 };

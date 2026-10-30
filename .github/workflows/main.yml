@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
 
       - name: Install dependencies
@@ -38,6 +38,11 @@ jobs:
       # preview build and a real Chromium.
       - name: Controls
         run: node scripts/controls-lint.mjs
+
+      # The visualizer guides offer these as copy-paste interview answers, so
+      # each is checked against a brute force. The runner image ships python3.
+      - name: Guide solutions
+        run: python3 scripts/check_guide_solutions.py
 
       - name: Build
         # Build-time env vars only need to be present, not valid.

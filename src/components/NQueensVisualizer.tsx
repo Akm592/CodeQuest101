@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Surface } from "./ui/surface";
+import { nQueensGuide, nQueensGuideStepFor } from "../lib/guides/nQueensGuide";
+import AlgorithmGuidePanel from "./Visualizer/AlgorithmGuide";
 import VisualizerControls from "./Visualizer/VisualizerControls";
 
 type Mode = "first" | "all";
@@ -244,6 +246,11 @@ const NQueensVisualizer: React.FC = () => {
           {step?.explanation ?? `Press Start to search a ${n} × ${n} board.`}
         </p>
       </Surface>
+
+      <AlgorithmGuidePanel
+        guide={nQueensGuide}
+        activeStageId={step ? nQueensGuideStepFor(step) : null}
+      />
     </div>
   );
 };

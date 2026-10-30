@@ -15,6 +15,11 @@
 import { motion } from "framer-motion";
 import * as React from "react";
 
+import {
+  TRIE_PAGE_DEMOS,
+  trieCustomScript,
+  type TrieDemoKey,
+} from "../../lib/algorithms/demoInputs";
 import { layoutTrie } from "../../lib/algorithms/trieLayout";
 import {
   buildTrieSteps,
@@ -28,24 +33,11 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Surface } from "../ui/surface";
+import { trieGuide, trieGuideStepFor } from "../../lib/guides/trieGuide";
+import AlgorithmGuidePanel from "../Visualizer/AlgorithmGuide";
 import VisualizerControls from "../Visualizer/VisualizerControls";
 
-const SEED: TrieScript[] = TRIE_DEMO_WORDS.map((word) => ({ op: "insert" as const, word }));
-
-type DemoKey = "build" | "searchHit" | "searchPrefix" | "prefixQuery" | "custom";
-
-const DEMOS: Record<Exclude<DemoKey, "custom">, { label: string; script: TrieScript[] }> = {
-  build: { label: "Build the trie", script: SEED },
-  searchHit: { label: 'search("card") → found', script: [...SEED, { op: "search", word: "card" }] },
-  searchPrefix: {
-    label: 'search("ca") → a prefix is not a word',
-    script: [...SEED, { op: "search", word: "ca" }],
-  },
-  prefixQuery: {
-    label: 'startsWith("ca") → four words',
-    script: [...SEED, { op: "prefix", word: "ca" }],
-  },
-};
+type DemoKey = TrieDemoKey | "custom";
 
 const R = 17;
 
@@ -57,11 +49,7 @@ const TrieVisualizer: React.FC = () => {
   const [customWord, setCustomWord] = React.useState("cart");
 
   const script: TrieScript[] = React.useMemo(() => {
-    if (demo === "custom") {
-      const word = customWord.trim().toLowerCase().replace(/[^a-z]/g, "").slice(0, 10);
-      return word ? [...SEED, { op: "insert" as const, word }] : SEED;
-    }
-    return DEMOS[demo].script;
+    return demo === "custom" ? trieCustomScript(customWord) : TRIE_PAGE_DEMOS[demo].script;
   }, [demo, customWord]);
 
   const { steps } = React.useMemo(() => buildTrieSteps(script), [script]);
@@ -96,14 +84,14 @@ const TrieVisualizer: React.FC = () => {
     <div className="flex w-full flex-col gap-6">
       <Surface variant="card" radius="2xl" className="p-4 sm:p-6">
         <div className="flex flex-wrap gap-2">
-          {(Object.keys(DEMOS) as (keyof typeof DEMOS)[]).map((key) => (
+          {(Object.keys(TRIE_PAGE_DEMOS) as TrieDemoKey[]).map((key) => (
             <Button
               key={key}
               variant={demo === key ? "default" : "outline"}
               size="sm"
               onClick={() => setDemo(key)}
             >
-              {DEMOS[key].label}
+              {TRIE_PAGE_DEMOS[key].label}
             </Button>
           ))}
           <Button
@@ -238,6 +226,8 @@ const TrieVisualizer: React.FC = () => {
           </p>
         )}
       </Surface>
+
+      <AlgorithmGuidePanel guide={trieGuide} activeStageId={step ? trieGuideStepFor(step) : null} />
     </div>
   );
 };

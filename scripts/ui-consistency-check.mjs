@@ -353,7 +353,145 @@ for (const path of ['/', '/chat']) {
   for (const t of touch.tooSmall) failures.push(`${path}: control ${t} is under the 44px touch minimum`);
   for (const o of touch.overlaps) failures.push(`${path}: overlapping controls — ${o}`);
 }
+
+// --- 6b. Android interaction ----------------------------------------------
+// Headless Chromium has no soft keyboard, paints no tap highlight and has no
+// pull-to-refresh, so everything above passed while all three were broken on a
+// real phone. What can be checked is that the settings which prevent them are
+// in place, plus the keyboard approximated as what resizes-content turns it
+// into: the viewport getting shorter.
+console.log('\nAndroid interaction on /chat:');
+currentPath = '/chat';
+await page.goto(`${ORIGIN}/chat`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(3000);
+
+const android = await page.evaluate(() => {
+  const meta = document.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? '';
+  // Not the computed value: desktop Chromium's default is already
+  // rgba(0,0,0,0), so that passes whether or not the app sets anything. Look
+  // for a rule that applies to <html> and declares it.
+  let tapHighlight = 'not declared';
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try { rules = [...sheet.cssRules]; } catch { continue; }
+    // Keep the rule itself as well as anything nested in it: style rules have
+    // a (usually empty) cssRules list too, now that CSS nesting exists.
+    const flat = rules.flatMap((r) => [r, ...(r.cssRules ?? [])]);
+    for (const rule of flat) {
+      // Read from the rule's own cssText: Chromium's style.getPropertyValue
+      // and style.cssText both omit this prefixed property even where the rule
+      // declares it.
+      const value = rule.cssText?.match(/-webkit-tap-highlight-color:\s*([^;]+)/)?.[1];
+      if (value && rule.selectorText && document.documentElement.matches(rule.selectorText)) {
+        tapHighlight = value.trim();
+      }
+    }
+  }
+  const list = document.querySelector('main .overflow-y-auto');
+  return {
+    meta,
+    tapHighlight,
+    listOverscroll: list ? getComputedStyle(list).overscrollBehaviorY : 'no list',
+  };
+});
+const transparent = /^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(android.tapHighlight);
+const resizes = android.meta.includes('interactive-widget=resizes-content');
+const contained = android.listOverscroll === 'contain';
+console.log(`  viewport meta resizes-content : ${resizes ? 'yes' : 'NO'}`);
+console.log(`  tap highlight on <html>       : ${android.tapHighlight}`);
+console.log(`  message list overscroll-y     : ${android.listOverscroll}`);
+if (!resizes) failures.push('/chat: viewport meta lacks interactive-widget=resizes-content — the Android keyboard will cover the composer');
+if (!transparent) failures.push(`/chat: tap highlight is ${android.tapHighlight}, not transparent — Android flashes a box on every tap`);
+if (!contained) failures.push(`/chat: message list overscroll-behavior-y is ${android.listOverscroll} — dragging down at the top triggers pull-to-refresh`);
+
+// Fill the list so it scrolls (no backend means no messages), pin it to the
+// bottom, then "open the keyboard".
+const keyboard = async (pinned) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  // Let the list's ResizeObserver handle the return to full height before
+  // scrolling. The page deliberately ignores scroll events that land while a
+  // resize is still pending (they are the browser relaying out), so scrolling
+  // in the same frame as the resize would test the guard, not the reader.
+  await page.waitForTimeout(300);
+  await page.evaluate((pinned) => {
+    const list = document.querySelector('main .overflow-y-auto');
+    if (!list) return;
+    if (!list.querySelector('[data-filler]')) {
+      const filler = document.createElement('div');
+      filler.dataset.filler = '';
+      filler.style.height = '3000px';
+      list.append(filler);
+    }
+    list.scrollTop = pinned ? list.scrollHeight : 0;
+  }, pinned);
+  await page.waitForTimeout(200);
+  await page.setViewportSize({ width: 360, height: 420 });
+  await page.waitForTimeout(400);
+  return page.evaluate(() => {
+    const list = document.querySelector('main .overflow-y-auto');
+    const composer = document.querySelector('textarea');
+    if (!list || !composer) return null;
+    return {
+      gap: Math.round(list.scrollHeight - list.scrollTop - list.clientHeight),
+      scrollTop: Math.round(list.scrollTop),
+      composerBottom: Math.round(composer.getBoundingClientRect().bottom),
+      innerHeight: window.innerHeight,
+    };
+  });
+};
+
+const pinnedRun = await keyboard(true);
+const unpinnedRun = await keyboard(false);
+if (!pinnedRun || !unpinnedRun) {
+  failures.push('/chat: could not find the message list or composer for the keyboard check');
+} else {
+  console.log(`  keyboard open, was at bottom  : ${pinnedRun.gap}px from bottom, composer ends at ${pinnedRun.composerBottom}/${pinnedRun.innerHeight}`);
+  console.log(`  keyboard open, was scrolled up: scrollTop ${unpinnedRun.scrollTop}`);
+  if (pinnedRun.composerBottom > pinnedRun.innerHeight) {
+    failures.push(`/chat: composer ends at ${pinnedRun.composerBottom}px in a ${pinnedRun.innerHeight}px viewport — hidden behind the keyboard`);
+  }
+  if (pinnedRun.gap > 2) {
+    failures.push(`/chat: shrinking the viewport left a pinned list ${pinnedRun.gap}px short of the bottom — the newest message is hidden`);
+  }
+  if (unpinnedRun.scrollTop !== 0) {
+    failures.push(`/chat: shrinking the viewport moved a list the reader had scrolled up (scrollTop ${unpinnedRun.scrollTop})`);
+  }
+}
 await page.setViewportSize({ width: 1280, height: 900 });
+
+// --- 6c. "How it works" guides follow the animation -------------------------
+// Each of the four newest visualizers has a guide whose highlighted stage is
+// meant to track the animation. Unit tests prove the step → stage mapping; this
+// proves the page actually wires it up: nothing highlighted before Start, then
+// exactly one stage highlighted at every step, and the highlight moves.
+console.log('\nAlgorithm guides:');
+for (const route of ['/visualize/dynamicProgramming', '/visualize/nQueens', '/visualize/topologicalSort', '/visualize/trie']) {
+  currentPath = route;
+  await page.goto(`${ORIGIN}${route}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  const guide = page.locator('[data-algorithm-guide]');
+  if ((await guide.count()) !== 1) {
+    failures.push(`${route}: expected one "How it works" guide, found ${await guide.count()}`);
+    continue;
+  }
+  const highlighted = () => guide.locator('[aria-current="step"]');
+  const before = await highlighted().count();
+
+  const seen = new Set();
+  let badCounts = 0;
+  const forward = page.getByRole('button', { name: 'Step forward' });
+  for (let i = 0; i < 12 && (await forward.isEnabled()); i++) {
+    await forward.click();
+    await page.waitForTimeout(60);
+    const count = await highlighted().count();
+    if (count !== 1) badCounts++;
+    else seen.add(await highlighted().first().innerText());
+  }
+  console.log(`  ${route.padEnd(32)} before start: ${before} highlighted; ${seen.size} distinct stage(s) in 12 steps`);
+  if (before !== 0) failures.push(`${route}: a guide stage is highlighted before the animation starts`);
+  if (badCounts) failures.push(`${route}: ${badCounts} step(s) highlighted other than exactly one guide stage`);
+  if (seen.size < 2) failures.push(`${route}: the guide highlight never moved across 12 steps`);
+}
 
 // --- 7. Style sprawl -----------------------------------------------------
 const css = await page.evaluate(async () => {
