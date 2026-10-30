@@ -459,43 +459,38 @@ if (!pinnedRun || !unpinnedRun) {
 }
 await page.setViewportSize({ width: 1280, height: 900 });
 
-// --- 6c. Playground preview cards -------------------------------------------
-// The DP, Topological Sort, N-Queens and Trie cards loop a mini-animation and
-// highlight the stage it is in. Check that they render, that the highlight
-// actually moves, and that reduced motion stops it rather than just slowing it.
-console.log('\nPlayground previews:');
-currentPath = '/';
-const previewStages = async (pg, category) => {
-  // Via about:blank: going to the same URL with only a hash would not reload,
-  // and the previously opened category would still be showing.
-  await pg.goto('about:blank');
-  await pg.goto(`${ORIGIN}/#visualizations`, { waitUntil: 'domcontentloaded' });
-  await pg.waitForTimeout(1500);
-  await pg.getByRole('heading', { name: category, exact: true }).click();
-  await pg.waitForTimeout(1500);
-  const read = () => pg.locator('#visualizations li[aria-current="step"]').allInnerTexts();
-  const before = await read();
-  await pg.waitForTimeout(2500);
-  return { before, after: await read() };
-};
-
-for (const [category, expected] of [['Algorithms', 3], ['Data Structures', 1]]) {
-  const { before, after } = await previewStages(page, category);
-  const moved = before.some((t, i) => t !== after[i]);
-  console.log(`  ${category.padEnd(16)} ${before.length} preview(s), highlight ${moved ? 'moves' : 'STUCK'}`);
-  if (before.length !== expected) {
-    failures.push(`Playground ${category}: ${before.length} preview cards highlight a stage, expected ${expected}`);
+// --- 6c. "How it works" guides follow the animation -------------------------
+// Each of the four newest visualizers has a guide whose highlighted stage is
+// meant to track the animation. Unit tests prove the step → stage mapping; this
+// proves the page actually wires it up: nothing highlighted before Start, then
+// exactly one stage highlighted at every step, and the highlight moves.
+console.log('\nAlgorithm guides:');
+for (const route of ['/visualize/dynamicProgramming', '/visualize/nQueens', '/visualize/topologicalSort', '/visualize/trie']) {
+  currentPath = route;
+  await page.goto(`${ORIGIN}${route}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  const guide = page.locator('[data-algorithm-guide]');
+  if ((await guide.count()) !== 1) {
+    failures.push(`${route}: expected one "How it works" guide, found ${await guide.count()}`);
+    continue;
   }
-  if (!moved) failures.push(`Playground ${category}: no preview advanced in 2.5s`);
-}
+  const highlighted = () => guide.locator('[aria-current="step"]');
+  const before = await highlighted().count();
 
-{
-  const reduced = await browser.newPage({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
-  const { before, after } = await previewStages(reduced, 'Algorithms');
-  const still = before.length > 0 && before.every((t, i) => t === after[i]);
-  console.log(`  reduced motion   ${still ? 'static' : 'STILL ANIMATING'}`);
-  if (!still) failures.push('Playground: preview cards keep animating under prefers-reduced-motion');
-  await reduced.close();
+  const seen = new Set();
+  let badCounts = 0;
+  const forward = page.getByRole('button', { name: 'Step forward' });
+  for (let i = 0; i < 12 && (await forward.isEnabled()); i++) {
+    await forward.click();
+    await page.waitForTimeout(60);
+    const count = await highlighted().count();
+    if (count !== 1) badCounts++;
+    else seen.add(await highlighted().first().innerText());
+  }
+  console.log(`  ${route.padEnd(32)} before start: ${before} highlighted; ${seen.size} distinct stage(s) in 12 steps`);
+  if (before !== 0) failures.push(`${route}: a guide stage is highlighted before the animation starts`);
+  if (badCounts) failures.push(`${route}: ${badCounts} step(s) highlighted other than exactly one guide stage`);
+  if (seen.size < 2) failures.push(`${route}: the guide highlight never moved across 12 steps`);
 }
 
 // --- 7. Style sprawl -----------------------------------------------------

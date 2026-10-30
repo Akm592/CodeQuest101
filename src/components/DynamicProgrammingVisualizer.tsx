@@ -18,8 +18,12 @@ import {
   buildLcsSteps,
   type DpResult,
   type DpStep,
-  type KnapsackItem,
 } from "../lib/algorithms/dpSteps";
+import {
+  DP_DEFAULT_CAPACITY,
+  DP_DEFAULT_STRINGS,
+  KNAPSACK_ITEMS,
+} from "../lib/algorithms/demoInputs";
 import { useAlgorithmPlayer } from "../hooks/useAlgorithmPlayer";
 import { cn } from "../lib/utils";
 import { Input } from "./ui/input";
@@ -32,22 +36,17 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Surface } from "./ui/surface";
+import { DP_GUIDES, dpGuideStepFor } from "../lib/guides/dpGuides";
+import AlgorithmGuidePanel from "./Visualizer/AlgorithmGuide";
 import VisualizerControls from "./Visualizer/VisualizerControls";
 
 type ProblemKey = "editDistance" | "lcs" | "knapsack";
 
-const KNAPSACK_ITEMS: KnapsackItem[] = [
-  { weight: 5, value: 10, label: "A" },
-  { weight: 4, value: 40, label: "B" },
-  { weight: 6, value: 30, label: "C" },
-  { weight: 3, value: 50, label: "D" },
-];
 
 interface ProblemInfo {
   title: string;
   recurrence: string;
   description: string;
-  complexity: { time: string; space: string };
 }
 
 // Same shape as SortingAlgorithmVisualizer's ALGO_INFO: one record, looked up
@@ -58,21 +57,18 @@ const DP_PROBLEMS: Record<ProblemKey, ProblemInfo> = {
     recurrence: "dp[i][j] = match ? dp[i-1][j-1] : 1 + min(replace, delete, insert)",
     description:
       "The fewest single-character edits that turn one string into the other. Each cell reads exactly three neighbours, and the arrow drawn to the winner is the edit operation itself.",
-    complexity: { time: "O(m × n)", space: "O(m × n)" },
   },
   lcs: {
     title: "Longest Common Subsequence",
     recurrence: "dp[i][j] = match ? dp[i-1][j-1] + 1 : max(dp[i-1][j], dp[i][j-1])",
     description:
       "The longest sequence of characters appearing in both strings in order, though not necessarily adjacent. Same table shape as edit distance with a different recurrence — which is the point.",
-    complexity: { time: "O(m × n)", space: "O(m × n)" },
   },
   knapsack: {
     title: "0/1 Knapsack",
     recurrence: "dp[i][c] = max(dp[i-1][c], dp[i-1][c - weight] + value)",
     description:
       "The most valuable set of items that fits a capacity, each item taken once or not at all. Rows are items and columns are capacity, and the back-reference jumps a variable distance left — the part people trip on.",
-    complexity: { time: "O(n × capacity)", space: "O(n × capacity)" },
   },
 };
 
@@ -88,9 +84,9 @@ const centre = (row: number, col: number) => ({
 
 const DynamicProgrammingVisualizer: React.FC = () => {
   const [problem, setProblem] = React.useState<ProblemKey>("editDistance");
-  const [source, setSource] = React.useState("kitten");
-  const [target, setTarget] = React.useState("sitting");
-  const [capacity, setCapacity] = React.useState(10);
+  const [source, setSource] = React.useState<string>(DP_DEFAULT_STRINGS.source);
+  const [target, setTarget] = React.useState<string>(DP_DEFAULT_STRINGS.target);
+  const [capacity, setCapacity] = React.useState(DP_DEFAULT_CAPACITY);
 
   // Built during render, not in an effect: the UI consistency checker samples
   // roughly 1.4s after load, so anything gated behind a timer gets measured
@@ -205,12 +201,6 @@ const DynamicProgrammingVisualizer: React.FC = () => {
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           <Surface variant="chip" radius="full" className="px-3 py-1 font-mono text-secondary-bright">
             {info.recurrence}
-          </Surface>
-          <Surface variant="chip" radius="full" className="px-3 py-1 font-mono text-muted-foreground">
-            time {info.complexity.time}
-          </Surface>
-          <Surface variant="chip" radius="full" className="px-3 py-1 font-mono text-muted-foreground">
-            space {info.complexity.space}
           </Surface>
         </div>
       </Surface>
@@ -333,6 +323,11 @@ const DynamicProgrammingVisualizer: React.FC = () => {
           {step?.explanation ?? `Press Start to fill the ${info.title.toLowerCase()} table.`}
         </p>
       </Surface>
+
+      <AlgorithmGuidePanel
+        guide={DP_GUIDES[problem]}
+        activeStageId={step ? dpGuideStepFor(problem, step, result.labels) : null}
+      />
     </div>
   );
 };

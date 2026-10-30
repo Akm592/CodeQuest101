@@ -39,6 +39,11 @@ jobs:
       - name: Controls
         run: node scripts/controls-lint.mjs
 
+      # The visualizer guides offer these as copy-paste interview answers, so
+      # each is checked against a brute force. The runner image ships python3.
+      - name: Guide solutions
+        run: python3 scripts/check_guide_solutions.py
+
       - name: Build
         # Build-time env vars only need to be present, not valid.
         env:

@@ -24,8 +24,6 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import type { PreviewKey } from "../../lib/algorithms/previewStages";
-
 export type CategoryKey = "algorithms" | "dataStructures" | "machineLearning";
 
 export interface Visualization {
@@ -34,10 +32,6 @@ export interface Visualization {
   icon: React.ReactElement;
   key: string;
   level: "Easy" | "Medium" | "Hard";
-  /** A looping mini-animation with the algorithm's stages, shown on the card. */
-  preview?: PreviewKey;
-  /** The fuller explanation a preview card shows in place of `description`. */
-  summary?: string;
 }
 
 export interface Category {
@@ -81,36 +75,9 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Sorting Algorithms", description: "Compare efficiency of sorts", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
     { title: "Binary Search", description: "Divide and conquer strategy", icon: <Search />, key: "binarySearch", level: "Easy" },
     { title: "Floyd's Algorithm", description: "Cycle detection in linked lists", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
-    {
-      title: "Dynamic Programming",
-      description: "Fill the table, then trace the answer back",
-      icon: <Table2 />,
-      key: "dynamicProgramming",
-      level: "Hard",
-      preview: "dynamicProgramming",
-      summary:
-        "Break a problem into overlapping subproblems and store each answer in a table, so nothing is computed twice. Here it's edit distance: every cell is the cheapest way to turn one prefix into another, built from three neighbours. Reach for it when a question asks for the minimum, maximum or number of ways.",
-    },
-    {
-      title: "Topological Sort",
-      description: "Kahn's ordering and union-find",
-      icon: <Workflow />,
-      key: "topologicalSort",
-      level: "Hard",
-      preview: "topologicalSort",
-      summary:
-        "Order tasks so that every prerequisite comes before the task that needs it. Kahn's algorithm counts each node's incoming edges, outputs a node once that count reaches zero, and removes its edges as it goes. If nodes are left over, the graph has a cycle. Think course schedules, build systems and dependency resolution.",
-    },
-    {
-      title: "N-Queens",
-      description: "Backtracking: place, conflict, undo",
-      icon: <Crown />,
-      key: "nQueens",
-      level: "Hard",
-      preview: "nQueens",
-      summary:
-        "Place N queens so that no two share a row, column or diagonal. Backtracking fills one row at a time: put a queen on a safe square and move to the next row, and when a row has no safe square left, undo the last queen and try its next square. The same pattern solves Sudoku, permutations and subsets.",
-    },
+    { title: "Dynamic Programming", description: "Fill the table, then trace the answer back", icon: <Table2 />, key: "dynamicProgramming", level: "Hard" },
+    { title: "Topological Sort", description: "Kahn's ordering and union-find", icon: <Workflow />, key: "topologicalSort", level: "Hard" },
+    { title: "N-Queens", description: "Backtracking: place, conflict, undo", icon: <Crown />, key: "nQueens", level: "Hard" },
   ],
   dataStructures: [
     { title: "Binary Tree Traversal", description: "DFS & BFS animations", icon: <Network />, key: "binaryTree", level: "Easy" },
@@ -119,16 +86,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Tree Structures", description: "Hierarchical data modeling", icon: <Network />, key: "tree", level: "Medium" },
     { title: "Graph Theory", description: "Nodes and edges exploration", icon: <Network />, key: "graph", level: "Hard" },
     { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
-    {
-      title: "Trie",
-      description: "Prefix tree: insert, search, autocomplete",
-      icon: <ListTree />,
-      key: "trie",
-      level: "Medium",
-      preview: "trie",
-      summary:
-        "A tree that stores words one letter per level, so words with a common prefix share the same path. Inserting or looking up a word takes time proportional to its length, however many words are stored. A marker on the last node tells a complete word apart from a prefix. Used for autocomplete, prefix search and word games.",
-    },
+    { title: "Trie", description: "Prefix tree: insert, search, autocomplete", icon: <ListTree />, key: "trie", level: "Medium" },
   ],
   machineLearning: [
     { title: "Neural Networks", description: "Backpropagation visualized", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
