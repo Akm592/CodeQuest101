@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 
-const TypingIndicator = () => {
+/**
+ * @param slow  No reply has started after several seconds: most likely the
+ *              free-tier backend is waking from sleep, so say so rather than
+ *              leaving the dots to look broken.
+ */
+const TypingIndicator = ({ slow = false }: { slow?: boolean }) => {
   const dotVariants = {
     initial: { y: 0, opacity: 0.4 },
     animate: { y: -6, opacity: 1 },
@@ -53,6 +58,11 @@ const TypingIndicator = () => {
           />
         </div>
       </div>
+      {slow && (
+        <p className="mb-1 max-w-xs text-xs leading-snug text-muted-foreground" role="status">
+          Waking up the server. The first reply after a quiet spell can take up to a minute.
+        </p>
+      )}
     </motion.div>
   );
 };

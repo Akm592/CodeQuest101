@@ -542,12 +542,19 @@ console.log('\nChat visualizations (faked backend):');
       };
     }, SENTINEL);
     let visualizeCalls = 0;
+    let healthPings = 0;
     await pg.route(
-      (url) => ['/sessions', '/chat', '/chat/visualize'].includes(url.pathname) && url.origin !== new URL(ORIGIN).origin,
+      (url) => ['/sessions', '/chat', '/chat/visualize', '/health'].includes(url.pathname) && url.origin !== new URL(ORIGIN).origin,
       async (route) => {
         const path = new URL(route.request().url()).pathname;
         const body = JSON.parse(route.request().postData() || '{}');
+        if (path === '/health') {
+          healthPings++;
+          return route.fulfill({ json: { status: 'OK' } });
+        }
         if (path === '/sessions') return route.fulfill({ json: { session_id: '11111111-2222-3333-4444-555555555555' } });
+        // A cold backend: the reply starts only after ~9s.
+        if (body.user_input === 'slow start') await new Promise((r) => setTimeout(r, 9000));
         if (path === '/chat/visualize') {
           visualizeCalls++;
           return route.fulfill({ json: outcomeFor(body.context) });
@@ -578,6 +585,12 @@ console.log('\nChat visualizations (faked backend):');
       await pg.close();
       continue;
     }
+    // A short answer is on screen in full as soon as it arrives. It used to be
+    // re-typed at 15ms a character after arriving.
+    const shownAtOnce = await pg.getByText('An answer about explain two sum.', { exact: true }).isVisible();
+    if (!shownAtOnce) failures.push(`${currentPath}: a short answer was not shown in full on arrival`);
+    if (healthPings < 1) failures.push(`${currentPath}: opening the site did not ping /health to wake the backend`);
+
     const perAnswer = await pg.locator('[data-viz-suggestions]').last().locator('button').count();
     if (perAnswer !== 1) failures.push(`${currentPath}: expected one button per answer, got ${perAnswer}`);
     if (visualizeCalls !== 0) failures.push(`${currentPath}: a visualization was requested before any click`);
@@ -625,9 +638,24 @@ console.log('\nChat visualizations (faked backend):');
     const chatAlive = await pg.locator('textarea').isVisible();
     if (!chatAlive) failures.push(`${currentPath}: the chat was gone after a renderer crash`);
 
+    // 4. A slow start: after 8s with no reply the indicator says why.
+    let slowNote = true;
+    if (w === 1280) {
+      await pg.locator('textarea').fill('slow start');
+      await pg.locator('textarea').press('Enter');
+      slowNote = await pg.getByText(/Waking up the server/).waitFor({ timeout: 8800 }).then(() => true, () => false);
+      if (!slowNote) failures.push(`${currentPath}: a slow reply showed no "waking up" note`);
+      await pg.getByText('An answer about slow start.', { exact: true }).waitFor({ timeout: 5000 });
+      if (await pg.getByText(/Waking up the server/).count()) {
+        failures.push(`${currentPath}: the "waking up" note stayed after the reply arrived`);
+      }
+    }
+
     console.log(
       `  ${String(w).padStart(4)}px  trace: explanation ${titlesMatch ? 'follows' : 'WRONG'}, code line ${linesMatch ? 'follows' : 'WRONG'}; ` +
       `decline ${declined ? 'shown' : 'MISSING'}; crash ${contained && chatAlive ? 'contained' : 'NOT CONTAINED'}; ` +
+      `answer ${shownAtOnce ? 'instant' : 'DELAYED'}; wake ping ${healthPings ? 'sent' : 'MISSING'}; ` +
+      `${w === 1280 ? `slow note ${slowNote ? 'shown' : 'MISSING'}; ` : ''}` +
       `${visualizeCalls} generation(s) for 3 clicks`,
     );
     // The simulated crash is expected to reach React's error handling; any

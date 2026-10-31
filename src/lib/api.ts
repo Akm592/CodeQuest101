@@ -293,3 +293,19 @@ export async function postChatStream(
   }
   return response;
 }
+
+let warmed = false;
+
+/**
+ * Start waking the backend as soon as the site opens.
+ *
+ * Render's free tier sleeps after ~15 idle minutes and takes 30-60 seconds to
+ * wake. Without this, that wait landed on the user's first message. Pinging
+ * /health on page load overlaps the wake-up with them reading the page and
+ * typing. Fire-and-forget: no auth, no retries, failures ignored.
+ */
+export function warmBackend(): void {
+  if (warmed) return;
+  warmed = true;
+  fetch(`${API_BASE_URL}/health`, { method: "GET", cache: "no-store" }).catch(() => {});
+}

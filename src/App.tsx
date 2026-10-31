@@ -7,6 +7,7 @@ import {
   useNavigate
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { warmBackend } from "./lib/api";
 import HomePage from "./components/HomePage";
 import ChatInterface from "./components/chatbot/chatBot";
 import { LoginPage } from "./components/Auth/Login";
@@ -131,6 +132,9 @@ const VisualizeWrapper = () => {
 
 function App() {
   const [loading, setLoading] = useState(true);
+
+  // Wake the backend while the user is still reading; see warmBackend.
+  useEffect(() => warmBackend(), []);
 
   useEffect(() => {
     // Simulate a loading process
