@@ -27,6 +27,8 @@
 //
 // Set CHROME_PATH to reuse a Chromium already installed on the machine.
 
+import { readFileSync } from 'node:fs';
+
 import { chromium } from 'playwright';
 
 import { decodePng, pixelAt } from './lib/png.mjs';
@@ -491,6 +493,95 @@ for (const route of ['/visualize/dynamicProgramming', '/visualize/nQueens', '/vi
   if (before !== 0) failures.push(`${route}: a guide stage is highlighted before the animation starts`);
   if (badCounts) failures.push(`${route}: ${badCounts} step(s) highlighted other than exactly one guide stage`);
   if (seen.size < 2) failures.push(`${route}: the guide highlight never moved across 12 steps`);
+}
+
+// --- 6d. Chat visualizations, against a faked backend ----------------------
+// The chat's visualizations need the backend and the model, neither of which
+// this checker has. So the backend is faked at the network layer: an answer
+// streamed with two suggestion chips, and the scene for each from the same
+// fixtures the unit tests (and the backend's own validator) use. This checks
+// the browser half end to end: chips render, opening one shows the player,
+// every step changes both the explanation and the highlighted code line, and
+// keys typed in the chat box no longer drive anything else on the page.
+console.log('\nChat visualizations (faked backend):');
+{
+  const fixture = (name) =>
+    JSON.parse(readFileSync(new URL(`../src/lib/scene/fixtures/${name}.json`, import.meta.url), 'utf8'));
+  const scenes = { 'Two Sum': fixture('twoSum'), 'Bubble sort': fixture('bubbleSort') };
+  const sse = (o) => `data: ${JSON.stringify(o)}\n\n`;
+  const stream =
+    sse({ type: 'text', content: 'Two Sum: walk the array once with a hash map of complements.' }) +
+    sse({ type: 'suggestions', autoOpen: false, data: Object.keys(scenes).map((problem) => ({
+      title: `Visualize ${problem}`, kind: 'trace', trace: { problem, input: 'small', approach: 'optimal' },
+    })) });
+
+  for (const [w, h] of [[1280, 900], [390, 844]]) {
+    currentPath = `/chat (viz, ${w}px)`;
+    const pg = await browser.newPage({ viewport: { width: w, height: h } });
+    const errors = [];
+    pg.on('pageerror', (e) => errors.push(e.message));
+    await pg.route(
+      (url) => ['/sessions', '/chat', '/chat/visualize'].includes(url.pathname) && url.origin !== new URL(ORIGIN).origin,
+      async (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path === '/sessions') return route.fulfill({ json: { session_id: '11111111-2222-3333-4444-555555555555' } });
+        if (path === '/chat/visualize') {
+          const { trace } = JSON.parse(route.request().postData());
+          return route.fulfill({ json: { scene: scenes[trace.problem] } });
+        }
+        return route.fulfill({ headers: { 'content-type': 'text/event-stream' }, body: stream });
+      },
+    );
+    await pg.goto(`${ORIGIN}/chat`, { waitUntil: 'domcontentloaded' });
+    await pg.waitForTimeout(2000);
+    await pg.locator('textarea').fill('explain two sum');
+    await pg.locator('textarea').press('Enter');
+
+    const chips = pg.locator('[data-viz-suggestions] button');
+    try {
+      await chips.first().waitFor({ timeout: 8000 });
+    } catch {
+      failures.push(`${currentPath}: no visualization suggestions appeared under the answer`);
+      await pg.close();
+      continue;
+    }
+    if ((await chips.count()) !== 2) failures.push(`${currentPath}: expected 2 suggestion chips, got ${await chips.count()}`);
+
+    // The old p5 sketches listened on the whole window: a space typed here
+    // stepped every visualization in the conversation.
+    await pg.locator('textarea').press('Space');
+    if ((await pg.locator('[data-scene-player]').count()) !== 0) {
+      failures.push(`${currentPath}: typing in the chat box opened a visualization`);
+    }
+
+    await chips.first().click();
+    const player = pg.locator('[data-scene-player]');
+    const forward = pg.getByRole('button', { name: 'Step forward' });
+    await forward.waitFor({ timeout: 8000 });
+
+    const seen = [];
+    for (let i = 0; i < scenes['Two Sum'].steps.length; i++) {
+      await forward.click();
+      await pg.waitForTimeout(80);
+      seen.push([
+        await player.locator('[aria-live="polite"] h3').innerText(),
+        await player.locator('[aria-current="true"]').innerText().catch(() => ''),
+      ]);
+    }
+    const titlesMatch = seen.every(([title], i) => title === scenes['Two Sum'].steps[i].title);
+    const linesMatch = seen.every(([, line], i) => line.startsWith(String(scenes['Two Sum'].steps[i].code_line)));
+    const overflow = await pg.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    console.log(`  ${String(w).padStart(4)}px  ${await chips.count()} chips; ${seen.length} steps; explanation ${titlesMatch ? 'follows' : 'WRONG'}; code line ${linesMatch ? 'follows' : 'WRONG'}`);
+    if (!titlesMatch) failures.push(`${currentPath}: the explanation did not follow the steps`);
+    if (!linesMatch) failures.push(`${currentPath}: the highlighted code line did not follow the steps`);
+    if (overflow > 0) failures.push(`${currentPath}: the player overflows the viewport by ${overflow}px`);
+
+    await pg.keyboard.press('Escape');
+    await pg.waitForTimeout(200);
+    if ((await player.count()) !== 0) failures.push(`${currentPath}: Escape did not close the player`);
+    for (const e of errors) failures.push(`${currentPath}: page error: ${e}`);
+    await pg.close();
+  }
 }
 
 // --- 7. Style sprawl -----------------------------------------------------

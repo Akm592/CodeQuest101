@@ -1,0 +1,606 @@
+{
+ "title": "Bubble sort on [5, 1, 4, 2]",
+ "summary": "Repeatedly compare neighbours and swap them when they are out of order. After pass i, the i largest values are in their final places.",
+ "structures": [
+  {
+   "id": "a",
+   "type": "bars",
+   "label": "a"
+  }
+ ],
+ "code": {
+  "language": "python",
+  "lines": [
+   "def bubble_sort(a):",
+   "    n = len(a)",
+   "    for i in range(n - 1):",
+   "        for j in range(n - 1 - i):",
+   "            if a[j] > a[j + 1]:",
+   "                a[j], a[j + 1] = a[j + 1], a[j]",
+   "    return a"
+  ]
+ },
+ "steps": [
+  {
+   "title": "Unsorted input",
+   "explanation": "Each pass bubbles the largest remaining value to the end by swapping neighbours that are out of order.",
+   "code_line": 2,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "5",
+      "1",
+      "4",
+      "2"
+     ]
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    }
+   ]
+  },
+  {
+   "title": "Compare 5 and 1",
+   "explanation": "5 > 1, so they are out of order.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "5",
+      "1",
+      "4",
+      "2"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "0",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "0"
+    }
+   ]
+  },
+  {
+   "title": "Swap 5 and 1",
+   "explanation": "Swap them; 5 moves one place right.",
+   "code_line": 6,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "5",
+      "4",
+      "2"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "0",
+     "role": "swap"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "swap"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "0"
+    }
+   ]
+  },
+  {
+   "title": "Compare 5 and 4",
+   "explanation": "5 > 4, so they are out of order.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "5",
+      "4",
+      "2"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "1"
+    }
+   ]
+  },
+  {
+   "title": "Swap 5 and 4",
+   "explanation": "Swap them; 5 moves one place right.",
+   "code_line": 6,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "4",
+      "5",
+      "2"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "swap"
+    },
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "swap"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "1"
+    }
+   ]
+  },
+  {
+   "title": "Compare 5 and 2",
+   "explanation": "5 > 2, so they are out of order.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "4",
+      "5",
+      "2"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "2"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "2"
+    }
+   ]
+  },
+  {
+   "title": "Swap 5 and 2",
+   "explanation": "Swap them; 5 moves one place right.",
+   "code_line": 6,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "4",
+      "2",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "swap"
+    },
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "swap"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "2"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "j",
+     "value": "2"
+    }
+   ]
+  },
+  {
+   "title": "Compare 1 and 4",
+   "explanation": "1 <= 4, already in order: no swap.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "4",
+      "2",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "visited"
+    },
+    {
+     "structure": "a",
+     "target": "0",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "j",
+     "value": "0"
+    }
+   ]
+  },
+  {
+   "title": "Compare 4 and 2",
+   "explanation": "4 > 2, so they are out of order.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "4",
+      "2",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "visited"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "j",
+     "value": "1"
+    }
+   ]
+  },
+  {
+   "title": "Swap 4 and 2",
+   "explanation": "Swap them; 4 moves one place right.",
+   "code_line": 6,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "2",
+      "4",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "visited"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "swap"
+    },
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "swap"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "j",
+     "value": "1"
+    }
+   ]
+  },
+  {
+   "title": "Compare 1 and 2",
+   "explanation": "1 <= 2, already in order: no swap.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "2",
+      "4",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "visited"
+    },
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "visited"
+    },
+    {
+     "structure": "a",
+     "target": "0",
+     "role": "compare"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "j",
+     "structure": "a",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    },
+    {
+     "name": "i",
+     "value": "2"
+    },
+    {
+     "name": "j",
+     "value": "0"
+    }
+   ]
+  },
+  {
+   "title": "Sorted",
+   "explanation": "No pass is left: every value has bubbled into place.",
+   "code_line": 7,
+   "states": [
+    {
+     "structure": "a",
+     "items": [
+      "1",
+      "2",
+      "4",
+      "5"
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "a",
+     "target": "0",
+     "role": "found"
+    },
+    {
+     "structure": "a",
+     "target": "1",
+     "role": "found"
+    },
+    {
+     "structure": "a",
+     "target": "2",
+     "role": "found"
+    },
+    {
+     "structure": "a",
+     "target": "3",
+     "role": "found"
+    }
+   ],
+   "variables": [
+    {
+     "name": "n",
+     "value": "4"
+    }
+   ]
+  }
+ ]
+}

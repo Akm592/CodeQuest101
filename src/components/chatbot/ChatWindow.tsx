@@ -4,14 +4,7 @@ import { FixedSizeList as VirtualList } from 'react-window';
 import MessageBubble from "./MessageBubble";
 import { AlertCircle } from "lucide-react";
 
-interface Message {
-    id: string;
-    sender: "user" | "bot";
-    text: string;
-    timestamp: string;
-    isVisualization?: boolean;
-    visualizationData?: any;
-}
+import type { ChatMessage as Message } from "./types";
 
 interface ChatWindowProps {
     messages: Message[];

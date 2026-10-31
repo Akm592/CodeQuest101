@@ -1,0 +1,409 @@
+{
+ "title": "Two Sum with a hash map",
+ "summary": "Walk the array once. For each number, check whether its complement (target - x) was already seen; if so, that's the pair. Otherwise remember the number and its index.",
+ "structures": [
+  {
+   "id": "nums",
+   "type": "array",
+   "label": "nums"
+  },
+  {
+   "id": "seen",
+   "type": "hashmap",
+   "label": "seen (value → index)"
+  }
+ ],
+ "code": {
+  "language": "python",
+  "lines": [
+   "def two_sum(nums, target):",
+   "    seen = {}",
+   "    for i, x in enumerate(nums):",
+   "        need = target - x",
+   "        if need in seen:",
+   "            return [seen[need], i]",
+   "        seen[x] = i",
+   "    return []"
+  ]
+ },
+ "steps": [
+  {
+   "title": "Start with an empty map",
+   "explanation": "seen will map each value to its index. Nothing has been read yet, so it starts empty.",
+   "code_line": 2,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": []
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    }
+   ]
+  },
+  {
+   "title": "Look at nums[0] = 2",
+   "explanation": "To reach 9 with 2 we need 9 - 2 = 7. The question is whether 7 appeared earlier.",
+   "code_line": 4,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": []
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "nums",
+     "target": "0",
+     "role": "current"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "x",
+     "value": "2"
+    },
+    {
+     "name": "need",
+     "value": "7"
+    }
+   ]
+  },
+  {
+   "title": "7 hasn't been seen yet",
+   "explanation": "The map is empty, so 7 isn't in it. No pair ends at index 0.",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": []
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "nums",
+     "target": "0",
+     "role": "current"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "x",
+     "value": "2"
+    },
+    {
+     "name": "need",
+     "value": "7"
+    }
+   ]
+  },
+  {
+   "title": "Remember 2 at index 0",
+   "explanation": "Store 2 -> 0, so a later number that needs a 2 can find it in one lookup instead of rescanning the array.",
+   "code_line": 7,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": [
+      {
+       "key": "2",
+       "value": "0"
+      }
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "seen",
+     "target": "2",
+     "role": "current"
+    },
+    {
+     "structure": "nums",
+     "target": "0",
+     "role": "visited"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "0"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "0"
+    },
+    {
+     "name": "x",
+     "value": "2"
+    },
+    {
+     "name": "need",
+     "value": "7"
+    }
+   ]
+  },
+  {
+   "title": "Look at nums[1] = 7",
+   "explanation": "Now x = 7, so we need 9 - 7 = 2.",
+   "code_line": 4,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": [
+      {
+       "key": "2",
+       "value": "0"
+      }
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "nums",
+     "target": "1",
+     "role": "current"
+    },
+    {
+     "structure": "nums",
+     "target": "0",
+     "role": "visited"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "x",
+     "value": "7"
+    },
+    {
+     "name": "need",
+     "value": "2"
+    }
+   ]
+  },
+  {
+   "title": "2 is already in the map",
+   "explanation": "seen holds 2 at index 0, so nums[0] + nums[1] = 2 + 7 = 9. The lookup is O(1), which is what makes the whole pass O(n).",
+   "code_line": 5,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": [
+      {
+       "key": "2",
+       "value": "0"
+      }
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "seen",
+     "target": "2",
+     "role": "found"
+    },
+    {
+     "structure": "nums",
+     "target": "1",
+     "role": "compare"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "x",
+     "value": "7"
+    },
+    {
+     "name": "need",
+     "value": "2"
+    }
+   ]
+  },
+  {
+   "title": "Return [0, 1]",
+   "explanation": "The pair is index 0 (value 2) and index 1 (value 7). The scan stops after two elements instead of checking every pair.",
+   "code_line": 6,
+   "states": [
+    {
+     "structure": "nums",
+     "items": [
+      "2",
+      "7",
+      "11",
+      "15"
+     ]
+    },
+    {
+     "structure": "seen",
+     "entries": [
+      {
+       "key": "2",
+       "value": "0"
+      }
+     ]
+    }
+   ],
+   "highlights": [
+    {
+     "structure": "nums",
+     "target": "0",
+     "role": "found"
+    },
+    {
+     "structure": "nums",
+     "target": "1",
+     "role": "found"
+    }
+   ],
+   "pointers": [
+    {
+     "name": "i",
+     "structure": "nums",
+     "target": "1"
+    }
+   ],
+   "variables": [
+    {
+     "name": "target",
+     "value": "9"
+    },
+    {
+     "name": "i",
+     "value": "1"
+    },
+    {
+     "name": "x",
+     "value": "7"
+    },
+    {
+     "name": "need",
+     "value": "2"
+    }
+   ]
+  }
+ ]
+}
