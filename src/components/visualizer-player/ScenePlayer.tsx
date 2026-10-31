@@ -10,7 +10,7 @@
 // visualizer listened on the whole page, so typing a space in the chat box
 // stepped every visualization in the conversation.
 
-import { Loader2, RotateCcw, Sparkles, X } from "lucide-react";
+import { Info, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import * as React from "react";
 import { createPortal } from "react-dom";
 
@@ -46,7 +46,8 @@ const RENDERERS = {
 
 export type SceneSource =
   | { kind: "ready"; scene: Scene }
-  | { kind: "fetch"; trace: TraceRequest; context: string };
+  /** Generate on open, from the conversation (and a specific trace, for old saved suggestions). */
+  | { kind: "fetch"; context: string; trace?: TraceRequest };
 
 interface ScenePlayerProps {
   title: string;
@@ -238,25 +239,75 @@ const KeyboardShortcuts: React.FC<{
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Contains a renderer that throws on data validation didn't anticipate.
+ *
+ * Without it, one bad frame unmounted the whole app: a blank page, with the
+ * conversation gone from view. Now the player says so and can be closed.
+ */
+class SceneBoundary extends React.Component<
+  { onClose: () => void; children: React.ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error("Visualization failed to draw:", error);
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="grid flex-1 place-items-center p-6 text-center" role="alert" data-scene-crashed="">
+        <div className="max-w-sm">
+          <p className="text-sm text-foreground">Couldn't draw this visualization: some of its data is malformed.</p>
+          <button
+            type="button"
+            onClick={this.props.onClose}
+            className="mt-4 inline-flex h-11 items-center rounded-xl border border-white/15 px-5 text-sm font-semibold text-foreground hover:bg-white/10"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+
 export const ScenePlayer: React.FC<ScenePlayerProps> = ({ title, source, onClose, aiGenerated = true }) => {
   const titleId = React.useId();
   const dialogRef = React.useRef<HTMLDivElement>(null);
   const [state, setState] = React.useState<
-    { status: "loading" } | { status: "ready"; scene: Scene } | { status: "error"; message: string }
+    | { status: "loading" }
+    | { status: "ready"; scene: Scene }
+    | { status: "declined"; reason: string }
+    | { status: "error"; message: string }
   >(source.kind === "ready" ? { status: "ready", scene: source.scene } : { status: "loading" });
   const [attempt, setAttempt] = React.useState(0);
 
   // Load the scene (or reuse the cached request).
   // Keyed by value: a re-rendering parent passing an equal-but-new object
   // must not restart the request.
-  const requestKey = source.kind === "fetch" ? JSON.stringify([source.trace, source.context]) : null;
+  const requestKey = source.kind === "fetch" ? JSON.stringify([source.context, source.trace ?? null]) : null;
   React.useEffect(() => {
     if (!requestKey) return;
-    const [trace, context] = JSON.parse(requestKey) as [TraceRequest, string];
+    const [context, trace] = JSON.parse(requestKey) as [string, TraceRequest | null];
     let alive = true;
     setState({ status: "loading" });
-    fetchScene(trace, context).then(
-      (scene) => alive && setState({ status: "ready", scene }),
+    fetchScene(context, trace ?? undefined).then(
+      (outcome) =>
+        alive &&
+        setState(
+          outcome.feasible
+            ? { status: "ready", scene: outcome.scene }
+            : { status: "declined", reason: outcome.reason },
+        ),
       (error: Error) => alive && setState({ status: "error", message: error.message }),
     );
     return () => {
@@ -304,7 +355,7 @@ export const ScenePlayer: React.FC<ScenePlayerProps> = ({ title, source, onClose
           <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <h2 id={titleId} className="text-base font-semibold leading-snug sm:text-lg">{sceneTitle}</h2>
-            {aiGenerated && (
+            {aiGenerated && state.status === "ready" && (
               <p className="text-xs text-muted-foreground">AI-generated trace: check it against the code.</p>
             )}
           </div>
@@ -322,8 +373,27 @@ export const ScenePlayer: React.FC<ScenePlayerProps> = ({ title, source, onClose
           <div className="grid flex-1 place-items-center p-6 text-center" role="status">
             <div>
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-              <p className="mt-3 text-sm text-foreground">Building the step-by-step trace…</p>
-              <p className="mt-1 text-xs text-muted-foreground">This usually takes 5–15 seconds.</p>
+              <p className="mt-3 text-sm text-foreground">Picking an example and tracing it step by step…</p>
+              <p className="mt-1 text-xs text-muted-foreground">This usually takes 10–30 seconds.</p>
+            </div>
+          </div>
+        )}
+
+        {/* The model judged this can't be traced faithfully. Shown calmly,
+            not as a failure: declining beats inventing an example. */}
+        {state.status === "declined" && (
+          <div className="grid flex-1 place-items-center p-6 text-center" data-scene-declined="">
+            <div className="max-w-md">
+              <Info className="mx-auto h-7 w-7 text-viz-pointer" aria-hidden="true" />
+              <p className="mt-3 text-sm font-semibold text-foreground">This one can't be shown step by step</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{state.reason}</p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-5 inline-flex h-11 items-center rounded-xl border border-white/15 px-5 text-sm font-semibold text-foreground hover:bg-white/10"
+              >
+                Back to the chat
+              </button>
             </div>
           </div>
         )}
@@ -343,7 +413,11 @@ export const ScenePlayer: React.FC<ScenePlayerProps> = ({ title, source, onClose
           </div>
         )}
 
-        {state.status === "ready" && <SceneView scene={state.scene} titleId={titleId} />}
+        {state.status === "ready" && (
+          <SceneBoundary onClose={onClose}>
+            <SceneView scene={state.scene} titleId={titleId} />
+          </SceneBoundary>
+        )}
       </div>
     </div>,
     document.body,

@@ -167,14 +167,14 @@ export function parseSuggestions(raw: unknown): Suggestion[] {
   const out: Suggestion[] = [];
   for (const s of raw) {
     if (!isObject(s) || !isString(s.title) || !s.title.trim()) continue;
-    if (s.kind === "trace" && isObject(s.trace)) {
+    if (s.kind === "context") {
+      out.push({ title: s.title, kind: "context" });
+    } else if (s.kind === "trace" && isObject(s.trace)) {
       const { problem, input, approach } = s.trace;
       if (isString(problem) && isString(input) && isString(approach)) {
         out.push({ title: s.title, kind: "trace", trace: { problem, input, approach } });
       }
     }
-    // "builtin" suggestions are not offered by the backend yet; ignored until
-    // the chat can open the site's own visualizers.
   }
   return out.slice(0, 3);
 }

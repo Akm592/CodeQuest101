@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import bubbleSortFixture from "./fixtures/bubbleSort.json";
 import twoSumFixture from "./fixtures/twoSum.json";
 import { legacyToScene } from "./legacy";
+import { SceneError, toOutcome } from "./outcome";
 import { parseScene, parseSuggestions } from "./validate";
 
 const twoSum = () => ({
@@ -83,6 +84,12 @@ describe("parseScene", () => {
 });
 
 describe("parseSuggestions", () => {
+  it("accepts the single context button the backend now sends", () => {
+    expect(parseSuggestions([{ title: "Visualize this with an example", kind: "context" }])).toEqual([
+      { title: "Visualize this with an example", kind: "context" },
+    ]);
+  });
+
   it("keeps well-formed trace suggestions, at most three", () => {
     const trace = { problem: "p", input: "i", approach: "a" };
     const raw = [
@@ -174,5 +181,32 @@ describe("fixture scenes", () => {
   ])("%s parses", (_name, fixture) => {
     const result = parseScene(fixture);
     expect(result.ok, result.ok ? "" : result.error).toBe(true);
+  });
+});
+
+describe("toOutcome", () => {
+  it("passes a decline through as a normal result, not an error", () => {
+    expect(toOutcome({ feasible: false, reason: "A proof, not a process." })).toEqual({
+      feasible: false,
+      reason: "A proof, not a process.",
+    });
+  });
+
+  it("gives a decline without a reason a sensible one", () => {
+    const outcome = toOutcome({ feasible: false });
+    expect(outcome.feasible === false && outcome.reason.length).toBeGreaterThan(10);
+  });
+
+  it("validates a feasible scene", () => {
+    const outcome = toOutcome({ feasible: true, scene: twoSumFixture });
+    expect(outcome.feasible && outcome.scene.steps.length).toBe(7);
+  });
+
+  it("accepts the first version's response, which had no `feasible`", () => {
+    expect(toOutcome({ scene: twoSumFixture }).feasible).toBe(true);
+  });
+
+  it("throws a readable error for a malformed scene", () => {
+    expect(() => toOutcome({ feasible: true, scene: { title: "x" } })).toThrow(SceneError);
   });
 });

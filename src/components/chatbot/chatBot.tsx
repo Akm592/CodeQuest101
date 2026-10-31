@@ -212,6 +212,15 @@ const ChatInterface = () => {
   // Context the backend asked us to hold between turns. A ref, not state,
   // because handleSendMessage must read the latest value without re-subscribing.
   const pendingRef = useRef<PendingContext | null>(null);
+  // True once a reply has taken long enough to start that the backend is
+  // probably waking up; see TypingIndicator.
+  const [slowStart, setSlowStart] = useState(false);
+  const slowTimerRef = useRef<number | null>(null);
+  const clearSlowStart = () => {
+    if (slowTimerRef.current !== null) window.clearTimeout(slowTimerRef.current);
+    slowTimerRef.current = null;
+    setSlowStart(false);
+  };
 
   // --- Memoized Values ---
 
@@ -249,6 +258,8 @@ const ChatInterface = () => {
 
     try {
       chatDispatch({ type: 'SET_TYPING', payload: true });
+      clearSlowStart();
+      slowTimerRef.current = window.setTimeout(() => setSlowStart(true), 8000);
 
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -295,6 +306,7 @@ const ChatInterface = () => {
         (event) => {
           switch (event.type) {
             case "text": {
+              if (isFirstChunk) clearSlowStart();
               accumulatedBotText += event.content;
               if (isFirstChunk) {
                 chatDispatch({
@@ -388,6 +400,7 @@ const ChatInterface = () => {
     } finally {
       chatDispatch({ type: 'SET_TYPING', payload: false });
       chatDispatch({ type: 'SET_LOADING', payload: false });
+      clearSlowStart();
       abortControllerRef.current = null;
     }
   }, [chatState.inputValue, chatState.isLoading, sessionState.session?.id, preferredLanguage]);
@@ -836,7 +849,7 @@ const ChatInterface = () => {
                       onRetry={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
                       enableVirtualization={chatState.messages.length > 100}
                     />
-                    {chatState.isTyping && <TypingIndicator />}
+                    {chatState.isTyping && <TypingIndicator slow={slowStart} />}
                   </motion.div>
                 )}
               </AnimatePresence>
