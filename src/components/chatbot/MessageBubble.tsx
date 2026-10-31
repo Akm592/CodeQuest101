@@ -4,20 +4,45 @@ import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { Copy, Maximize2, Check, Sparkles, User } from "lucide-react";
-import AlgorithmVisualizer from "../Visualizer/AlgorithmVisualizer";
+import { Copy, Check, Play, Sparkles, User } from "lucide-react";
 import VisualizationModal from "../Visualizer/VisualizationModal";
+import ScenePlayer, { type SceneSource } from "../visualizer-player/ScenePlayer";
+import { legacyToScene } from "../../lib/scene/legacy";
+import type { Suggestion } from "../../lib/scene/types";
+import type { ChatMessage } from "./types";
+
+// Messages whose suggestion has already been auto-opened. Module-level, not
+// component state: a bubble remounts when the list re-renders, and the player
+// must open once per answer, not every time the bubble is mounted again.
+const autoOpened = new Set<string>();
+
+/** "▶ Hash map lookup for [2,7,11,15]" chips under an answer. */
+const SuggestionChips: React.FC<{
+  suggestions: Suggestion[];
+  onOpen: (s: Suggestion) => void;
+}> = ({ suggestions, onOpen }) => (
+  <div className="mt-2 w-full max-w-full sm:max-w-2xl" data-viz-suggestions="">
+    <p className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" /> See it step by step
+    </p>
+    <div className="flex flex-wrap gap-2">
+      {suggestions.map((s) => (
+        <button
+          key={s.title}
+          type="button"
+          onClick={() => onOpen(s)}
+          className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-left text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/20"
+        >
+          <Play className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-hidden="true" />
+          <span className="min-w-0">{s.title}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 interface MessageBubbleProps {
-  message: {
-    id: string;
-    sender: "user" | "bot";
-    text: string;
-    timestamp: string;
-    isVisualization?: boolean;
-    visualizationData?: any;
-    isStreaming?: boolean;
-  };
+  message: ChatMessage;
   isLastMessage?: boolean;
   streamingText?: string;
   onStreamComplete?: () => void;
@@ -133,6 +158,42 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onStreamComplete
 }) => {
   const [showModal, setShowModal] = useState(false);
+  const [player, setPlayer] = useState<{ title: string; source: SceneSource; ai: boolean } | null>(null);
+
+  const openSuggestion = React.useCallback(
+    (s: Suggestion) => {
+      if (s.kind !== "trace" || !s.trace) return;
+      setPlayer({
+        title: s.title,
+        source: { kind: "fetch", trace: s.trace, context: message.vizContext ?? message.text },
+        ai: true,
+      });
+    },
+    [message.vizContext, message.text],
+  );
+
+  // "Visualize bubble sort on [5,1,4]": the user asked, so open the first
+  // suggestion as soon as it arrives instead of making them click.
+  useEffect(() => {
+    const first = message.suggestions?.[0];
+    if (!message.autoOpenSuggestion || !first || autoOpened.has(message.id)) return;
+    autoOpened.add(message.id);
+    openSuggestion(first);
+  }, [message.autoOpenSuggestion, message.suggestions, message.id, openSuggestion]);
+
+  // Visualizations saved by the old backend: open in the new player when they
+  // convert, otherwise in the old renderer.
+  const legacyScene = useMemo(
+    () => (message.isVisualization ? legacyToScene(message.visualizationData) : null),
+    [message.isVisualization, message.visualizationData],
+  );
+  const openLegacy = () => {
+    if (legacyScene) {
+      setPlayer({ title: legacyScene.title, source: { kind: "ready", scene: legacyScene }, ai: true });
+    } else {
+      setShowModal(true);
+    }
+  };
   const [codeCopied, setCodeCopied] = useState(false);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   void isTypingComplete;
@@ -357,18 +418,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   // Content rendering logic
   const renderContent = () => {
+    // Not a live canvas any more: every inline p5 sketch redrew at 60fps for
+    // as long as it was in the history, and listened to keys and clicks on
+    // the whole page.
     if (message.isVisualization && message.visualizationData) {
       return (
-        <div className="relative group cursor-pointer w-full" onClick={() => setShowModal(true)}>
-          <div className="w-full h-40 sm:h-56 md:h-72 lg:h-80 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-            <AlgorithmVisualizer visualizationData={message.visualizationData} />
-          </div>
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl">
-            <div className="p-3 bg-black/60 rounded-full backdrop-blur-sm border border-white/20">
-              <Maximize2 className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={openLegacy}
+          className="flex min-h-11 w-full items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-primary/20"
+        >
+          <Play className="h-4 w-4 shrink-0 fill-primary text-primary" aria-hidden="true" />
+          Open visualization{legacyScene ? `: ${legacyScene.title}` : ""}
+        </button>
       );
     }
 
@@ -443,10 +505,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className={bubbleClassName}>
           {renderContent()}
         </div>
+        {!isUserMessage && message.suggestions && message.suggestions.length > 0 && (
+          <SuggestionChips suggestions={message.suggestions} onOpen={openSuggestion} />
+        )}
         <span className={`text-muted-foreground text-[10px] mt-1.5 px-1 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
           {message.timestamp}
         </span>
       </motion.div>
+
+      {player && (
+        <ScenePlayer
+          title={player.title}
+          source={player.source}
+          aiGenerated={player.ai}
+          onClose={() => setPlayer(null)}
+        />
+      )}
 
       {/* Visualization Modal */}
       {showModal && message.isVisualization && message.visualizationData && (

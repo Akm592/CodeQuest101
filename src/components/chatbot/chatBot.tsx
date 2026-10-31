@@ -12,15 +12,21 @@ import { api, postChatStream, PendingContext } from "../../lib/api";
 import { isNearBottom } from "../../lib/scroll";
 import { v4 as uuidv4 } from "uuid";
 import SuggestionsScreen from "./SuggestionsScreen";
+import { buildVizContext, type ChatMessage } from "./types";
+import { createSseParser } from "../../lib/chatStream";
+import { parseSuggestions } from "../../lib/scene/validate";
 
 // --- Interfaces ---
-interface Message {
-  id: string;
-  sender: "user" | "bot";
-  text: string;
-  timestamp: string;
-  isVisualization?: boolean;
-  visualizationData?: any;
+type Message = ChatMessage;
+
+/** A row from GET /sessions/:id/messages. */
+interface StoredMessage {
+  id?: string;
+  sender_type?: string;
+  content?: string | null;
+  created_at?: string;
+  visualization_data?: unknown;
+  metadata?: { suggestions?: unknown } | null;
 }
 
 interface ChatSessionInfo {
@@ -221,7 +227,7 @@ const ChatInterface = () => {
 
     chatDispatch({ type: 'SET_ERROR', payload: null });
 
-    const currentUserMessageId = `user-${Date.now()}-${Math.random()}`;
+    const currentUserMessageId = `user-${uuidv4()}`;
     const userMessage: Message = {
       id: currentUserMessageId,
       sender: "user",
@@ -234,7 +240,11 @@ const ChatInterface = () => {
       chatDispatch({ type: 'SET_INPUT_VALUE', payload: "" });
     }
 
-    const botMessageId = `bot-${Date.now()}-${Math.random()}`;
+    // `let`: an old backend can send a visualization mid-reply, and any text
+    // after it starts a new message, which needs an id of its own. Reusing
+    // this one gave two messages the same React key, and every later
+    // UPDATE_MESSAGE edited both.
+    let botMessageId = `bot-${uuidv4()}`;
     let accumulatedBotText = "";
 
     try {
@@ -277,72 +287,89 @@ const ChatInterface = () => {
 
       const decoder = new TextDecoder();
       let isFirstChunk = true;
+      const now = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+      // Events are parsed across chunk boundaries (see lib/chatStream.ts):
+      // splitting each chunk on newlines dropped any event a chunk cut in two.
+      const parser = createSseParser(
+        (event) => {
+          switch (event.type) {
+            case "text": {
+              accumulatedBotText += event.content;
+              if (isFirstChunk) {
+                chatDispatch({
+                  type: 'ADD_MESSAGE',
+                  payload: { id: botMessageId, sender: "bot", text: accumulatedBotText, timestamp: now() },
+                });
+                isFirstChunk = false;
+              } else {
+                chatDispatch({
+                  type: 'UPDATE_MESSAGE',
+                  payload: { id: botMessageId, updates: { text: accumulatedBotText } },
+                });
+              }
+              break;
+            }
+            case "pending":
+              // The backend needs another turn to finish this request and
+              // has handed us the context it will need.
+              pendingRef.current = event.data as PendingContext;
+              break;
+            case "suggestions": {
+              const suggestions = parseSuggestions(event.data);
+              if (suggestions.length === 0 || isFirstChunk) break;
+              chatDispatch({
+                type: 'UPDATE_MESSAGE',
+                payload: {
+                  id: botMessageId,
+                  updates: {
+                    suggestions,
+                    vizContext: buildVizContext(textToSend, accumulatedBotText),
+                    autoOpenSuggestion: event.autoOpen,
+                  },
+                },
+              });
+              break;
+            }
+            case "visualization": {
+              // Only an older backend sends these; kept so a deploy in either
+              // order works.
+              chatDispatch({
+                type: 'ADD_MESSAGE',
+                payload: {
+                  id: `bot-viz-${uuidv4()}`,
+                  sender: "bot",
+                  text: "",
+                  timestamp: now(),
+                  isVisualization: true,
+                  visualizationData: event.data,
+                },
+              });
+              accumulatedBotText = "";
+              isFirstChunk = true;
+              botMessageId = `bot-${uuidv4()}`;
+              break;
+            }
+            case "error":
+              chatDispatch({
+                type: 'ADD_MESSAGE',
+                payload: { id: `error-${uuidv4()}`, sender: "bot", text: event.content, timestamp: now() },
+              });
+              break;
+          }
+        },
+        (raw, error) => console.error("Unparseable chat event:", error, raw),
+      );
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
-          chatDispatch({
-            type: 'UPDATE_MESSAGE',
-            payload: {
-              id: botMessageId,
-              updates: { timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
-            }
-          });
+          parser.push(decoder.decode());
+          parser.end();
+          chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { timestamp: now() } } });
           break;
         }
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        lines.forEach(line => {
-          if (line.startsWith("data:")) {
-            try {
-              const jsonString = line.substring(5).trim();
-              if (jsonString) {
-                const data = JSON.parse(jsonString);
-
-                if (data.type === "text") {
-                  accumulatedBotText += data.content;
-
-                  if (isFirstChunk) {
-                    const newBotMessage: Message = {
-                      id: botMessageId,
-                      sender: "bot",
-                      text: accumulatedBotText,
-                      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                      isVisualization: false,
-                    };
-                    chatDispatch({ type: 'ADD_MESSAGE', payload: newBotMessage });
-                    isFirstChunk = false;
-                  } else {
-                    chatDispatch({
-                      type: 'UPDATE_MESSAGE',
-                      payload: { id: botMessageId, updates: { text: accumulatedBotText } }
-                    });
-                  }
-                } else if (data.type === "pending") {
-                  // The backend needs another turn to finish this request and
-                  // has handed us the context it will need.
-                  pendingRef.current = data.data as PendingContext;
-                } else if (data.type === "visualization") {
-                  const vizMessage: Message = {
-                    id: `bot-viz-${Date.now()}`,
-                    sender: "bot",
-                    text: data.description || " ",
-                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                    isVisualization: true,
-                    visualizationData: data.data,
-                  };
-                  chatDispatch({ type: 'ADD_MESSAGE', payload: vizMessage });
-                  accumulatedBotText = "";
-                  isFirstChunk = true;
-                }
-              }
-            } catch (e) {
-              console.error("Error parsing SSE data:", e, "Line:", line);
-            }
-          }
-        });
+        parser.push(decoder.decode(value, { stream: true }));
       }
 
     } catch (error: any) {
@@ -351,7 +378,7 @@ const ChatInterface = () => {
         chatDispatch({ type: 'SET_ERROR', payload: error.message || "Failed to get response from the server." });
 
         const errorMessage: Message = {
-          id: `error-${Date.now()}`,
+          id: `error-${uuidv4()}`,
           sender: "bot",
           text: `Sorry, I encountered an error: ${error.message}. Please check the connection or try again later.`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -383,16 +410,26 @@ const ChatInterface = () => {
       chatDispatch({ type: 'SET_ERROR', payload: null });
 
       const response = await api.get(`/sessions/${sessionId}/messages`);
-      const historyMessages: Message[] = (response.data || []).map((msg: any) => ({
-        id: msg.id || `fallback-${Math.random()}`,
-        sender: msg.sender_type === 'user' || msg.sender_type === 'bot' ? msg.sender_type : 'bot',
-        text: msg.content || "",
-        timestamp: msg.created_at
-          ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isVisualization: msg.visualization_data !== null && msg.visualization_data !== undefined,
-        visualizationData: msg.visualization_data,
-      }));
+      const rows: StoredMessage[] = response.data || [];
+      const historyMessages: Message[] = rows.map((msg, i) => {
+        const sender: Message["sender"] =
+          msg.sender_type === 'user' || msg.sender_type === 'bot' ? msg.sender_type : 'bot';
+        const text = msg.content || "";
+        const suggestions = sender === "bot" ? parseSuggestions(msg.metadata?.suggestions) : [];
+        // The question a stored answer replied to: the nearest user message before it.
+        const question = rows.slice(0, i).reverse().find((m) => m.sender_type === 'user')?.content ?? "";
+        return {
+          id: msg.id || `fallback-${uuidv4()}`,
+          sender,
+          text,
+          timestamp: msg.created_at
+            ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          isVisualization: msg.visualization_data !== null && msg.visualization_data !== undefined,
+          visualizationData: msg.visualization_data,
+          ...(suggestions.length > 0 && { suggestions, vizContext: buildVizContext(question, text) }),
+        };
+      });
 
       chatDispatch({ type: 'SET_MESSAGES', payload: historyMessages });
     } catch (error: any) {

@@ -111,6 +111,9 @@ export const VisualizerControls: React.FC<VisualizerControlsProps> = ({
   // The mirror. `value` is what the slider shows; `onValueChange` converts
   // straight back to milliseconds so nothing downstream sees the inverted form.
   const sliderValue = maxDelayMs + minDelayMs - delayMs;
+  // A fixed id broke the label once two players were on one page (the chat can
+  // open one per message, and a modal sits over the page's own controls).
+  const speedId = React.useId();
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
@@ -145,11 +148,11 @@ export const VisualizerControls: React.FC<VisualizerControlsProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
-        <label htmlFor="visualizer-speed" className="shrink-0 text-sm font-medium text-muted-foreground">
+        <label htmlFor={speedId} className="shrink-0 text-sm font-medium text-muted-foreground">
           Speed
         </label>
         <Slider
-          id="visualizer-speed"
+          id={speedId}
           value={[sliderValue]}
           onValueChange={([v]) => onDelayChange(maxDelayMs + minDelayMs - v)}
           min={minDelayMs}
