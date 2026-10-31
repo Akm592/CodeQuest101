@@ -497,70 +497,101 @@ for (const route of ['/visualize/dynamicProgramming', '/visualize/nQueens', '/vi
 
 // --- 6d. Chat visualizations, against a faked backend ----------------------
 // The chat's visualizations need the backend and the model, neither of which
-// this checker has. So the backend is faked at the network layer: an answer
-// streamed with two suggestion chips, and the scene for each from the same
-// fixtures the unit tests (and the backend's own validator) use. This checks
-// the browser half end to end: chips render, opening one shows the player,
-// every step changes both the explanation and the highlighted code line, and
-// keys typed in the chat box no longer drive anything else on the page.
+// this checker has. So the backend is faked at the network layer, speaking the
+// real contract: an answer, then one "Visualize this with an example" button;
+// on click, POST /chat/visualize returns {feasible, reason, scene}. Scenes
+// come from the fixtures the unit tests and the backend's validator also use.
+//
+// Three conversations, three outcomes:
+//   1. a trace: the player opens, and every step moves both the explanation
+//      and the highlighted code line;
+//   2. a decline: the model says it can't be traced faithfully, and the
+//      player says so calmly instead of erroring;
+//   3. a renderer crash (simulated by making Math.abs throw on a sentinel
+//      value only BarsView feeds it): the boundary contains it and the chat
+//      is still there.
 console.log('\nChat visualizations (faked backend):');
 {
   const fixture = (name) =>
     JSON.parse(readFileSync(new URL(`../src/lib/scene/fixtures/${name}.json`, import.meta.url), 'utf8'));
-  const scenes = { 'Two Sum': fixture('twoSum'), 'Bubble sort': fixture('bubbleSort') };
+  const twoSum = fixture('twoSum');
+  const SENTINEL = 424242;
+  const crashing = {
+    title: 'Crash test', summary: '', structures: [{ id: 'a', type: 'bars', label: 'a' }],
+    steps: [{ title: 'x', explanation: 'x', states: [{ structure: 'a', items: ['1', String(SENTINEL)] }] }],
+  };
   const sse = (o) => `data: ${JSON.stringify(o)}\n\n`;
-  const stream =
-    sse({ type: 'text', content: 'Two Sum: walk the array once with a hash map of complements.' }) +
-    sse({ type: 'suggestions', autoOpen: false, data: Object.keys(scenes).map((problem) => ({
-      title: `Visualize ${problem}`, kind: 'trace', trace: { problem, input: 'small', approach: 'optimal' },
-    })) });
+  const answerFor = (question) =>
+    sse({ type: 'text', content: `An answer about ${question}.` }) +
+    sse({ type: 'suggestions', autoOpen: false, data: [{ title: 'Visualize this with an example', kind: 'context' }] });
+  const outcomeFor = (context) =>
+    context.includes('prove') ? { feasible: false, reason: 'This is a proof, not a step-by-step process.' }
+      : context.includes('crash') ? { feasible: true, scene: crashing }
+        : { feasible: true, scene: twoSum };
 
   for (const [w, h] of [[1280, 900], [390, 844]]) {
     currentPath = `/chat (viz, ${w}px)`;
     const pg = await browser.newPage({ viewport: { width: w, height: h } });
     const errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
+    await pg.addInitScript((sentinel) => {
+      const abs = Math.abs;
+      Math.abs = (x) => {
+        if (x === sentinel) throw new Error('simulated renderer crash');
+        return abs(x);
+      };
+    }, SENTINEL);
+    let visualizeCalls = 0;
     await pg.route(
       (url) => ['/sessions', '/chat', '/chat/visualize'].includes(url.pathname) && url.origin !== new URL(ORIGIN).origin,
       async (route) => {
         const path = new URL(route.request().url()).pathname;
+        const body = JSON.parse(route.request().postData() || '{}');
         if (path === '/sessions') return route.fulfill({ json: { session_id: '11111111-2222-3333-4444-555555555555' } });
         if (path === '/chat/visualize') {
-          const { trace } = JSON.parse(route.request().postData());
-          return route.fulfill({ json: { scene: scenes[trace.problem] } });
+          visualizeCalls++;
+          return route.fulfill({ json: outcomeFor(body.context) });
         }
-        return route.fulfill({ headers: { 'content-type': 'text/event-stream' }, body: stream });
+        return route.fulfill({ headers: { 'content-type': 'text/event-stream' }, body: answerFor(body.user_input) });
       },
     );
     await pg.goto(`${ORIGIN}/chat`, { waitUntil: 'domcontentloaded' });
     await pg.waitForTimeout(2000);
-    await pg.locator('textarea').fill('explain two sum');
-    await pg.locator('textarea').press('Enter');
 
-    const chips = pg.locator('[data-viz-suggestions] button');
+    const ask = async (question) => {
+      const before = await pg.locator('[data-viz-suggestions] button').count();
+      await pg.locator('textarea').fill(question);
+      await pg.locator('textarea').press('Enter');
+      await pg.waitForFunction(
+        (n) => document.querySelectorAll('[data-viz-suggestions] button').length > n, before, { timeout: 8000 },
+      );
+      return pg.locator('[data-viz-suggestions] button').last();
+    };
+    const player = pg.locator('[data-scene-player]');
+
+    // 1. A trace.
+    let chip;
     try {
-      await chips.first().waitFor({ timeout: 8000 });
+      chip = await ask('explain two sum');
     } catch {
-      failures.push(`${currentPath}: no visualization suggestions appeared under the answer`);
+      failures.push(`${currentPath}: no "Visualize this" button appeared under the answer`);
       await pg.close();
       continue;
     }
-    if ((await chips.count()) !== 2) failures.push(`${currentPath}: expected 2 suggestion chips, got ${await chips.count()}`);
+    const perAnswer = await pg.locator('[data-viz-suggestions]').last().locator('button').count();
+    if (perAnswer !== 1) failures.push(`${currentPath}: expected one button per answer, got ${perAnswer}`);
+    if (visualizeCalls !== 0) failures.push(`${currentPath}: a visualization was requested before any click`);
 
     // The old p5 sketches listened on the whole window: a space typed here
     // stepped every visualization in the conversation.
     await pg.locator('textarea').press('Space');
-    if ((await pg.locator('[data-scene-player]').count()) !== 0) {
-      failures.push(`${currentPath}: typing in the chat box opened a visualization`);
-    }
+    if ((await player.count()) !== 0) failures.push(`${currentPath}: typing in the chat box opened a visualization`);
 
-    await chips.first().click();
-    const player = pg.locator('[data-scene-player]');
+    await chip.click();
     const forward = pg.getByRole('button', { name: 'Step forward' });
     await forward.waitFor({ timeout: 8000 });
-
     const seen = [];
-    for (let i = 0; i < scenes['Two Sum'].steps.length; i++) {
+    for (let i = 0; i < twoSum.steps.length; i++) {
       await forward.click();
       await pg.waitForTimeout(80);
       seen.push([
@@ -568,18 +599,42 @@ console.log('\nChat visualizations (faked backend):');
         await player.locator('[aria-current="true"]').innerText().catch(() => ''),
       ]);
     }
-    const titlesMatch = seen.every(([title], i) => title === scenes['Two Sum'].steps[i].title);
-    const linesMatch = seen.every(([, line], i) => line.startsWith(String(scenes['Two Sum'].steps[i].code_line)));
+    const titlesMatch = seen.every(([title], i) => title === twoSum.steps[i].title);
+    const linesMatch = seen.every(([, line], i) => line.startsWith(String(twoSum.steps[i].code_line)));
     const overflow = await pg.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    console.log(`  ${String(w).padStart(4)}px  ${await chips.count()} chips; ${seen.length} steps; explanation ${titlesMatch ? 'follows' : 'WRONG'}; code line ${linesMatch ? 'follows' : 'WRONG'}`);
     if (!titlesMatch) failures.push(`${currentPath}: the explanation did not follow the steps`);
     if (!linesMatch) failures.push(`${currentPath}: the highlighted code line did not follow the steps`);
     if (overflow > 0) failures.push(`${currentPath}: the player overflows the viewport by ${overflow}px`);
-
     await pg.keyboard.press('Escape');
     await pg.waitForTimeout(200);
     if ((await player.count()) !== 0) failures.push(`${currentPath}: Escape did not close the player`);
-    for (const e of errors) failures.push(`${currentPath}: page error: ${e}`);
+
+    // 2. A decline.
+    await (await ask('prove the halting problem')).click();
+    const declined = await pg.locator('[data-scene-declined]').waitFor({ timeout: 8000 }).then(() => true, () => false);
+    if (!declined) failures.push(`${currentPath}: a declined visualization did not show its reason`);
+    await pg.keyboard.press('Escape');
+    await pg.waitForTimeout(200);
+
+    // 3. A renderer crash.
+    await (await ask('crash test')).click();
+    const contained = await pg.locator('[data-scene-crashed]').waitFor({ timeout: 8000 }).then(() => true, () => false);
+    if (!contained) failures.push(`${currentPath}: a renderer crash was not contained by the boundary`);
+    await pg.keyboard.press('Escape');
+    await pg.waitForTimeout(200);
+    const chatAlive = await pg.locator('textarea').isVisible();
+    if (!chatAlive) failures.push(`${currentPath}: the chat was gone after a renderer crash`);
+
+    console.log(
+      `  ${String(w).padStart(4)}px  trace: explanation ${titlesMatch ? 'follows' : 'WRONG'}, code line ${linesMatch ? 'follows' : 'WRONG'}; ` +
+      `decline ${declined ? 'shown' : 'MISSING'}; crash ${contained && chatAlive ? 'contained' : 'NOT CONTAINED'}; ` +
+      `${visualizeCalls} generation(s) for 3 clicks`,
+    );
+    // The simulated crash is expected to reach React's error handling; any
+    // other page error is a real failure.
+    for (const e of errors.filter((m) => !m.includes('simulated renderer crash'))) {
+      failures.push(`${currentPath}: page error: ${e}`);
+    }
     await pg.close();
   }
 }

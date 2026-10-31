@@ -162,10 +162,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   const openSuggestion = React.useCallback(
     (s: Suggestion) => {
-      if (s.kind !== "trace" || !s.trace) return;
+      // Nothing about the visualization exists until this click: the backend
+      // reads the conversation, picks an example and traces it now.
       setPlayer({
         title: s.title,
-        source: { kind: "fetch", trace: s.trace, context: message.vizContext ?? message.text },
+        source: { kind: "fetch", context: message.vizContext ?? message.text, trace: s.trace },
         ai: true,
       });
     },

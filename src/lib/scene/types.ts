@@ -97,7 +97,14 @@ export interface TraceRequest {
 
 export interface Suggestion {
   title: string;
-  kind: "trace" | "builtin";
+  /**
+   * "context": trace whatever the conversation is about; the backend picks the
+   * example when the button is clicked. "trace": a specific request, from
+   * suggestions saved by the first version.
+   */
+  kind: "context" | "trace";
   trace?: TraceRequest;
-  builtin?: { key: string; params?: Entry[] };
 }
+
+/** What POST /chat/visualize returns: a scene, or the model declining with a reason. */
+export type SceneOutcome = { feasible: true; scene: Scene } | { feasible: false; reason: string };
