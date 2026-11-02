@@ -1,0 +1,520 @@
+# app/scrapers/leetcode_scraper.py
+import ast
+import json
+import re
+import time
+import unicodedata
+from typing import Any, Dict, List, Optional
+
+import httpx
+from bs4 import BeautifulSoup
+
+from app.core.logger import logger  # Make sure logger is configured in app.core
+
+LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql"
+LEETCODE_ALL_PROBLEMS_URL = "https://leetcode.com/api/problems/all/"
+
+# Cache for problems list to avoid repeated fetching
+_problems_cache: Optional[List[Dict[str, Any]]] = None
+# monotonic time before which a failed download is not retried.
+_retry_after = 0.0
+
+# The list is ~1 MB. A shorter timeout bounds how long one unlucky message can
+# wait on it; the backoff stops every later message from waiting again.
+PROBLEM_LIST_TIMEOUT_S = 10.0
+FAILURE_BACKOFF_S = 600.0
+
+
+async def _fetch_all_problems() -> Optional[List[Dict[str, Any]]]:
+    """Fetch and cache the list of all LeetCode problems.
+
+    A failed download used to set the cache to ``[]``, which the cache check
+    (``if _problems_cache:``) reads as "not cached". So once LeetCode refused
+    the server once, *every* later coding question retried the 30-second
+    download before it could even start answering. Failures are now
+    remembered for FAILURE_BACKOFF_S.
+    """
+    global _problems_cache, _retry_after
+    if _problems_cache is not None:
+        return _problems_cache
+    if time.monotonic() < _retry_after:
+        return None
+
+    logger.info("Fetching all LeetCode problems list...")
+    started = time.perf_counter()
+    try:
+        async with httpx.AsyncClient(timeout=PROBLEM_LIST_TIMEOUT_S) as client:
+            response = await client.get(LEETCODE_ALL_PROBLEMS_URL)
+            response.raise_for_status()
+            data = response.json()
+        problems = data.get("stat_status_pairs") if isinstance(data, dict) else None
+        if not problems:
+            raise ValueError("response has no 'stat_status_pairs'")
+        _problems_cache = problems
+        logger.info(
+            f"Cached {len(problems)} LeetCode problems in {time.perf_counter() - started:.1f}s."
+        )
+        return problems
+    except Exception as e:
+        _retry_after = time.monotonic() + FAILURE_BACKOFF_S
+        logger.error(
+            f"Could not fetch the LeetCode problem list ({e!r}) after "
+            f"{time.perf_counter() - started:.1f}s; not retrying for {FAILURE_BACKOFF_S:.0f}s."
+        )
+        return None
+
+
+async def warm_problem_list() -> None:
+    """Load the problem list in the background at startup.
+
+    Otherwise the first coding question after every restart (and the free
+    tier restarts whenever it idles) pays for the download.
+    """
+    await _fetch_all_problems()
+
+
+def normalize_text(text: str) -> str:
+    """Normalize text by lowercasing, removing accents, and extra whitespace."""
+    if not isinstance(text, str):
+        return ""
+    try:
+        # NFKD decomposition followed by encoding/decoding removes accents
+        text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8')
+    except Exception:
+        pass # Ignore normalization errors for weird characters
+    text = text.lower()
+    text = re.sub(r'\s+', ' ', text).strip() # Replace multiple spaces with one
+    return text
+
+async def get_title_slug(identifier: str) -> Optional[str]:
+    """Resolve a LeetCode identifier (URL, number, title or pasted text) to a title slug."""
+    if not identifier or not isinstance(identifier, str):
+        logger.warning("Invalid identifier provided to get_title_slug: must be a non-empty string.")
+        return None
+
+    normalized_identifier = normalize_text(identifier)
+    logger.info(
+        f"Resolving identifier: '{identifier[:100]}...' "
+        f"(normalized: '{normalized_identifier[:100]}...')"
+    )
+
+    # 1. Check for URL (more robustly handles query params etc.)
+    url_match = re.search(r"leetcode\.com/problems/([^/?#]+)", identifier)
+    if url_match:
+        title_slug = url_match.group(1)
+        logger.info(f"Identified as URL, extracted title slug: {title_slug}")
+        # Optional: Verify slug exists via a quick HEAD request or basic fetch?
+        # For now, trust the extracted slug.
+        return title_slug
+
+    problems = await _fetch_all_problems()
+    if not problems:
+        logger.error("Failed to fetch or use problem list for matching. Cannot resolve non-URL identifier.")
+        # Maybe attempt GraphQL query directly if identifier *looks* like a slug?
+        if re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", identifier.strip()):
+             logger.info(f"Identifier '{identifier.strip()}' looks like a slug, attempting direct use.")
+             return identifier.strip()
+        return None # Cannot proceed reliably without the problem list
+
+    matched_slug = None
+
+    # 2. Check for "Number. Title" format or just Number
+    num_title_match = re.match(r"^\s*(\d+)\s*[.]?\s*(.*)", identifier.strip())
+    just_num_match = re.match(r"^\s*(\d+)\.?\s*$", identifier.strip()) # Handles optional trailing dot
+
+    potential_number = None
+    potential_title_part = ""
+
+    if num_title_match:
+        potential_number = num_title_match.group(1)
+        # Use the normalized version of the potential title part
+        potential_title_part = normalize_text(num_title_match.group(2))
+        logger.info(f"Possible Number-Title format: Number={potential_number}, Title Part='{potential_title_part}'")
+    elif just_num_match:
+        potential_number = just_num_match.group(1)
+        logger.info(f"Possible Number format: Number={potential_number}")
+
+    # Match using number first if available (most reliable)
+    if potential_number:
+        for problem in problems:
+            stat = problem.get("stat", {})
+            # Use frontend_question_id as it's the displayed number
+            if str(stat.get("frontend_question_id")) == potential_number:
+                slug = stat.get("question__title_slug")
+                if not slug:  # Skip if slug is missing for this problem
+                    continue
+
+                # If we also have a title part, verify it loosely matches
+                if potential_title_part:
+                    problem_title_norm = normalize_text(stat.get("question__title", ""))
+                    # Check if normalized potential title is substring of normalized actual title or vice-versa
+                    if potential_title_part in problem_title_norm or problem_title_norm in potential_title_part:
+                        logger.info(f"Matched by number ({potential_number}) and verified title part: {slug}")
+                        matched_slug = slug
+                        break # Found best match
+                    else:
+                        logger.debug(
+                            f"Number {potential_number} matched slug {slug}, but title part "
+                            f"'{potential_title_part}' did not match '{problem_title_norm}'"
+                        )
+                        # Don't break yet, maybe another problem has same number? (unlikely)
+                        # If we don't find a better match, we might fallback to this later.
+                        if not matched_slug: # Store first number match as fallback
+                            matched_slug = slug
+
+                else: # Matched by number only
+                     logger.info(f"Matched by number ({potential_number}): {slug}")
+                     matched_slug = slug
+                     break # Found match
+
+        if matched_slug:
+            logger.info(f"Resolution successful based on number: {matched_slug}")
+            return matched_slug # Return early if number match found
+
+    # 3. Fuzzy Title Matching (if no number match or no number identified)
+    # Only proceed if we haven't found a match via number
+    logger.info("Number match failed or not applicable, attempting title matching...")
+    # Use the potential title part from "Num. Title" or the full normalized identifier
+    search_title = potential_title_part if potential_title_part else normalized_identifier
+
+    # Avoid matching extremely short/common words if identifier is short
+    if not search_title or (len(search_title) < 4 and len(identifier.split()) < 3):
+         logger.info("Identifier too short or lacks specific terms for reliable title-only matching.")
+    else:
+        logger.info(f"Attempting fuzzy title matching with: '{search_title}'")
+        # Look for exact title match first (case-insensitive via normalization)
+        for problem in problems:
+            stat = problem.get("stat", {})
+            problem_title_norm = normalize_text(stat.get("question__title", ""))
+            slug = stat.get("question__title_slug")
+            if not slug or not problem_title_norm:
+                continue
+
+            if problem_title_norm == search_title:
+                logger.info(f"Matched by exact title: {slug}")
+                matched_slug = slug
+                break
+        # If no exact match, look for containment (problem title within identifier)
+        # This handles cases like "solve two sum" matching "Two Sum"
+        if not matched_slug:
+             candidates = []
+             for problem in problems:
+                stat = problem.get("stat", {})
+                problem_title_norm = normalize_text(stat.get("question__title", ""))
+                slug = stat.get("question__title_slug")
+                if not slug or not problem_title_norm:
+                    continue
+
+                # Check if the actual problem title is a substring of the search title
+                if problem_title_norm and problem_title_norm in search_title:
+                    # Score based on length - longer matches are better
+                    candidates.append({'slug': slug, 'title': problem_title_norm, 'score': len(problem_title_norm)})
+                    logger.debug(f"Potential title match (title in identifier): {slug} (Title: {problem_title_norm})")
+
+             # If multiple candidates, pick the one with the longest matching title
+             if candidates:
+                 candidates.sort(key=lambda x: x['score'], reverse=True)
+                 matched_slug = candidates[0]['slug']
+                 matched_title = candidates[0]['title']
+                 logger.info(
+                     f"Matched by best fuzzy title: {matched_slug} "
+                     f"(Matched Title: '{matched_title}')"
+                 )
+
+        if matched_slug:
+            logger.info(f"Resolution successful based on title matching: {matched_slug}")
+            return matched_slug
+
+    # 4. Heuristic for Pasted Text (Check first few lines for pattern)
+    # Only if identifier is long and no match found yet
+    if not matched_slug and len(identifier) > 150: # Arbitrary length threshold
+        logger.info("Identifier is long, attempting pasted text heuristic...")
+        lines = identifier.strip().split('\n')
+        for line in lines[:5]: # Check first 5 lines only
+            # Look for "Number. Title" pattern at the start of a line
+            pasted_match = re.match(r"^\s*(\d+)\.\s+([a-zA-Z0-9\s-]+)", line.strip())
+            if pasted_match:
+                num = pasted_match.group(1)
+                title_part = normalize_text(pasted_match.group(2))
+                logger.info(f"Pasted text heuristic found pattern: Number={num}, Title Part='{title_part}'")
+                # Try matching this extracted info using the number logic again
+                for problem in problems:
+                     stat = problem.get("stat", {})
+                     slug = stat.get("question__title_slug")
+                     if not slug:
+                         continue
+
+                     if str(stat.get("frontend_question_id")) == num:
+                        problem_title_norm = normalize_text(stat.get("question__title", ""))
+                        # Check if extracted title part matches loosely
+                        if title_part in problem_title_norm or problem_title_norm in title_part:
+                            logger.info(f"Matched via pasted text heuristic: {slug}")
+                            matched_slug = slug
+                            break # Found match
+
+                if matched_slug:
+                     logger.info(f"Resolution successful based on pasted text heuristic: {matched_slug}")
+                     return matched_slug # Exit outer loop too
+            # Stop checking lines if match found
+            if matched_slug:
+                break
+
+    if not matched_slug:
+        logger.warning(f"Could not resolve identifier to a LeetCode title slug: '{identifier[:100]}...'")
+
+    return matched_slug
+
+
+def extract_examples_from_content(content: str) -> List[Dict[str, Any]]:
+    """Extract example inputs and outputs from LeetCode problem content.
+
+    Returns a list of examples with input and output data.
+    """
+    examples = []
+
+    if not content:
+        return examples
+
+    # Pattern to match Example blocks
+    example_pattern = r'Example\s*(\d+):\s*(.*?)(?=Example\s*\d+:|$)'
+    example_matches = re.findall(example_pattern, content, re.DOTALL | re.IGNORECASE)
+
+    for example_num, example_content in example_matches:
+        example_data = {
+            "example_number": int(example_num),
+            "raw_content": example_content.strip(),
+            "input": None,
+            "output": None,
+            "explanation": None
+        }
+
+        # Extract Input.
+        # The lookaheads must not require a newline: the HTML is flattened with
+        # `soup.get_text(separator=" ")` before it reaches here, so "Input: ...
+        # Output: ..." arrives on one line. Requiring \n meant input and output
+        # were always None in production and only ever parsed in tests that fed
+        # raw HTML.
+        input_match = re.search(
+            r'Input:\s*(.+?)(?=\s*Output\s*:|\s*Explanation\s*:|\Z)',
+            example_content,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if input_match:
+            input_text = input_match.group(1).strip()
+            example_data["input"] = parse_input_data(input_text)
+
+        # Extract Output
+        output_match = re.search(
+            r'Output:\s*(.+?)(?=\s*Explanation\s*:|\s*Example\s*\d+\s*:|\Z)',
+            example_content,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if output_match:
+            output_text = output_match.group(1).strip()
+            example_data["output"] = parse_output_data(output_text)
+
+        # Extract Explanation
+        explanation_match = re.search(
+            r'Explanation:\s*(.+?)(?=\s*Example\s*\d+\s*:|\Z)',
+            example_content,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if explanation_match:
+            example_data["explanation"] = explanation_match.group(1).strip()
+
+        examples.append(example_data)
+
+    return examples
+
+def parse_input_data(input_text: str) -> Dict[str, Any]:
+    """Parse input text to extract variable names and values."""
+    parsed_input = {
+        "raw": input_text,
+        "variables": {}
+    }
+    # Capture `variable_name = value`, as broadly as possible for the value.
+    # The trailing group must be a lookahead: as a consuming group it swallowed
+    # the ", next_var =" delimiter, so findall could only ever return the first
+    # variable ("nums = [2,7], target = 9" yielded nums and dropped target).
+    pattern = r'(\w+)\s*=\s*(.+?)(?=,\s*\w+\s*=|\Z)'
+    matches = re.findall(pattern, input_text, re.DOTALL)
+    for var_name, var_value_raw in matches:
+        var_value = var_value_raw.strip()
+        try:
+            # Attempt to evaluate the value as a Python literal
+            # This handles numbers, booleans, strings, lists, and dictionaries
+            parsed_input["variables"][var_name] = ast.literal_eval(var_value)
+        except (ValueError, SyntaxError):
+            # If literal_eval fails, treat it as a string
+            # Remove surrounding quotes if present
+            if (var_value.startswith('"') and var_value.endswith('"')) or \
+               (var_value.startswith('\'') and var_value.endswith('\'')):
+                parsed_input["variables"][var_name] = var_value[1:-1]
+            else:
+                parsed_input["variables"][var_name] = var_value
+    return parsed_input
+
+
+
+def parse_output_data(output_text: str) -> Dict[str, Any]:
+    """Parse output text to extract expected result."""
+    parsed_output = {
+        "raw": output_text,
+        "value": None
+    }
+
+    clean_output = re.sub(r'^(Output:\s*)?', '', output_text.strip())
+
+    try:
+        parsed_output["value"] = ast.literal_eval(clean_output)
+    except (ValueError, SyntaxError):
+        # If literal_eval fails, try to handle as a string
+        if (clean_output.startswith('"') and clean_output.endswith('"')) or \
+           (clean_output.startswith('\'') and clean_output.endswith('\'')):
+            parsed_output["value"] = clean_output[1:-1]
+        elif clean_output.lower() == 'true':
+            parsed_output["value"] = True
+        elif clean_output.lower() == 'false':
+            parsed_output["value"] = False
+        else:
+            parsed_output["value"] = clean_output
+    except json.JSONDecodeError: # This exception is not raised by ast.literal_eval
+        parsed_output["value"] = clean_output
+
+    return parsed_output
+
+async def fetch_leetcode_question(title_slug: str) -> Optional[Dict[str, Any]]:
+    """Fetch one question by slug, returning structured data including examples."""
+    logger.info(f"Fetching LeetCode details for title slug: {title_slug}")
+    query = """
+    query getQuestionDetail($titleSlug: String!) {
+      question(titleSlug: $titleSlug) {
+        questionId
+        questionFrontendId
+        title
+        content
+        difficulty
+        topicTags {
+          name
+          slug
+        }
+        codeSnippets {
+            langSlug
+            code
+        }
+      }
+    }
+    """
+    variables = {"titleSlug": title_slug}
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        ),
+        "Referer": f"https://leetcode.com/problems/{title_slug}/",
+        "Origin": "https://leetcode.com",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            response = await client.post(
+                LEETCODE_GRAPHQL_URL,
+                json={"query": query, "variables": variables},
+                headers=headers
+            )
+            response.raise_for_status()
+
+        data = response.json()
+
+        if "errors" in data:
+             logger.error(f"GraphQL error fetching '{title_slug}': {data['errors']}")
+             return None
+
+        if not data.get("data"):
+             logger.error(f"GraphQL response missing 'data' field for '{title_slug}'.")
+             return None
+
+        question_data = data.get("data", {}).get("question")
+        if not question_data:
+            logger.warning(f"No question data found for slug '{title_slug}'.")
+            return None
+
+        # Extract basic info
+        title = question_data.get('title', 'N/A')
+        frontend_id = question_data.get('questionFrontendId', '')
+        difficulty = question_data.get('difficulty', 'N/A')
+        html_content = question_data.get("content", "")
+
+        # Clean HTML content
+        clean_content = "No description available."
+        if html_content:
+            try:
+                soup = BeautifulSoup(html_content, "html.parser")
+                for br in soup.find_all("br"):
+                    br.replace_with("\n")
+                for p in soup.find_all("p"):
+                    p.append("\n\n")
+                for li in soup.find_all("li"):
+                    li.insert(0, "* ")
+                    li.append("\n")
+                for tag in soup(["script", "style"]):
+                    tag.decompose()
+
+                clean_content = soup.get_text(separator=" ").strip()
+                clean_content = re.sub(r'\s*\n\s*', '\n', clean_content).strip()
+                clean_content = re.sub(r'[ \t]{2,}', ' ', clean_content)
+            except Exception as parse_error:
+                logger.warning(f"Error parsing HTML content for {title_slug}: {parse_error}")
+                clean_content = html_content
+
+        # Extract examples from content
+        examples = extract_examples_from_content(clean_content)
+
+        # Add topic tags
+        tags = [tag['name'] for tag in question_data.get('topicTags', []) if tag and 'name' in tag]
+        tags_str = f"Topics: {', '.join(tags)}\n" if tags else ""
+
+        # Return structured data instead of formatted string
+        result = {
+            # The slug is what lets a later turn re-resolve this problem without
+            # relying on server memory surviving between requests.
+            "slug": title_slug,
+            "id": frontend_id,
+            "title": title,
+            "difficulty": difficulty,
+            "tags": tags,
+            "content": clean_content,
+            "examples": examples,
+            "formatted_content": (
+                f"ID: {frontend_id}\n"
+                f"Title: {title}\n"
+                f"Difficulty: {difficulty}\n"
+                f"{tags_str}"
+                f"\nContent:\n{clean_content}"
+            )
+        }
+
+        logger.info(f"Successfully fetched details for: {frontend_id}. {title} with {len(examples)} examples")
+        return result
+
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            f"HTTP status error fetching '{title_slug}': "
+            f"{e.response.status_code} - {e.request.url}"
+        )
+        return None
+    except httpx.RequestError as e:
+        logger.error(f"HTTP request error fetching '{title_slug}': {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching LeetCode question '{title_slug}': {e}", exc_info=True)
+        return None
+
+async def scrape_leetcode_question(identifier: str) -> Optional[Dict[str, Any]]:
+    """Resolve an identifier to a question and fetch its structured details."""
+    title_slug = await get_title_slug(identifier)
+    if not title_slug:
+        return None
+    return await fetch_leetcode_question(title_slug)
