@@ -1,0 +1,36 @@
+name: Backend
+
+# Runs when the backend changes, and also when the scene fixtures in the
+# frontend change: backend/tests/test_frontend_contract.py validates those
+# against the backend's models.
+on:
+  push:
+    branches: ["**"]
+    paths: ["backend/**", "frontend/src/lib/scene/fixtures/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", "frontend/src/lib/scene/fixtures/**", ".github/workflows/backend.yml"]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        # conftest.py supplies the dummy environment the app needs to import.
+        run: pytest -q

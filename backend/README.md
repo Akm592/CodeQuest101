@@ -1,4 +1,7 @@
-# CodeQuest_Backend
+# CodeQuest backend
+
+The API behind [CodeQuest](../README.md). It lives in the `backend/` folder of
+the CodeQuest101 monorepo; the frontend is in [`../frontend`](../frontend).
 
 CodeQuest is an intelligent computer science tutoring chatbot designed to help users understand complex algorithms, solve LeetCode-style problems, and visualize data structures. This backend is built with Python, FastAPI, and Google's Gemini Pro.
 
@@ -98,8 +101,8 @@ what actually protects user data. See [`supabase/README.md`](supabase/README.md)
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/CodeQuest_Backend.git
-    cd CodeQuest_Backend
+    git clone https://github.com/Akm592/CodeQuest101.git
+    cd CodeQuest101/backend
     ```
 
 2.  **Create a virtual environment and install dependencies:**

@@ -9,8 +9,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/Akm592/CodeQuest_Backend.git
-cd CodeQuest_Backend
+git clone https://github.com/Akm592/CodeQuest101.git
+cd CodeQuest101/backend
 
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
