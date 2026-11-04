@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import chat, health
 from app.core.config import settings
 from app.core.logger import logger
+from app.llm.gemini_integration import resolver
 from app.scrapers.leetcode_scraper import warm_problem_list
 
 
@@ -21,6 +22,8 @@ async def lifespan(app: FastAPI):
         # Not awaited: startup must not wait on LeetCode. Kept on app.state
         # because the event loop holds only a weak reference to a task.
         app.state.warm_task = asyncio.create_task(warm_problem_list())
+    # Find the models this key can use before the first chat needs them.
+    app.state.models_task = asyncio.create_task(resolver.warm())
     logger.info(f"CORS origins: {settings.CORS_ORIGINS}")
     yield
     logger.info("Shutting down.")
