@@ -30,6 +30,9 @@ _SKIP_WORDS = (
 # After a failed listing, wait this long before asking again, so a broken
 # listing doesn't add a round trip to every request.
 RELIST_AFTER_S = 60.0
+# An overloaded model (429/5xx after retries) goes to the back of the queue for
+# this long, so the next requests start on a model that is answering.
+COOL_DOWN_S = 120.0
 
 # Last resort when the listing fails: Google's aliases that always point at
 # the current model of each tier, so they don't get retired like versions.
@@ -60,6 +63,7 @@ class ModelResolver:
         self._listed_failed_at: Optional[float] = None
         self._missing: Set[str] = set()
         self._learned: Dict[str, str] = {}
+        self._cooling: Dict[str, float] = {}
 
     def reset(self) -> None:
         """Forget everything learned (for tests)."""
@@ -117,7 +121,14 @@ class ModelResolver:
             if name and name not in seen and name not in self._missing:
                 seen.add(name)
                 result.append(name)
-        return result
+        now = time.monotonic()
+        # Stable sort: overloaded models keep their order, after the rest.
+        return sorted(result, key=lambda n: self._cooling.get(n, 0.0) > now)
+
+    def cool_down(self, model: str) -> None:
+        """Move an overloaded model to the back of the queue for a while."""
+        self._cooling[model] = time.monotonic() + COOL_DOWN_S
+        logger.warning(f"{model} is overloaded; trying other models first for {COOL_DOWN_S:.0f}s")
 
     def mark_missing(self, model: str, role: str, error: Exception) -> None:
         """Remember that ``model`` 404ed; adopt the replacement its message names."""

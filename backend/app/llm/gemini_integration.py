@@ -2,7 +2,7 @@ import asyncio
 import json
 import re
 import time
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
 from google import genai
 from google.genai import types
@@ -45,9 +45,20 @@ def _status(error: Exception) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-async def _generate(model: str, contents: Any, config: types.GenerateContentConfig, label: str):
+# Scenes have other models to fall back on, so an overloaded one gets a single
+# quick retry before the next model is tried.
+SCENE_RETRY_DELAYS_S = (1.0,)
+
+
+async def _generate(
+    model: str,
+    contents: Any,
+    config: types.GenerateContentConfig,
+    label: str,
+    delays: Tuple[float, ...] = RETRY_DELAYS_S,
+):
     """Call generate_content, retrying transient failures with a short backoff."""
-    for attempt, delay in enumerate((*RETRY_DELAYS_S, None)):
+    for attempt, delay in enumerate((*delays, None)):
         try:
             return await client.aio.models.generate_content(
                 model=model, contents=contents, config=config
@@ -155,6 +166,9 @@ async def stream_chat_response(
                 if status == 404:
                     resolver.mark_missing(model, ANSWER, e)
                     break  # next model
+                if status in TRANSIENT_STATUSES:
+                    resolver.cool_down(model)
+                    break  # still overloaded after retries: next model
                 logger.error(f"Streaming error: {e}")
                 raise GenerationError("The model could not generate a response.") from e
 
@@ -214,7 +228,7 @@ async def _try_scene(model, structured, mode, request, language):
     last_invalid: Optional[str] = None
     for repair in range(2):
         try:
-            response = await _generate(model, contents, config, "Scene")
+            response = await _generate(model, contents, config, "Scene", SCENE_RETRY_DELAYS_S)
         except Exception as e:
             logger.error(f"Scene generation call failed with {mode}: {e}")
             return e
@@ -284,9 +298,13 @@ async def generate_scene(
                 raise GenerationError(f"Couldn't build a valid visualization ({outcome.reason}).")
             refusals.append(f"{mode}: {outcome}")
             statuses.append(_status(outcome))
-            if _status(outcome) == 404:
+            status = _status(outcome)
+            if status == 404:
                 resolver.mark_missing(model, SCENE, outcome)
                 break  # this model doesn't exist; another mode won't help
+            if status in TRANSIENT_STATUSES:
+                resolver.cool_down(model)
+                break  # overloaded; another mode of the same model won't help
 
     logger.error(f"Every way of generating a scene was refused: {' | '.join(refusals)}")
     if statuses and all(s in TRANSIENT_STATUSES for s in statuses):
@@ -327,9 +345,13 @@ async def _intent_call(prompt: str):
             return await _generate(model, prompt, classification_config, "Intent")
         except Exception as e:
             last_error = e
-            if _status(e) != 404:
+            status = _status(e)
+            if status == 404:
+                resolver.mark_missing(model, ANSWER, e)
+            elif status in TRANSIENT_STATUSES:
+                resolver.cool_down(model)
+            else:
                 raise
-            resolver.mark_missing(model, ANSWER, e)
     raise last_error or GenerationError("No model is available.")
 
 
