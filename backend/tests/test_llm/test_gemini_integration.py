@@ -299,9 +299,10 @@ async def test_retries_are_bounded(mock_genai_client, no_retry_pause):
     with pytest.raises(GenerationError, match="unavailable"):
         await generate_scene(CONTEXT)
 
-    # Four ways of asking (see above), each tried three times (two retries).
-    assert mock_genai_client.aio.models.generate_content.await_count == 12
-    assert [c.args[0] for c in no_retry_pause.await_args_list[:2]] == [1.0, 3.0]
+    # Three models, each retried once, then moved past (not asked in JSON
+    # mode too: an overloaded model is overloaded in every mode).
+    assert mock_genai_client.aio.models.generate_content.await_count == 6
+    assert [c.args[0] for c in no_retry_pause.await_args_list] == [1.0] * 3
 
 
 @pytest.mark.asyncio
@@ -466,3 +467,43 @@ async def test_when_no_model_works_the_answer_fails_cleanly(mock_genai_client):
     )
     with pytest.raises(GenerationError):
         [c async for c in stream_chat_response("q", "sys", [])]
+
+
+# --- Overload moves to another model -------------------------------------------
+#
+# Production: gemini-3.8-flash returned 503 for every try while 3.7/3.6/3.5
+# flash were available, and the click failed.
+
+
+@pytest.mark.asyncio
+async def test_an_overloaded_scene_model_hands_over_to_the_next(mock_genai_client):
+    mock_genai_client.aio.models.generate_content.side_effect = [
+        overloaded(), overloaded(), response(feasible()),
+    ]
+
+    assert (await generate_scene(CONTEXT)).feasible
+    used = [c.kwargs["model"] for c in mock_genai_client.aio.models.generate_content.call_args_list]
+    assert used == [SCENE_MODEL, SCENE_MODEL, ANSWER_MODEL]
+
+
+@pytest.mark.asyncio
+async def test_the_next_click_starts_on_a_model_that_is_answering(mock_genai_client):
+    mock_genai_client.aio.models.generate_content.side_effect = [
+        overloaded(), overloaded(), response(feasible()), response(feasible()),
+    ]
+    await generate_scene(CONTEXT)
+    await generate_scene(CONTEXT)
+    assert mock_genai_client.aio.models.generate_content.call_args.kwargs["model"] == ANSWER_MODEL
+
+
+@pytest.mark.asyncio
+async def test_an_overloaded_answer_model_hands_over_before_any_text(mock_genai_client):
+    async def chunks():
+        yield MagicMock(text="hi")
+
+    mock_genai_client.aio.models.generate_content_stream = AsyncMock(
+        side_effect=[overloaded(), overloaded(), overloaded(), chunks()]
+    )
+    assert [c async for c in stream_chat_response("q", "sys", [])] == ["hi"]
+    last = mock_genai_client.aio.models.generate_content_stream.call_args.kwargs["model"]
+    assert last != ANSWER_MODEL
