@@ -398,3 +398,17 @@ async def test_overload_is_named_as_the_cause(mock_genai_client):
     mock_genai_client.aio.models.generate_content.side_effect = RuntimeError("503 high demand")
     with pytest.raises(GenerationError, match="overloaded"):
         await generate_scene(CONTEXT)
+
+
+@pytest.mark.asyncio
+async def test_the_error_names_what_google_returned(mock_genai_client):
+    mock_genai_client.aio.models.generate_content.side_effect = RuntimeError("403 API key not valid")
+    with pytest.raises(GenerationError, match="403.*GEMINI_API_KEY"):
+        await generate_scene(CONTEXT)
+
+
+@pytest.mark.asyncio
+async def test_an_unreachable_api_is_named(mock_genai_client):
+    mock_genai_client.aio.models.generate_content.side_effect = OSError("connection refused")
+    with pytest.raises(GenerationError, match="couldn't reach"):
+        await generate_scene(CONTEXT)

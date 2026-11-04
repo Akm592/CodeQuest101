@@ -314,7 +314,20 @@ async def generate_scene(
             "The visualization service is unavailable right now: Google's models are "
             "overloaded. Try again in a minute."
         )
-    raise GenerationError("The visualization service is unavailable right now.")
+    raise GenerationError(f"The visualization service is unavailable right now ({_cause(statuses)}).")
+
+
+def _cause(statuses: List[Optional[int]]) -> str:
+    """Name what Google said, so the message in the app shows the cause."""
+    codes = sorted({s for s in statuses if s is not None})
+    if not codes:
+        return "couldn't reach Google's API"
+    hint = ""
+    if any(c in (400, 401, 403) for c in codes):
+        hint = ": check GEMINI_API_KEY on the server"
+    elif 404 in codes:
+        hint = ": the model names aren't available to this key"
+    return "Google returned " + ", ".join(map(str, codes)) + hint
 
 
 def _strip_fences(raw: str) -> str:
