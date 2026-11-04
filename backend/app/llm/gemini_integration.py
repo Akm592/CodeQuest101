@@ -1,6 +1,8 @@
+import asyncio
 import json
+import re
 import time
-from typing import AsyncGenerator, Dict, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
 from google import genai
 from google.genai import types
@@ -20,6 +22,38 @@ SCENE_MODEL = settings.GEMINI_SCENE_MODEL
 
 class GenerationError(Exception):
     """The model could not produce a usable answer. The message is safe to show."""
+
+
+# Statuses that mean "try again shortly": rate limited or overloaded. Google
+# returns 503 "This model is currently experiencing high demand... usually
+# temporary" during spikes, and treating that as final failed requests that a
+# second attempt would have served.
+TRANSIENT_STATUSES = {429, 500, 503, 504}
+RETRY_DELAYS_S = (1.0, 3.0)
+
+
+def _status(error: Exception) -> Optional[int]:
+    """Return an API error's HTTP status: its ``code``, else a leading "503 ..."."""
+    code = getattr(error, "code", None)
+    if isinstance(code, int):
+        return code
+    match = re.match(r"\s*(\d{3})\b", str(error))
+    return int(match.group(1)) if match else None
+
+
+async def _generate(model: str, contents: Any, config: types.GenerateContentConfig, label: str):
+    """Call generate_content, retrying transient failures with a short backoff."""
+    for attempt, delay in enumerate((*RETRY_DELAYS_S, None)):
+        try:
+            return await client.aio.models.generate_content(
+                model=model, contents=contents, config=config
+            )
+        except Exception as e:
+            status = _status(e)
+            if status not in TRANSIENT_STATUSES or delay is None:
+                raise
+            logger.warning(f"{label}: {model} returned {status}; retry {attempt + 1} in {delay:.0f}s")
+            await asyncio.sleep(delay)
 
 
 chat_config_defaults = dict(
@@ -72,18 +106,31 @@ async def stream_chat_response(
         system_instruction=system_prompt or None,
     )
 
-    try:
-        response = await client.aio.models.generate_content_stream(
-            model=DEFAULT_MODEL,
-            contents=contents,
-            config=config,
-        )
-        async for chunk in response:
-            if chunk.text:
-                yield chunk.text
-    except Exception as e:
-        logger.error(f"Streaming error: {str(e)}")
-        raise GenerationError("The model could not generate a response.") from e
+    for attempt, delay in enumerate((*RETRY_DELAYS_S, None)):
+        sent = False
+        try:
+            response = await client.aio.models.generate_content_stream(
+                model=DEFAULT_MODEL,
+                contents=contents,
+                config=config,
+            )
+            async for chunk in response:
+                if chunk.text:
+                    sent = True
+                    yield chunk.text
+            return
+        except Exception as e:
+            status = _status(e)
+            # Retry only if nothing has been shown yet: after the first chunk,
+            # a retry would repeat text the user already has.
+            if not sent and status in TRANSIENT_STATUSES and delay is not None:
+                logger.warning(
+                    f"Answer: {DEFAULT_MODEL} returned {status}; retry {attempt + 1} in {delay:.0f}s"
+                )
+                await asyncio.sleep(delay)
+                continue
+            logger.error(f"Streaming error: {str(e)}")
+            raise GenerationError("The model could not generate a response.") from e
 
 
 def _scene_request_text(context: str, trace: Optional[TraceRequest]) -> str:
@@ -160,20 +207,23 @@ async def generate_scene(
     request = types.Content(role="user", parts=[types.Part(text=_scene_request_text(context, trace))])
     refusals: List[str] = []
     last_invalid: Optional[str] = None
+    missing: set = set()
 
     for model, structured in _scene_attempts():
+        if model in missing:
+            continue  # it 404ed: asking it again in another mode can't help
         mode = f"{model} ({'schema' if structured else 'json'})"
         config = _scene_config(language, structured)
         contents: List[types.Content] = [request]
 
         for repair in range(2):
             try:
-                response = await client.aio.models.generate_content(
-                    model=model, contents=contents, config=config
-                )
+                response = await _generate(model, contents, config, "Scene")
             except Exception as e:
                 refusals.append(f"{mode}: {e}")
                 logger.error(f"Scene generation call failed with {mode}: {e}")
+                if _status(e) == 404:
+                    missing.add(model)
                 break  # this way of asking is refused; try the next one
 
             raw = response.text or ""
@@ -234,11 +284,7 @@ async def classify_intent_with_llm(user_query: str) -> str:
         start_time = time.perf_counter()
         prompt = INTENT_CLASSIFICATION_PROMPT.format(user_query=user_query)
 
-        response = await client.aio.models.generate_content(
-            model=DEFAULT_MODEL,
-            contents=prompt,
-            config=classification_config,
-        )
+        response = await _generate(DEFAULT_MODEL, prompt, classification_config, "Intent")
 
         intent = response.text.strip().lower()
         duration = time.perf_counter() - start_time
