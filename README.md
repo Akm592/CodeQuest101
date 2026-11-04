@@ -1,50 +1,58 @@
 # CodeQuest: Interactive Algorithm Visualizations
 
-![CodeQuest Logo](https://via.placeholder.com/150)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Frontend](https://github.com/Akm592/CodeQuest101/actions/workflows/frontend.yml/badge.svg)](https://github.com/Akm592/CodeQuest101/actions/workflows/frontend.yml)
+[![Backend](https://github.com/Akm592/CodeQuest101/actions/workflows/backend.yml/badge.svg)](https://github.com/Akm592/CodeQuest101/actions/workflows/backend.yml)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/Akm592/CodeQuest.svg)](https://github.com/Akm592/CodeQuest/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/Akm592/CodeQuest.svg)](https://github.com/Akm592/CodeQuest/issues)
+CodeQuest helps developers master algorithms and data structures by watching
+them run. It has two parts:
 
-## 🚀 Welcome to CodeQuest
+- **Interactive visualizers** for sorting, searching, graphs, trees, dynamic
+  programming, backtracking, tries and more. Each one has step-by-step
+  playback and a "How it works" guide with pseudocode and a runnable Python
+  solution.
+- **An AI tutor** that answers coding questions. When an answer can be traced
+  on a concrete example, it offers a **Visualize this with an example**
+  button, which builds a step-by-step animation of that solution, with the
+  executing code line and the variables shown at every step.
 
-Embark on an interactive journey through popular coding challenges and algorithmic visualizations.
+Try it at **[codequest101.vercel.app](https://codequest101.vercel.app/)**. The
+tutor works without an account. Signing in saves your chat history; guests get
+an ephemeral session and a usage limit.
 
-## 📚 About CodeQuest
+## Repository layout
 
-CodeQuest is an innovative platform designed to help developers master complex algorithms and data structures through interactive visualizations. Our mission is to make learning engaging, intuitive, and accessible to coders of all levels.
+| Folder | What it is | Deployed on |
+|---|---|---|
+| [`frontend/`](frontend) | React + Vite + TypeScript app: visualizers, chat UI, animation player | Vercel (Root Directory `frontend`) |
+| [`backend/`](backend) | FastAPI service: chat streaming, Gemini, visualization traces, Supabase persistence | Render (Root Directory `backend`, Docker) |
 
-### 🌟 Key Features
+The two share one wire format for visualizations ("scenes"). The fixtures in
+`frontend/src/lib/scene/fixtures` are validated by both sides' tests, so a
+change that breaks either side fails CI.
 
-- **Interactive Visualizations**: Experience algorithms in action with our dynamic, step-by-step visualizations.
-- **Popular Coding Challenges**: Practice with a curated selection of frequently asked interview questions.
-- **Graph Algorithm Visualizer**: Dive deep into graph theory with our specialized graph algorithm tool.
-- **Mobile Responsive**: Learn on-the-go with our mobile-friendly interface.
-- **Comprehensive Explanations**: Each problem comes with detailed explanations and LeetCode links for further practice.
+## Running locally
 
-## 🛠️ Using CodeQuest
-
-1. Visit [CodeQuest Website](https://codequest101.vercel.app/)
-2. Browse through our collection of algorithm visualizations
-3. Select a problem to start your interactive learning experience
-4. Use the step-by-step controls to understand the algorithm's flow
-5. Read the accompanying explanations for deeper insights
-
-You can use the AI tutor without an account. Signing in saves your chat
-history; guests get an ephemeral session and a usage limit.
-
-## 💻 Running locally
-
-Requires Node.js 20+ and a running instance of
-[CodeQuest_Backend](https://github.com/Akm592/CodeQuest_Backend).
+**Backend** (Python 3.11):
 
 ```bash
-npm install
-cp .env.example .env.local   # then fill it in
-npm run dev
+cd backend
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env          # GEMINI_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Environment variables
+See [`backend/README.md`](backend/README.md) for the API and configuration.
+
+**Frontend** (Node.js 24):
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local    # VITE_API_URL=http://localhost:8000, Supabase URL and anon key
+npm run dev
+```
 
 | Variable | Purpose |
 |---|---|
@@ -52,45 +60,41 @@ npm run dev
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
 
-The anon key is meant to be public — it ships in the built bundle. Row Level
-Security is what protects user data, so the backend repo's
-`supabase/migrations` must be applied to your Supabase project before signing
-in does anything useful.
+The anon key is meant to be public, since it ships in the built bundle.
+Row Level Security is what protects user data, so apply
+`backend/supabase/migrations` to your Supabase project before signing in.
 
-### Checks
+## Checks
+
+These are what CI runs. Each workflow runs only when its folder changes.
 
 ```bash
-npx tsc -b      # typecheck
-npm run lint    # eslint
-npm run build   # production build
+# frontend/
+npx tsc -b && npm run lint && npm test
+node scripts/controls-lint.mjs
+python3 scripts/check_guide_solutions.py
+npm run build
+
+# backend/
+ruff check . && pytest -q
 ```
 
-These are the same three steps CI runs.
+`frontend/scripts/ui-consistency-check.mjs` is a fuller browser check
+(contrast, overflow, touch targets, the chat's visualization flow against a
+faked backend). It needs a preview build and Chromium, so it runs by hand.
 
+## Contributing
 
+Contributions are welcome:
 
-## 🤝 Contributing
+1. Fork the repository and create a branch.
+2. Make your change, with tests where it makes sense.
+3. Run the checks above for the folder you touched.
+4. Open a pull request describing what changed and why.
 
-We welcome contributions from the community! If you'd like to contribute, please:
+Bug reports and feature ideas go in
+[GitHub Issues](https://github.com/Akm592/CodeQuest101/issues).
 
-1. Fork the repository
-2. Create a new branch
-3. Make your changes
-4. Submit a pull request
+## License
 
-For more details, check out our [Contributing Guidelines](https://github.com/Akm592/CodeQuest/blob/main/CONTRIBUTING.md).
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/Akm592/CodeQuest/blob/main/LICENSE) file for details.
-
-## 📞 Contact Us
-
-Have questions or suggestions? Reach out to us:
-
-- GitHub Issues: [Report a bug or request a feature](https://github.com/Akm592/CodeQuest/issues)
-
----
-
-Happy Coding with CodeQuest! 🚀👨‍💻👩‍💻
-
+[MIT](LICENSE).
