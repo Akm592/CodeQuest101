@@ -2,7 +2,7 @@ import asyncio
 import json
 import re
 import time
-from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from google import genai
 from google.genai import types
@@ -10,14 +10,18 @@ from pydantic import ValidationError
 
 from app.core.config import settings
 from app.core.logger import logger
+from app.llm.models import ANSWER, SCENE, ModelResolver
 from app.llm.prompts import INTENT_CLASSIFICATION_PROMPT, SCENE_PROMPT
 from app.schemas.visualization_schemas import SceneResult, TraceRequest
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-# Default model to use - configurable via GEMINI_MODEL env var
-DEFAULT_MODEL = settings.GEMINI_MODEL
-SCENE_MODEL = settings.GEMINI_SCENE_MODEL
+# Which model to call is decided at runtime; see app/llm/models.py. The
+# lambda looks `client` up on each call, so tests can patch it.
+resolver = ModelResolver(lambda: client.aio.models.list())
+
+# How many different models one request may try before giving up.
+MAX_MODELS_PER_REQUEST = 3
 
 
 class GenerationError(Exception):
@@ -54,6 +58,21 @@ async def _generate(model: str, contents: Any, config: types.GenerateContentConf
                 raise
             logger.warning(f"{label}: {model} returned {status}; retry {attempt + 1} in {delay:.0f}s")
             await asyncio.sleep(delay)
+
+
+async def _each_model(role: str) -> AsyncGenerator[str, None]:
+    """Yield models to try for ``role``, re-asking the resolver after each.
+
+    Re-asking matters: a 404 can teach the resolver a replacement, which then
+    comes next.
+    """
+    tried: set = set()
+    while len(tried) < MAX_MODELS_PER_REQUEST:
+        nxt = [m for m in await resolver.candidates(role) if m not in tried]
+        if not nxt:
+            return
+        tried.add(nxt[0])
+        yield nxt[0]
 
 
 chat_config_defaults = dict(
@@ -106,31 +125,41 @@ async def stream_chat_response(
         system_instruction=system_prompt or None,
     )
 
-    for attempt, delay in enumerate((*RETRY_DELAYS_S, None)):
-        sent = False
-        try:
-            response = await client.aio.models.generate_content_stream(
-                model=DEFAULT_MODEL,
-                contents=contents,
-                config=config,
-            )
-            async for chunk in response:
-                if chunk.text:
-                    sent = True
-                    yield chunk.text
-            return
-        except Exception as e:
-            status = _status(e)
-            # Retry only if nothing has been shown yet: after the first chunk,
-            # a retry would repeat text the user already has.
-            if not sent and status in TRANSIENT_STATUSES and delay is not None:
-                logger.warning(
-                    f"Answer: {DEFAULT_MODEL} returned {status}; retry {attempt + 1} in {delay:.0f}s"
+    last_error: Optional[Exception] = None
+    async for model in _each_model(ANSWER):
+        for attempt, delay in enumerate((*RETRY_DELAYS_S, None)):
+            sent = False
+            try:
+                response = await client.aio.models.generate_content_stream(
+                    model=model,
+                    contents=contents,
+                    config=config,
                 )
-                await asyncio.sleep(delay)
-                continue
-            logger.error(f"Streaming error: {str(e)}")
-            raise GenerationError("The model could not generate a response.") from e
+                async for chunk in response:
+                    if chunk.text:
+                        sent = True
+                        yield chunk.text
+                return
+            except Exception as e:
+                last_error = e
+                status = _status(e)
+                # After the first chunk, retrying or switching model would
+                # repeat text the user already has.
+                if sent:
+                    logger.error(f"Streaming error after text was sent: {e}")
+                    raise GenerationError("The model could not generate a response.") from e
+                if status in TRANSIENT_STATUSES and delay is not None:
+                    logger.warning(f"Answer: {model} returned {status}; retry {attempt + 1} in {delay:.0f}s")
+                    await asyncio.sleep(delay)
+                    continue
+                if status == 404:
+                    resolver.mark_missing(model, ANSWER, e)
+                    break  # next model
+                logger.error(f"Streaming error: {e}")
+                raise GenerationError("The model could not generate a response.") from e
+
+    logger.error(f"No model could answer: {last_error}")
+    raise GenerationError("The model could not generate a response.") from last_error
 
 
 def _scene_request_text(context: str, trace: Optional[TraceRequest]) -> str:
@@ -146,65 +175,6 @@ def _scene_request_text(context: str, trace: Optional[TraceRequest]) -> str:
 
 # The JSON Schema the plain-JSON fallback asks for in words. Built once.
 _SCENE_JSON_SCHEMA = json.dumps(SceneResult.model_json_schema(), separators=(",", ":"))
-
-
-def _scene_attempts() -> List[Tuple[str, bool]]:
-    """(model, structured) in the order to try them, without duplicates.
-
-    Structured output (``response_schema``) constrains the model best, but the
-    API refuses a schema it considers too large or too deeply nested, and the
-    scene model may not be enabled for every key. Either failure used to end
-    the request with "unavailable". Each fallback drops one of those risks:
-    plain JSON mode with the schema in the instructions, then the answer model,
-    which the chat already proves works with this key.
-    """
-    attempts = [(SCENE_MODEL, True), (SCENE_MODEL, False), (DEFAULT_MODEL, False)]
-    seen, ordered = set(), []
-    for attempt in attempts:
-        if attempt not in seen:
-            seen.add(attempt)
-            ordered.append(attempt)
-    return ordered
-
-
-# Models found by asking the API, cached for the process. Model names are
-# retired with little notice (gemini-2.5-flash started returning 404 for new
-# keys), so when every configured model is refused, the scene call asks which
-# models this key can actually use instead of failing.
-_discovered: Optional[List[str]] = None
-MAX_DISCOVERED = 3
-_SKIP_WORDS = ("tts", "image", "audio", "live", "embed", "vision", "thinking-exp", "learnlm", "gemma")
-
-
-def _version_key(name: str) -> Tuple:
-    """Sort newest first: higher version, then non-lite, then stable over preview."""
-    match = re.search(r"(\d+(?:\.\d+)?)", name)
-    version = float(match.group(1)) if match else 0.0
-    return (-version, "lite" in name, "preview" in name or "exp" in name, name)
-
-
-async def _discover_models() -> List[str]:
-    """Text-generation "flash" models this key can use, newest first. [] on failure."""
-    global _discovered
-    if _discovered:
-        return _discovered
-    try:
-        names = []
-        async for model in await client.aio.models.list():
-            name = (model.name or "").removeprefix("models/")
-            actions = model.supported_actions or []
-            if (
-                "flash" in name
-                and "generateContent" in actions
-                and not any(word in name for word in _SKIP_WORDS)
-            ):
-                names.append(name)
-    except Exception as e:
-        logger.error(f"Could not list Gemini models: {e}")
-        return []
-    _discovered = sorted(set(names), key=_version_key)[:MAX_DISCOVERED]
-    logger.info(f"Gemini models available to this key: {_discovered}")
-    return _discovered
 
 
 def _scene_config(language: str, structured: bool) -> types.GenerateContentConfig:
@@ -230,6 +200,54 @@ def _scene_config(language: str, structured: bool) -> types.GenerateContentConfi
     )
 
 
+class _Invalid:
+    """Two answers came back, neither a valid scene."""
+
+    def __init__(self, reason: Optional[str]):
+        self.reason = reason
+
+
+async def _try_scene(model, structured, mode, request, language):
+    """One way of asking: a SceneResult, an _Invalid, or the refusal exception."""
+    config = _scene_config(language, structured)
+    contents: List[types.Content] = [request]
+    last_invalid: Optional[str] = None
+    for repair in range(2):
+        try:
+            response = await _generate(model, contents, config, "Scene")
+        except Exception as e:
+            logger.error(f"Scene generation call failed with {mode}: {e}")
+            return e
+
+        raw = response.text or ""
+        try:
+            # Validate from the raw JSON rather than trusting
+            # `response.parsed`: the SDK skips Pydantic validators when
+            # parsing fails, and the repairs live in those validators.
+            result = SceneResult.model_validate_json(_strip_fences(raw))
+        except ValidationError as e:
+            last_invalid = "; ".join(err["msg"] for err in e.errors()[:5])
+            logger.info(f"Scene from {mode}, attempt {repair + 1}, invalid: {last_invalid}")
+            contents = [
+                request,
+                types.Content(role="model", parts=[types.Part(text=raw[:20000])]),
+                types.Content(
+                    role="user",
+                    parts=[types.Part(text=(
+                        f"That result is invalid: {last_invalid}. "
+                        "Return the corrected complete result."
+                    ))],
+                ),
+            ]
+            continue
+
+        if result.scene is not None and result.scene._repairs:
+            logger.info(f"Scene from {mode} repaired: {'; '.join(result.scene._repairs)}")
+        logger.info(f"Scene generated with {mode}.")
+        return result
+    return _Invalid(last_invalid)
+
+
 async def generate_scene(
     context: str, trace: Optional[TraceRequest] = None, language: str = "python"
 ) -> SceneResult:
@@ -242,71 +260,33 @@ async def generate_scene(
     only problems it can't repair are sent back once with the error.
 
     If a call is *refused* (schema rejected, model unavailable), the next way
-    of asking is tried; see _scene_attempts.
+    of asking is tried, then the next model the resolver offers.
     """
     request = types.Content(role="user", parts=[types.Part(text=_scene_request_text(context, trace))])
     refusals: List[str] = []
-    last_invalid: Optional[str] = None
-    missing: set = set()
     statuses: List[Optional[int]] = []
-    attempts = _scene_attempts()
-    tried = {model for model, _ in attempts}
-    discovered = False
+    first = True
 
-    while attempts:
-        model, structured = attempts.pop(0)
-        if not attempts and not discovered:
-            # About to try the last configured way; queue models the key
-            # really has, in case this one is refused too.
-            discovered = True
-            attempts.extend((m, False) for m in await _discover_models() if m not in tried)
-        if model in missing:
-            continue  # it 404ed: asking it again in another mode can't help
-        mode = f"{model} ({'schema' if structured else 'json'})"
-        config = _scene_config(language, structured)
-        contents: List[types.Content] = [request]
-
-        for repair in range(2):
-            try:
-                response = await _generate(model, contents, config, "Scene")
-            except Exception as e:
-                refusals.append(f"{mode}: {e}")
-                statuses.append(_status(e))
-                logger.error(f"Scene generation call failed with {mode}: {e}")
-                if _status(e) == 404:
-                    missing.add(model)
-                break  # this way of asking is refused; try the next one
-
-            raw = response.text or ""
-            try:
-                # Validate from the raw JSON rather than trusting
-                # `response.parsed`: the SDK skips Pydantic validators when
-                # parsing fails, and the repairs live in those validators.
-                result = SceneResult.model_validate_json(_strip_fences(raw))
-            except ValidationError as e:
-                last_invalid = "; ".join(err["msg"] for err in e.errors()[:5])
-                logger.info(f"Scene from {mode}, attempt {repair + 1}, invalid: {last_invalid}")
-                contents = [
-                    request,
-                    types.Content(role="model", parts=[types.Part(text=raw[:20000])]),
-                    types.Content(
-                        role="user",
-                        parts=[types.Part(text=(
-                            f"That result is invalid: {last_invalid}. "
-                            "Return the corrected complete result."
-                        ))],
-                    ),
-                ]
-                continue
-
-            if result.scene is not None and result.scene._repairs:
-                logger.info(f"Scene from {mode} repaired: {'; '.join(result.scene._repairs)}")
-            logger.info(f"Scene generated with {mode}.")
-            return result
-        else:
-            # Both tries answered but neither was usable: asking another way
-            # won't help a model that understood the request.
-            raise GenerationError(f"Couldn't build a valid visualization ({last_invalid}).")
+    async for model in _each_model(SCENE):
+        # Structured output first, on the first model only: the API can refuse
+        # a schema it thinks too large, and plain JSON mode with the schema in
+        # the instructions avoids that. Later models go straight to JSON mode.
+        modes = (True, False) if first else (False,)
+        first = False
+        for structured in modes:
+            mode = f"{model} ({'schema' if structured else 'json'})"
+            outcome = await _try_scene(model, structured, mode, request, language)
+            if isinstance(outcome, SceneResult):
+                return outcome
+            if isinstance(outcome, _Invalid):
+                # Both tries answered but neither was usable: asking another
+                # way won't help a model that understood the request.
+                raise GenerationError(f"Couldn't build a valid visualization ({outcome.reason}).")
+            refusals.append(f"{mode}: {outcome}")
+            statuses.append(_status(outcome))
+            if _status(outcome) == 404:
+                resolver.mark_missing(model, SCENE, outcome)
+                break  # this model doesn't exist; another mode won't help
 
     logger.error(f"Every way of generating a scene was refused: {' | '.join(refusals)}")
     if statuses and all(s in TRANSIENT_STATUSES for s in statuses):
@@ -339,6 +319,20 @@ def _strip_fences(raw: str) -> str:
     return text
 
 
+async def _intent_call(prompt: str):
+    """Ask the answer model, moving past models that 404."""
+    last_error: Optional[Exception] = None
+    async for model in _each_model(ANSWER):
+        try:
+            return await _generate(model, prompt, classification_config, "Intent")
+        except Exception as e:
+            last_error = e
+            if _status(e) != 404:
+                raise
+            resolver.mark_missing(model, ANSWER, e)
+    raise last_error or GenerationError("No model is available.")
+
+
 async def classify_intent_with_llm(user_query: str) -> str:
     """Use the LLM to classify the user's intent with in-memory caching."""
     # Normalize query for better cache hits
@@ -353,7 +347,7 @@ async def classify_intent_with_llm(user_query: str) -> str:
         start_time = time.perf_counter()
         prompt = INTENT_CLASSIFICATION_PROMPT.format(user_query=user_query)
 
-        response = await _generate(DEFAULT_MODEL, prompt, classification_config, "Intent")
+        response = await _intent_call(prompt)
 
         intent = response.text.strip().lower()
         duration = time.perf_counter() - start_time

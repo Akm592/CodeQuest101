@@ -42,7 +42,8 @@ bundle. Row Level Security is what protects the data, so **apply
 `supabase/migrations/0001_chat_schema_rls.sql` before running anything against a
 real project.** See [`supabase/README.md`](supabase/README.md).
 
-`.env.example` documents the optional variables too: `GEMINI_MODEL`,
+`.env.example` documents the optional variables too: `GEMINI_MODEL` and
+`GEMINI_SCENE_MODEL` (empty: picked at runtime from the models the key can use),
 `CORS_ORIGINS`, `GUEST_RATE_LIMIT`, `RATE_LIMIT_RULES`, `TRUSTED_PROXY_HOPS`,
 `LOG_LEVEL` and `APP_LOG_FILE`.
 
