@@ -34,10 +34,27 @@ def no_retry_pause():
 
 
 @pytest.fixture(autouse=True)
-def mock_genai_client():
+def mock_genai_client(monkeypatch):
+    monkeypatch.setattr(gemini_integration, "_discovered", None)
     with patch("app.llm.gemini_integration.client") as mock_client:
         mock_client.aio.models.generate_content = AsyncMock()
+        # By default the key lists no models, so discovery adds nothing.
+        mock_client.aio.models.list = AsyncMock(return_value=pager([]))
         yield mock_client
+
+
+def model(name, actions=("generateContent",)):
+    m = MagicMock()
+    m.name = f"models/{name}"
+    m.supported_actions = list(actions)
+    return m
+
+
+def pager(models):
+    async def it():
+        for m in models:
+            yield m
+    return it()
 
 
 def response(text="", parsed=None):
@@ -333,3 +350,51 @@ async def test_intent_classification_survives_one_overload(mock_genai_client):
     mock_genai_client.aio.models.generate_content.side_effect = [overloaded(), response("cs_tutor")]
 
     assert await gemini_integration.classify_intent_with_llm("explain two sum") == "cs_tutor"
+
+
+# --- Discovering models when the configured ones are gone ----------------------
+
+
+@pytest.mark.asyncio
+async def test_when_configured_models_are_refused_a_listed_model_is_used(mock_genai_client):
+    """Model names get retired; the key's own model list is the last resort."""
+    mock_genai_client.aio.models.list.return_value = pager([
+        model("gemini-2.5-flash-lite"),
+        model("gemini-9.1-flash"),
+        model("gemini-9.1-flash-tts"),
+        model("text-embedding-004", actions=("embedContent",)),
+        model("gemini-9.1-pro"),
+    ])
+    mock_genai_client.aio.models.generate_content.side_effect = [
+        RuntimeError("404 retired"),  # scene model
+        RuntimeError("404 retired"),  # answer model
+        response(feasible()),
+    ]
+
+    result = await generate_scene(CONTEXT)
+
+    assert result.feasible
+    used = [c.kwargs["model"] for c in mock_genai_client.aio.models.generate_content.call_args_list]
+    assert used[-1] == "gemini-9.1-flash"
+
+
+def test_discovered_models_are_newest_first_and_skip_lite():
+    names = ["gemini-2.0-flash", "gemini-3.8-flash-lite", "gemini-3.8-flash", "gemini-3.8-flash-preview"]
+    assert sorted(names, key=gemini_integration._version_key) == [
+        "gemini-3.8-flash", "gemini-3.8-flash-preview", "gemini-3.8-flash-lite", "gemini-2.0-flash",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_a_failed_model_listing_still_reports_unavailable(mock_genai_client):
+    mock_genai_client.aio.models.list.side_effect = RuntimeError("403")
+    mock_genai_client.aio.models.generate_content.side_effect = RuntimeError("404 gone")
+    with pytest.raises(GenerationError, match="unavailable"):
+        await generate_scene(CONTEXT)
+
+
+@pytest.mark.asyncio
+async def test_overload_is_named_as_the_cause(mock_genai_client):
+    mock_genai_client.aio.models.generate_content.side_effect = RuntimeError("503 high demand")
+    with pytest.raises(GenerationError, match="overloaded"):
+        await generate_scene(CONTEXT)

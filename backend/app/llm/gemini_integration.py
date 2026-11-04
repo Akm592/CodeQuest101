@@ -167,6 +167,46 @@ def _scene_attempts() -> List[Tuple[str, bool]]:
     return ordered
 
 
+# Models found by asking the API, cached for the process. Model names are
+# retired with little notice (gemini-2.5-flash started returning 404 for new
+# keys), so when every configured model is refused, the scene call asks which
+# models this key can actually use instead of failing.
+_discovered: Optional[List[str]] = None
+MAX_DISCOVERED = 3
+_SKIP_WORDS = ("tts", "image", "audio", "live", "embed", "vision", "thinking-exp", "learnlm", "gemma")
+
+
+def _version_key(name: str) -> Tuple:
+    """Sort newest first: higher version, then non-lite, then stable over preview."""
+    match = re.search(r"(\d+(?:\.\d+)?)", name)
+    version = float(match.group(1)) if match else 0.0
+    return (-version, "lite" in name, "preview" in name or "exp" in name, name)
+
+
+async def _discover_models() -> List[str]:
+    """Text-generation "flash" models this key can use, newest first. [] on failure."""
+    global _discovered
+    if _discovered:
+        return _discovered
+    try:
+        names = []
+        async for model in await client.aio.models.list():
+            name = (model.name or "").removeprefix("models/")
+            actions = model.supported_actions or []
+            if (
+                "flash" in name
+                and "generateContent" in actions
+                and not any(word in name for word in _SKIP_WORDS)
+            ):
+                names.append(name)
+    except Exception as e:
+        logger.error(f"Could not list Gemini models: {e}")
+        return []
+    _discovered = sorted(set(names), key=_version_key)[:MAX_DISCOVERED]
+    logger.info(f"Gemini models available to this key: {_discovered}")
+    return _discovered
+
+
 def _scene_config(language: str, structured: bool) -> types.GenerateContentConfig:
     instruction = SCENE_PROMPT.replace("{language}", language)
     if structured:
@@ -208,8 +248,18 @@ async def generate_scene(
     refusals: List[str] = []
     last_invalid: Optional[str] = None
     missing: set = set()
+    statuses: List[Optional[int]] = []
+    attempts = _scene_attempts()
+    tried = {model for model, _ in attempts}
+    discovered = False
 
-    for model, structured in _scene_attempts():
+    while attempts:
+        model, structured = attempts.pop(0)
+        if not attempts and not discovered:
+            # About to try the last configured way; queue models the key
+            # really has, in case this one is refused too.
+            discovered = True
+            attempts.extend((m, False) for m in await _discover_models() if m not in tried)
         if model in missing:
             continue  # it 404ed: asking it again in another mode can't help
         mode = f"{model} ({'schema' if structured else 'json'})"
@@ -221,6 +271,7 @@ async def generate_scene(
                 response = await _generate(model, contents, config, "Scene")
             except Exception as e:
                 refusals.append(f"{mode}: {e}")
+                statuses.append(_status(e))
                 logger.error(f"Scene generation call failed with {mode}: {e}")
                 if _status(e) == 404:
                     missing.add(model)
@@ -258,6 +309,11 @@ async def generate_scene(
             raise GenerationError(f"Couldn't build a valid visualization ({last_invalid}).")
 
     logger.error(f"Every way of generating a scene was refused: {' | '.join(refusals)}")
+    if statuses and all(s in TRANSIENT_STATUSES for s in statuses):
+        raise GenerationError(
+            "The visualization service is unavailable right now: Google's models are "
+            "overloaded. Try again in a minute."
+        )
     raise GenerationError("The visualization service is unavailable right now.")
 
 
