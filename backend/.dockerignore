@@ -1,3 +1,19 @@
+# Secrets: never bake them into an image. Render injects env vars at runtime.
+.env
+.env.*
+!.env.example
+
+# Python caches and local environments
 __pycache__
 *.pyc
-app.log
+.venv
+venv
+.pytest_cache
+.ruff_cache
+
+# Not needed at runtime
+tests
+docs
+*.log
+.git
+.code-review-graph

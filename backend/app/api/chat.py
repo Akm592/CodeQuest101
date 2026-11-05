@@ -448,8 +448,14 @@ async def stream_response(
 
 
 @router.post("/scrape_leetcode")
-async def scrape_leetcode_endpoint(request: Request):
-    """Look up a LeetCode question by URL, number or title."""
+async def scrape_leetcode_endpoint(
+    request: Request,
+    user: Optional[AuthenticatedUser] = Depends(get_current_user),
+):
+    """Look up a LeetCode question by URL, number or title.
+
+    Each lookup calls LeetCode, so guests share the chat's rate limit here.
+    """
     try:
         body = await request.json()
     except json.JSONDecodeError:
@@ -460,6 +466,9 @@ async def scrape_leetcode_endpoint(request: Request):
         raise HTTPException(
             status_code=400, detail="Missing or invalid 'identifier' (string) in request body"
         )
+
+    if user is None:
+        check_rate_limit(request)
 
     scraped = await scrape_leetcode_question(identifier)
     if not scraped:

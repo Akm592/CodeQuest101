@@ -183,3 +183,24 @@ def test_chat_rejects_empty_input(client):
 
 def test_scrape_endpoint_requires_an_identifier(client):
     assert client.post("/scrape_leetcode", json={}).status_code == 400
+
+
+def test_scrape_endpoint_rate_limits_guests(client, monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "GUEST_RATE_LIMIT", 1)
+    found = {"title": "Two Sum"}
+    with patch("app.api.chat.scrape_leetcode_question", AsyncMock(return_value=found)):
+        assert client.post("/scrape_leetcode", json={"identifier": "1"}).status_code == 200
+        assert client.post("/scrape_leetcode", json={"identifier": "1"}).status_code == 429
+
+
+def test_scrape_endpoint_does_not_rate_limit_signed_in_users(client, monkeypatch, as_user, alice):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "GUEST_RATE_LIMIT", 1)
+    as_user(alice)
+    found = {"title": "Two Sum"}
+    with patch("app.api.chat.scrape_leetcode_question", AsyncMock(return_value=found)):
+        for _ in range(3):
+            assert client.post("/scrape_leetcode", json={"identifier": "1"}).status_code == 200

@@ -106,7 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error("User not authenticated");
     const { data, error } = await supabase
       .from("chat_sessions")
-      .insert({ user_id: user.id }) // user.id should be the UUID from Supabase Auth, which should match your users.id in the new schema.
+      // chat_sessions.id had no default in the database, so an insert without
+      // an id failed and "New chat" did nothing. Send one explicitly.
+      .insert({ id: crypto.randomUUID(), user_id: user.id })
       .select();
     if (error) {
       console.error("Error creating chat session:", error);
