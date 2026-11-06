@@ -39,6 +39,7 @@ import { buildKMeansSteps } from "../ml/kMeans";
 import { buildLrSteps, samplePoints } from "../ml/linearRegression";
 import { buildMlpSteps, makeDataset } from "../ml/mlp";
 import { buildNbSteps, TEST_EMAILS, trainNb, TRAINING_EMAILS } from "../ml/naiveBayes";
+import { buildForestFrames, fitForest } from "../ml/randomForest";
 import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
 import {
   attentionGuide,
@@ -55,6 +56,8 @@ import {
   mlpGuideStepFor,
   naiveBayesGuide,
   naiveBayesGuideStepFor,
+  randomForestGuide,
+  randomForestGuideStepFor,
   neuralNetworkGuide,
   samplingGuide,
   samplingGuideStepFor,
@@ -251,6 +254,18 @@ const cases: [string, GuideCase][] = [
         [...TEST_EMAILS.map((t) => t.text), "free zebra"].map((text) => run(buildNbSteps(trainNb(TRAINING_EMAILS, alpha), text), naiveBayesGuideStepFor)),
       ),
       finalStages: ["decide"],
+    },
+  ],
+  [
+    "random forest",
+    {
+      guide: randomForestGuide,
+      runs: (["groups", "noisy"] as const).map((key) => {
+        const data = makeTreeData(key, 1);
+        const forest = fitForest(data, { maxDepth: 50, criterion: "gini", classes: TREE_DATASETS[key].classes, bounds: TREE_BOUNDS, trees: 20, maxFeatures: 1, bootstrap: true, seed: 1 });
+        return run(buildForestFrames(forest, data.length), randomForestGuideStepFor);
+      }),
+      finalStages: ["done"],
     },
   ],
 ];

@@ -411,6 +411,30 @@ check("smoothed word chances add up to 1 over the vocabulary", abs(sum(m.word_pr
 m0 = nbm.NaiveBayes(alpha=0.0).fit(["free offer", "free cash"], ["spam", "ham"])  # "offer" never appears in ham
 check("with alpha = 0 an unseen-in-class word rules the class out", m0.predict_proba("free offer")["ham"] == 0.0)
 
+print("\nrandom forest")
+rf = load("random_forest")
+forest = rf.RandomForest(n_trees=200, seed=3).fit([[i, 0] for i in range(80)], ["a"] * 80)
+left = sum(len(o) for o in forest.out_of_bag) / (200 * 80)
+check("bootstrap samples leave out about a third of the rows (≈ 0.366 for n = 80)", abs(left - (1 - 1 / 80) ** 80) < 0.01)
+wins = 0
+for trial in range(5):
+    r = rng
+    def noisy(n):
+        pts, labs = [], []
+        for i in range(n):
+            lab = i % 2
+            pts.append([r.gauss(6.5 if lab else 3.5, 1.6), r.gauss(6 if lab else 4, 1.6)])
+            labs.append(lab if r.random() > 0.15 else 1 - lab)
+        return pts, labs
+    tr_x, tr_y = noisy(80)
+    te_x, te_y = noisy(600)
+    tree = rf.build_tree(tr_x, tr_y, random.Random(0), 2)
+    single = sum(max(rf.leaf_probs(tree, x).items(), key=lambda kv: kv[1])[0] == y for x, y in zip(te_x, te_y)) / len(te_y)
+    model = rf.RandomForest(n_trees=40, seed=trial).fit(tr_x, tr_y)
+    combined = sum(model.predict(x) == y for x, y in zip(te_x, te_y)) / len(te_y)
+    wins += combined > single
+check("the forest beats a single fully grown tree on new noisy points (5 of 5 trials)", wins == 5)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

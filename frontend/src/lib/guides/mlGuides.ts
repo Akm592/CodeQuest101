@@ -12,12 +12,14 @@ import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
 import type { MlpStep } from "../ml/mlp";
 import type { NbStep } from "../ml/naiveBayes";
+import type { ForestStep } from "../ml/randomForest";
 import type { SamplingStep } from "../ml/sampling";
 import decisionTreePy from "./python/decision_tree.py?raw";
 import gradientDescentPy from "./python/gradient_descent.py?raw";
 import kMeansPy from "./python/k_means.py?raw";
 import linearRegressionPy from "./python/linear_regression.py?raw";
 import naiveBayesPy from "./python/naive_bayes.py?raw";
+import randomForestPy from "./python/random_forest.py?raw";
 import samplingPy from "./python/sampling.py?raw";
 import selfAttentionPy from "./python/self_attention.py?raw";
 import tinyMlpPy from "./python/tiny_mlp.py?raw";
@@ -402,3 +404,47 @@ export const naiveBayesGuide: AlgorithmGuide = {
 };
 
 export const naiveBayesGuideStepFor = (s: NbStep) => s.phase;
+
+export const randomForestGuide: AlgorithmGuide = {
+  title: "Random Forest",
+  whenToUseHeading: ML_HEADING,
+  idea: [
+    "One decision tree is jumpy: change the data a little and you get a very different tree. A random forest grows many trees and averages their answers. Their individual mistakes point in different directions, so averaging cancels much of them out, like asking a crowd instead of one person.",
+    "Averaging only helps if the trees disagree. Two tricks make them different. Each tree learns from a bootstrap sample: rows picked at random with replacement, so some rows appear twice and about a third are left out. And at every question, each tree may only look at a random few of the features.",
+    "The left-out rows are a free test. Each tree never saw about a third of the data, so you can check the forest on those rows (the out-of-bag estimate) without keeping a separate test set.",
+  ],
+  whenToUse: [
+    "Tabular data (spreadsheets, databases) where you want strong accuracy with very little tuning.",
+    "When one decision tree overfits or keeps changing with the data.",
+    "As a strong baseline. Gradient boosting is the other top choice for tabular data; it needs more tuning.",
+  ],
+  stages: [
+    { id: "one", title: "Grow one tree on a bootstrap sample", detail: "Draw n rows with replacement. Grow a full tree on them, looking at only a random subset of features at each question.", pseudo: "sample = random rows, with replacement" },
+    { id: "add", title: "Add more trees, each different", detail: "Every new tree gets its own random sample and its own random questions. The forest's answer is the average of all their probabilities.", pseudo: "p(x) = mean over trees of tree.probs(x)" },
+    { id: "done", title: "Predict with the average, check with out-of-bag", detail: "The class with the highest average probability wins. Each row can be tested by the trees that never saw it.", pseudo: "predict = argmax p(x)" },
+  ],
+  legend: [
+    { tone: "current", label: "Class: teal" },
+    { tone: "visited", label: "Class: violet" },
+    { tone: "idle", label: "Left out of a tree's sample" },
+  ],
+  complexity: {
+    time: "trees × (one tree's cost)",
+    space: "trees × (one tree's size)",
+    why: "Each tree is grown exactly like a decision tree, just on a resampled copy of the data, and the trees are independent, so they can be grown in parallel.",
+  },
+  pitfalls: [
+    "More trees never make it overfit, but they do make it slower: once the accuracy curve flattens, extra trees just cost time.",
+    "The individual trees can still overfit noise; the forest averages that away only partly. Limiting depth or leaf size can still help on very noisy data.",
+    "It's much harder to read than a single tree: you can't follow 50 trees by hand. Feature importances help, but scikit-learn warns the default ones favour features with many distinct values.",
+  ],
+  tryThis: [
+    "On “Noisy”, compare one tree with the forest on new points, then watch the forest boundary smooth out as trees are added.",
+    "Look at the four sample trees: each one is different, and none is as good as the average.",
+    "Check that the out-of-bag estimate lands close to the accuracy on new points.",
+  ],
+  python: randomForestPy,
+};
+
+/** Stage for the forest frames: the first tree, adding trees, the finished forest. */
+export const randomForestGuideStepFor = (s: ForestStep) => (s.k === 1 ? "one" : s.done ? "done" : "add");

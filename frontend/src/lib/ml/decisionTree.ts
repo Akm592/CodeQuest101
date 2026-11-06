@@ -10,7 +10,7 @@
 // depth limit is reached, the node is too small, or no split helps.
 
 import type { BaseStep } from "../algorithms/types";
-import { gaussian, seededRng } from "./random";
+import { gaussian, seededRng, type Rng } from "./random";
 
 export type Criterion = "gini" | "entropy";
 
@@ -69,15 +69,27 @@ export function candidateSplits(points: LabeledPoint[], feature: "x" | "y", clas
   return out;
 }
 
-export function bestSplit(points: LabeledPoint[], classes: number, criterion: Criterion): Split | null {
+export function bestSplit(points: LabeledPoint[], classes: number, criterion: Criterion, features: ("x" | "y")[] = ["x", "y"]): Split | null {
   let best: Split | null = null;
-  for (const f of ["x", "y"] as const) {
+  for (const f of features) {
     for (const s of candidateSplits(points, f, classes, criterion)) {
       // Strictly better only, so ties keep the first found (x before y, low threshold first).
       if (!best || s.score < best.score - 1e-12) best = s;
     }
   }
   return best;
+}
+
+/**
+ * The split a random forest tree would choose: look at a random subset of
+ * `maxFeatures` features first, and, like scikit-learn, keep looking at the
+ * remaining features only if none of those gives a useful split.
+ */
+export function randomFeatureSplit(points: LabeledPoint[], classes: number, criterion: Criterion, maxFeatures: number, rng: Rng): Split | null {
+  const order: ("x" | "y")[] = rng() < 0.5 ? ["x", "y"] : ["y", "x"];
+  const first = bestSplit(points, classes, criterion, order.slice(0, maxFeatures));
+  if (first && first.gain > 1e-12) return first;
+  return bestSplit(points, classes, criterion, order.slice(maxFeatures));
 }
 
 export interface Box {
@@ -107,6 +119,10 @@ export interface TreeOptions {
   minSamplesSplit?: number;
   classes: number;
   bounds: Box;
+  /** Random forests: consider only this many random features at each split. */
+  maxFeatures?: number;
+  /** Required with maxFeatures. */
+  rng?: Rng;
 }
 
 export interface TreeStep extends BaseStep {
@@ -121,11 +137,17 @@ const f3 = (v: number) => v.toFixed(3);
 
 /** Build the tree depth-first (like CART's recursion), recording every decision. */
 export function buildTreeSteps(points: LabeledPoint[], opts: TreeOptions, classNames: string[]): TreeStep[] {
-  const { maxDepth, criterion, classes, bounds, minSamplesSplit = 2 } = opts;
+  return growTree(points, opts, classNames, true).steps;
+}
+
+function growTree(points: LabeledPoint[], opts: TreeOptions, classNames: string[], record: boolean): { steps: TreeStep[]; nodes: TreeNode[] } {
+  const { maxDepth, criterion, classes, bounds, minSamplesSplit = 2, maxFeatures, rng } = opts;
   const nodes: TreeNode[] = [];
   const steps: TreeStep[] = [];
-  const snap = (phase: TreeStep["phase"], focus: number, explanation: string, candidate?: Split, done = false) =>
+  const snap = (phase: TreeStep["phase"], focus: number, explanation: string, candidate?: Split, done = false) => {
+    if (!record) return;
     steps.push({ phase, focus, nodes: nodes.map((n) => ({ ...n, box: { ...n.box }, counts: [...n.counts], split: n.split && { ...n.split } })), candidate, explanation, done });
+  };
   const describe = (c: number[]) => c.map((v, i) => `${v} ${classNames[i]}`).join(", ");
 
   const make = (pts: LabeledPoint[], depth: number, box: Box): number => {
@@ -144,7 +166,7 @@ export function buildTreeSteps(points: LabeledPoint[], opts: TreeOptions, classN
     if (node.impurity === 0) return leaf("every point here is the same class, so there's nothing left to ask.");
     if (node.depth >= maxDepth) return leaf(`the depth limit (${maxDepth}) is reached.`);
     if (pts.length < minSamplesSplit) return leaf("too few points to split.");
-    const s = bestSplit(pts, classes, criterion);
+    const s = maxFeatures && rng ? randomFeatureSplit(pts, classes, criterion, maxFeatures, rng) : bestSplit(pts, classes, criterion);
     if (!s || s.gain <= 1e-12) return leaf("no single question makes the two sides any purer.");
 
     const name = s.feature;
@@ -179,7 +201,7 @@ export function buildTreeSteps(points: LabeledPoint[], opts: TreeOptions, classN
   grow(root, points);
   const leaves = nodes.filter((n) => !n.split).length;
   snap("done", root, `Done: ${nodes.length} nodes, ${leaves} leaves. Every region of the plot now has an answer.`, undefined, true);
-  return steps;
+  return { steps, nodes };
 }
 
 /** Walk a point down the tree; returns the leaf and the nodes visited. */
@@ -197,9 +219,9 @@ export function accuracyOf(nodes: TreeNode[], pts: LabeledPoint[]): number {
   return pts.filter((p) => classify(nodes, p).leaf.prediction === p.label).length / pts.length;
 }
 
-/** The finished tree only (no steps), for the depth-vs-accuracy chart. */
+/** The finished tree only (no steps recorded), for charts and forests. */
 export function fitTree(points: LabeledPoint[], opts: TreeOptions): TreeNode[] {
-  return buildTreeSteps(points, opts, Array.from({ length: opts.classes }, (_, i) => String(i))).at(-1)!.nodes;
+  return growTree(points, opts, Array.from({ length: opts.classes }, (_, i) => String(i)), false).nodes;
 }
 
 // ---------------------------------------------------------------------------

@@ -45,6 +45,7 @@ const AttentionVisualizer = lazy(() => import("./components/ml/AttentionVisualiz
 const SamplingVisualizer = lazy(() => import("./components/ml/SamplingVisualizer"));
 const DecisionTreeVisualizer = lazy(() => import("./components/ml/DecisionTreeVisualizer"));
 const NaiveBayesVisualizer = lazy(() => import("./components/ml/NaiveBayesVisualizer"));
+const RandomForestVisualizer = lazy(() => import("./components/ml/RandomForestVisualizer"));
 const GraphTraversalVisualizer = lazy(() => import("./components/GraphTraversalVisualizer"));
 const HeapDataStructure = lazy(() => import("./components/Datastructures/Heaps/heapDataStructure"));
 const DynamicProgrammingVisualizer = lazy(() => import("./components/DynamicProgrammingVisualizer"));
@@ -88,6 +89,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   sampling: { kind: "page", title: "Next-Token Sampling", Component: SamplingVisualizer },
   decisionTree: { kind: "page", title: "Decision Tree", Component: DecisionTreeVisualizer },
   naiveBayes: { kind: "page", title: "Naive Bayes", Component: NaiveBayesVisualizer },
+  randomForest: { kind: "page", title: "Random Forest", Component: RandomForestVisualizer },
   graph: { kind: "page", title: "Graph Algorithms", Component: GraphTraversalVisualizer },
   heap: { kind: "page", title: "Heap Data Structure", Component: HeapDataStructure },
 
