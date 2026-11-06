@@ -20,6 +20,10 @@
 
 @layer base {
   :root {
+    /* Tells the browser the page is dark, so native controls it draws itself
+       (select menus, scrollbars, date pickers) use dark colours too. Without
+       it the language menu in Settings opened white with near-white text. */
+    color-scheme: dark;
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
 

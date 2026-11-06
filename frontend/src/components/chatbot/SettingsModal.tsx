@@ -87,10 +87,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     id="preferred-language"
                                     value={preferredLanguage}
                                     onChange={(e) => onPreferredLanguageChange?.(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-muted border border-border text-sm text-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/30"
                                 >
                                     {LANGUAGE_OPTIONS.map((option) => (
-                                        <option key={option.value} value={option.value}>
+                                        <option key={option.value} value={option.value} className="bg-card text-foreground">
                                             {option.name}
                                         </option>
                                     ))}
