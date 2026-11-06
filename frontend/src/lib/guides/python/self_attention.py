@@ -1,0 +1,41 @@
+import math
+
+
+def matmul(a, b):
+    return [[sum(x * y for x, y in zip(row, col)) for col in zip(*b)] for row in a]
+
+
+def softmax(xs):
+    m = max(xs)
+    exps = [math.exp(x - m) for x in xs]
+    total = sum(exps)
+    return [e / total for e in exps]
+
+
+def self_attention(X, Wq, Wk, Wv):
+    """Scaled dot-product self-attention.
+
+    X: one row per word (its embedding). Returns (outputs, weights), where
+    weights[i][j] is how much word i attends to word j.
+    """
+    Q, K, V = matmul(X, Wq), matmul(X, Wk), matmul(X, Wv)
+    d = len(K[0])
+    weights = []
+    for q in Q:
+        scores = [sum(a * b for a, b in zip(q, k)) / math.sqrt(d) for k in K]
+        weights.append(softmax(scores))
+    outputs = matmul(weights, V)
+    return outputs, weights
+
+
+# The page's toy: features are [thing, animal, person, refers back, action].
+words = ["the", "cat", "sat", "on", "the", "mat", "because", "it", "was", "tired"]
+vocab = {"cat": [1, 1, 0, 0, 0], "mat": [1, 0, 0, 0, 0], "it": [0, 0, 0, 1, 0],
+         "sat": [0, 0, 0, 0, 1], "tired": [0, 0, 0, 0, 0.5]}
+X = [vocab.get(w, [0, 0, 0, 0, 0]) for w in words]
+Wq = [[0, 0, 0, 0, 3], [0] * 5, [0] * 5, [3, 2.4, -4, 0, 0], [1, 3, 3, 0, 0]]
+I = [[1 if i == j else 0 for j in range(5)] for i in range(5)]
+
+_, weights = self_attention(X, Wq, I, I)
+it = words.index("it")
+print(words[max(range(len(words)), key=lambda j: weights[it][j])])  # cat

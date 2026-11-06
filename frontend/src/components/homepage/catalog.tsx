@@ -6,6 +6,7 @@
 // can never disagree again, and adding a visualizer updates the hero for free.
 
 import {
+  Boxes,
   Brain,
   Code2,
   Cpu,
@@ -14,12 +15,16 @@ import {
   GitBranch,
   Grid,
   Layers,
+  LineChart,
   ListTree,
+  MessageSquareText,
   Network,
   RotateCw,
+  ScanEye,
   Search,
   SortDesc,
   Table2,
+  TrendingDown,
   Workflow,
 } from "lucide-react";
 import * as React from "react";
@@ -55,8 +60,8 @@ export const categories: Category[] = [
     key: "dataStructures",
   },
   {
-    title: "Machine Learning",
-    description: "Explore AI concepts",
+    title: "Machine Learning & AI",
+    description: "From gradient descent to attention",
     icon: <Brain className="h-6 w-6 text-secondary-bright" />,
     key: "machineLearning",
   },
@@ -84,7 +89,12 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Trie", description: "Prefix tree: insert, search, autocomplete", icon: <ListTree />, key: "trie", level: "Medium" },
   ],
   machineLearning: [
-    { title: "Neural Networks", description: "Backpropagation visualized", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
+    { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
+    { title: "Linear Regression", description: "Fit a line by shrinking the error", icon: <LineChart />, key: "linearRegression", level: "Easy" },
+    { title: "K-Means Clustering", description: "Find groups with no labels", icon: <Boxes />, key: "kMeans", level: "Easy" },
+    { title: "Neural Network", description: "Watch it train: forward, backprop, update", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
+    { title: "Self-Attention", description: "How a transformer links “it” to “cat”", icon: <ScanEye />, key: "attention", level: "Medium" },
+    { title: "Next-Token Sampling", description: "Temperature, top-k and top-p, explained", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
   ],
 };
 
@@ -100,7 +110,7 @@ export type VisualizationKey =
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,
@@ -115,6 +125,6 @@ export const allVisualizations: Visualization[] = [
 export const catalogStats: { label: string; value: string }[] = [
   { label: "Algorithms", value: String(visualizations.algorithms.length) },
   { label: "Data Structures", value: String(visualizations.dataStructures.length) },
-  { label: "ML Models", value: String(visualizations.machineLearning.length) },
+  { label: "ML & AI", value: String(visualizations.machineLearning.length) },
   { label: "Visualizations", value: String(allVisualizations.length) },
 ];

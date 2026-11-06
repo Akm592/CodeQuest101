@@ -1,0 +1,32 @@
+def fit_line(xs, ys, lr=0.1, epochs=2000, tol=1e-12):
+    """Fit y = slope * x + intercept by gradient descent on mean squared error.
+
+    x is standardised first, so both parameters learn at the same pace.
+    """
+    n = len(xs)
+    mean = sum(xs) / n
+    std = (sum((x - mean) ** 2 for x in xs) / n) ** 0.5
+    zs = [(x - mean) / std for x in xs]
+
+    w, b = 0.0, 0.0
+    prev = float("inf")
+    for _ in range(epochs):
+        errors = [w * z + b - y for z, y in zip(zs, ys)]
+        mse = sum(e * e for e in errors) / n
+        if abs(prev - mse) < tol:
+            break
+        prev = mse
+        grad_w = 2 / n * sum(e * z for e, z in zip(errors, zs))
+        grad_b = 2 / n * sum(errors)
+        w -= lr * grad_w
+        b -= lr * grad_b
+
+    # Undo the scaling so the line is in the original units.
+    slope = w / std
+    intercept = b - w * mean / std
+    return slope, intercept
+
+
+xs = [1, 2, 3, 4, 5, 6]
+ys = [1.9, 2.4, 3.1, 3.4, 4.2, 4.4]
+print(fit_line(xs, ys))  # about (0.52, 1.42)

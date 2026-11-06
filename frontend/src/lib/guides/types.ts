@@ -30,6 +30,8 @@ export interface AlgorithmGuide {
   idea: string[];
   /** How to recognise the pattern in an interview question. */
   whenToUse: string[];
+  /** Heading for whenToUse. Defaults to "Spot it in an interview". */
+  whenToUseHeading?: string;
   stages: GuideStage[];
   legend: LegendEntry[];
   complexity: { time: string; space: string; why: string };

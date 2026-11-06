@@ -30,6 +30,27 @@ import {
 import { nQueensGuide, nQueensGuideStepFor } from "./nQueensGuide";
 import { trieGuide, trieGuideStepFor } from "./trieGuide";
 import type { AlgorithmGuide } from "./types";
+import { buildAttentionSteps, SENTENCES, tokenize } from "../ml/attention";
+import { GD_DEFAULT_LR, KMEANS_DEFAULT, kMeansPoints, LR_DEFAULT, MLP_DEFAULT, SAMPLING_DEFAULT } from "../ml/demos";
+import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
+import { buildKMeansSteps } from "../ml/kMeans";
+import { buildLrSteps, samplePoints } from "../ml/linearRegression";
+import { buildMlpSteps, makeDataset } from "../ml/mlp";
+import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
+import {
+  attentionGuide,
+  attentionGuideStepFor,
+  gdGuideStepFor,
+  gradientDescentGuide,
+  kMeansGuide,
+  kMeansGuideStepFor,
+  linearRegressionGuide,
+  lrGuideStepFor,
+  mlpGuideStepFor,
+  neuralNetworkGuide,
+  samplingGuide,
+  samplingGuideStepFor,
+} from "./mlGuides";
 
 // One case per guide: the guide, and every run the page can show for it, each
 // paired with the mapping the page uses. The runs are the pages' own inputs
@@ -47,6 +68,11 @@ const dpRun = (problem: "editDistance" | "lcs" | "knapsack", result: DpResult) =
 });
 
 const { source, target } = DP_DEFAULT_STRINGS;
+
+/** Wrap a typed run for the table below. */
+function run<T extends BaseStep>(steps: T[], stageFor: (s: T) => string) {
+  return { steps: steps as BaseStep[], stageFor: (s: BaseStep) => stageFor(s as T) };
+}
 
 const cases: [string, GuideCase][] = [
   [
@@ -125,6 +151,70 @@ const cases: [string, GuideCase][] = [
           };
         },
       ),
+      finalStages: ["done"],
+    },
+  ],
+  [
+    "gradient descent",
+    {
+      guide: gradientDescentGuide,
+      runs: [
+        ...Object.values(SURFACES).map((surf) =>
+          run(buildGdSteps(surf, { lr: GD_DEFAULT_LR[surf.key], optimizer: "plain", start: surf.start }), gdGuideStepFor),
+        ),
+        run(buildGdSteps(SURFACES.valley, { lr: 0.1, optimizer: "momentum", start: SURFACES.valley.start }), gdGuideStepFor),
+        run(buildGdSteps(SURFACES.bowl, { lr: 1.1, optimizer: "plain", start: SURFACES.bowl.start }), gdGuideStepFor),
+      ],
+      finalStages: ["stop", "diverged"],
+    },
+  ],
+  [
+    "linear regression",
+    {
+      guide: linearRegressionGuide,
+      runs: [LR_DEFAULT.lr, 1.05].map((lr) => run(buildLrSteps(samplePoints(LR_DEFAULT.seed), lr), lrGuideStepFor)),
+      finalStages: ["done", "diverged"],
+    },
+  ],
+  [
+    "k-means",
+    {
+      guide: kMeansGuide,
+      runs: (["plusplus", "random"] as const).map((init) =>
+        run(buildKMeansSteps(kMeansPoints(KMEANS_DEFAULT.seed), KMEANS_DEFAULT.k, init, KMEANS_DEFAULT.startSeed), kMeansGuideStepFor),
+      ),
+      finalStages: ["converged"],
+    },
+  ],
+  [
+    "self-attention",
+    {
+      guide: attentionGuide,
+      runs: SENTENCES.map((sentence) => {
+        const tokens = tokenize(sentence);
+        return run(buildAttentionSteps(tokens, tokens.findIndex((t) => t.word === "it")), attentionGuideStepFor);
+      }),
+      finalStages: ["blend"],
+    },
+  ],
+  [
+    "next-token sampling",
+    {
+      guide: samplingGuide,
+      runs: PROMPTS.map((p) => run(buildSamplingSteps(p, SAMPLING_DEFAULT, 1), samplingGuideStepFor)),
+      finalStages: ["sample"],
+    },
+  ],
+  [
+    "neural network",
+    {
+      guide: neuralNetworkGuide,
+      runs: [
+        run(
+          buildMlpSteps(makeDataset(MLP_DEFAULT.dataset, MLP_DEFAULT.seed), MLP_DEFAULT.hidden, MLP_DEFAULT.lr, MLP_DEFAULT.epochs, MLP_DEFAULT.seed),
+          mlpGuideStepFor,
+        ),
+      ],
       finalStages: ["done"],
     },
   ],

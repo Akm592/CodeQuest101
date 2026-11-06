@@ -232,6 +232,98 @@ for _ in range(100):
     ok &= t.starts_with(probe) == sorted(w for w in stored if w.startswith(probe))
 check("random word sets: search and starts_with agree with a set (100 cases)", ok)
 
+print("\ngradient descent")
+gd = load("gradient_descent")
+bowl, _ = gd.gradient_descent(lambda p: [2 * p[0], 2 * p[1]], [-2.4, 1.5], lr=0.3)
+check("reaches the bottom of x² + y²", abs(bowl[0]) < 1e-5 and abs(bowl[1]) < 1e-5)
+_, plain_path = gd.gradient_descent(gd.valley_grad, [-2.6, 1.2], lr=0.1)
+end, mom_path = gd.gradient_descent(gd.valley_grad, [-2.6, 1.2], lr=0.1, momentum=0.8)
+check("momentum reaches the valley floor in fewer steps", len(mom_path) < len(plain_path) and abs(end[0]) < 1e-4)
+
+print("\nlinear regression")
+lr_mod = load("linear_regression")
+ok = True
+for _ in range(100):
+    n = rng.randint(3, 20)
+    xs = [rng.uniform(0, 10) for _ in range(n)]
+    if max(xs) - min(xs) < 0.5:
+        continue
+    ys = [rng.uniform(-1, 1) * 3 + 0.7 * x for x in xs]
+    mx, my = sum(xs) / n, sum(ys) / n
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs)
+    got = lr_mod.fit_line(xs, ys)
+    ok &= abs(got[0] - slope) < 1e-4 and abs(got[1] - (my - slope * mx)) < 1e-3
+check("matches the closed-form least-squares line (100 random sets)", ok)
+
+print("\nk-means")
+km = load("k_means")
+ok = True
+for _ in range(60):
+    pts = [(rng.uniform(0, 10), rng.uniform(0, 10)) for _ in range(rng.randint(6, 30))]
+    k = rng.randint(1, 4)
+    centres, labels = km.k_means(pts, k, seed=rng.randint(0, 999))
+    d2 = lambda a, b: (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
+    ok &= all(d2(p, centres[lab]) <= min(d2(p, c) for c in centres) + 1e-9 for p, lab in zip(pts, labels))
+    for c in range(k):
+        members = [p for p, lab in zip(pts, labels) if lab == c]
+        if members:
+            ok &= abs(centres[c][0] - sum(p[0] for p in members) / len(members)) < 1e-9
+check("every point is on its nearest centre, every centre is its points' mean (60 cases)", ok)
+
+print("\nself-attention")
+sa = load("self_attention")
+_, weights = sa.self_attention(sa.X, sa.Wq, sa.I, sa.I)
+check("every row of weights sums to 1", all(abs(sum(r) - 1) < 1e-12 for r in weights))
+it = sa.words.index("it")
+check('"it" attends most to "cat" (the page\'s example)', sa.words[max(range(len(sa.words)), key=lambda j: weights[it][j])] == "cat")
+rows = [[rng.uniform(-1, 1) for _ in range(3)] for _ in range(4)]
+eye = [[1 if i == j else 0 for j in range(3)] for i in range(3)]
+out, w = sa.self_attention(rows, eye, eye, eye)
+manual = [sum(w[0][j] * rows[j][f] for j in range(4)) for f in range(3)]
+check("output is the weights times the values", all(abs(a - b) < 1e-12 for a, b in zip(out[0], manual)))
+
+print("\nnext-token sampling")
+smp = load("sampling")
+p = smp.next_token_probs(smp.logits, temperature=1.0, top_k=3)
+check("top-k = 3 keeps three words and sums to 1", sum(1 for v in p if v > 0) == 3 and abs(sum(p) - 1) < 1e-12)
+p = smp.next_token_probs(smp.logits, temperature=0.05)
+check("temperature near 0 picks the top word", p[0] > 0.999)
+p = smp.next_token_probs(smp.logits, temperature=1.0, top_p=0.95)
+kept = sorted((v for v in p if v > 0), reverse=True)
+full = smp.next_token_probs(smp.logits)
+check("top-p keeps the smallest set reaching p", sum(full[:len(kept)]) >= 0.95 and sum(full[:len(kept) - 1]) < 0.95)
+draws = [smp.sample_next(smp.logits, rng=rng) for _ in range(20000)]
+check("sampling frequencies match the probabilities", all(abs(draws.count(i) / 20000 - v) < 0.02 for i, v in enumerate(full)))
+
+print("\ntiny neural network")
+mlp = load("tiny_mlp")
+net = mlp.TinyMLP(hidden=4, seed=3)
+data = [(rng.uniform(-1, 1), rng.uniform(-1, 1), rng.randint(0, 1)) for _ in range(12)]
+grads = net.gradients(data)
+flat_g = [*grads[0][0], *grads[0][1], *grads[0][2], *grads[0][3], *grads[1], *grads[2], grads[3]]
+params = [(net.W1, (j, i)) for j in range(4) for i in range(2)] + [(net.b1, j) for j in range(4)] + [(net.W2, j) for j in range(4)]
+ok = True
+h = 1e-6
+for (arr, idx), g in zip(params, flat_g):
+    def get():
+        return arr[idx[0]][idx[1]] if isinstance(idx, tuple) else arr[idx]
+    def put(v):
+        if isinstance(idx, tuple):
+            arr[idx[0]][idx[1]] = v
+        else:
+            arr[idx] = v
+    v0 = get()
+    put(v0 + h); up = net.loss(data)
+    put(v0 - h); down = net.loss(data)
+    put(v0)
+    ok &= abs((up - down) / (2 * h) - g) < 1e-6
+net.b2 += h; up = net.loss(data); net.b2 -= 2 * h; down = net.loss(data); net.b2 += h
+ok &= abs((up - down) / (2 * h) - grads[3]) < 1e-6
+check("backprop gradients match finite differences", ok)
+xor_net = mlp.TinyMLP(hidden=4, seed=1)
+xor_net.train(mlp.xor)
+check("learns XOR", [xor_net.predict(x, y) for x, y, _ in mlp.xor] == [0, 0, 1, 1])
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

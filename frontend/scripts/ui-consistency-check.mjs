@@ -40,6 +40,7 @@ const VISUALIZERS = [
   'spiralMatrix', 'rotateImage', 'binaryTree', 'stack', 'hareTortoise',
   'tree', 'neuralNetwork', 'graph', 'heap',
   'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie',
+  'gradientDescent', 'linearRegression', 'kMeans', 'attention', 'sampling',
 ];
 
 const PAGES = ['/', '/chat', '/login', '/about', '/no-such-page',

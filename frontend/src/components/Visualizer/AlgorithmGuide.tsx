@@ -173,7 +173,7 @@ export const AlgorithmGuidePanel: React.FC<AlgorithmGuideProps> = ({ guide, acti
               </div>
 
               <div>
-                <SectionHeading>Spot it in an interview</SectionHeading>
+                <SectionHeading>{guide.whenToUseHeading ?? "Spot it in an interview"}</SectionHeading>
                 <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground marker:text-primary">
                   {guide.whenToUse.map((item, i) => (
                     <li key={i}>{item}</li>

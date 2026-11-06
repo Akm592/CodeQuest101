@@ -37,7 +37,12 @@ const BinaryTreeTraversalVisualizer = lazy(() => import("./components/BinaryTree
 const StackAndQueueVisualizer = lazy(() => import("./components/StackVisualizater"));
 const FloydsAlgorithmVisualizer = lazy(() => import("./components/FloydsAlgorithmVisualizer"));
 const TreeVisualizer = lazy(() => import("./components/TreeVisualizer"));
-const NeuralNetworkVisualizer = lazy(() => import("./components/NeuralNetworkVisualizer"));
+const NeuralNetworkTrainer = lazy(() => import("./components/ml/NeuralNetworkTrainer"));
+const GradientDescentVisualizer = lazy(() => import("./components/ml/GradientDescentVisualizer"));
+const LinearRegressionVisualizer = lazy(() => import("./components/ml/LinearRegressionVisualizer"));
+const KMeansVisualizer = lazy(() => import("./components/ml/KMeansVisualizer"));
+const AttentionVisualizer = lazy(() => import("./components/ml/AttentionVisualizer"));
+const SamplingVisualizer = lazy(() => import("./components/ml/SamplingVisualizer"));
 const GraphTraversalVisualizer = lazy(() => import("./components/GraphTraversalVisualizer"));
 const HeapDataStructure = lazy(() => import("./components/Datastructures/Heaps/heapDataStructure"));
 const DynamicProgrammingVisualizer = lazy(() => import("./components/DynamicProgrammingVisualizer"));
@@ -73,7 +78,12 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   stack: { kind: "page", title: "Stacks & Queues", Component: StackAndQueueVisualizer },
   hareTortoise: { kind: "page", title: "Floyd's Cycle Detection", Component: FloydsAlgorithmVisualizer },
   tree: { kind: "page", title: "Binary Search Tree", Component: TreeVisualizer },
-  neuralNetwork: { kind: "page", title: "Neural Network", Component: NeuralNetworkVisualizer },
+  neuralNetwork: { kind: "page", title: "Neural Network", Component: NeuralNetworkTrainer },
+  gradientDescent: { kind: "page", title: "Gradient Descent", Component: GradientDescentVisualizer },
+  linearRegression: { kind: "page", title: "Linear Regression", Component: LinearRegressionVisualizer },
+  kMeans: { kind: "page", title: "K-Means Clustering", Component: KMeansVisualizer },
+  attention: { kind: "page", title: "Self-Attention", Component: AttentionVisualizer },
+  sampling: { kind: "page", title: "Next-Token Sampling", Component: SamplingVisualizer },
   graph: { kind: "page", title: "Graph Algorithms", Component: GraphTraversalVisualizer },
   heap: { kind: "page", title: "Heap Data Structure", Component: HeapDataStructure },
 

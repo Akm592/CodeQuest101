@@ -35,11 +35,11 @@ const ALLOWLIST = new Set([]);
  * Naming the constants instead (MIN_SPEED_MS, calculateDelay) misses
  * RotateImageVisualizer, which hand-rolls a slider with raw milliseconds and
  * none of those identifiers — the file with the actual bug. Matching a bare
- * Slider import instead over-fires on NeuralNetworkVisualizer, whose three
- * sliders set hidden layers and neuron counts and are entirely legitimate.
+ * Slider import instead over-fires on the ML pages, whose sliders set a
+ * learning rate, a temperature or top-p and are entirely legitimate.
  *
- * The conjunction separates them cleanly: NeuralNetworkVisualizer mentions
- * "speed" zero times, every genuine offender at least six.
+ * The conjunction separates them cleanly: those pages never mention "speed";
+ * every genuine offender did, at least six times.
  */
 const IMPORTS_SLIDER = /^\s*import\s*\{[^}]*\bSlider\b[^}]*\}\s*from\s*["'][^"']*\/ui\/slider["']/m;
 const MENTIONS_SPEED = /\bspeed\b/i;
