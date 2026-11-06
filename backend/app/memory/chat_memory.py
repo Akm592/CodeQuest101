@@ -11,7 +11,13 @@ import time
 from collections import OrderedDict, deque
 from typing import Any, Dict, List, Optional
 
-DEFAULT_HISTORY_LENGTH = 5
+# Five exchanges. Five messages (two and a half exchanges) lost the thread of
+# a conversation after a single follow-up.
+DEFAULT_HISTORY_LENGTH = 10
+# What the model is sent is also capped by length: one long solution must not
+# crowd out the rest of the conversation.
+MAX_CONTEXT_CHARS = 16000
+MAX_MESSAGE_CHARS = 6000
 
 # Bounded so a long-running instance cannot accumulate one entry per session
 # seen, forever.
@@ -34,8 +40,24 @@ class ChatSession:
         self.last_seen = time.monotonic()
 
     def get_history(self) -> List[Dict[str, str]]:
-        """Return the retained history, oldest first."""
-        return list(self.history)
+        """Return the retained history, oldest first, within the length budget.
+
+        Long messages are cut to their beginning, which holds the idea and
+        the approach. The newest messages are kept first when the budget runs
+        out.
+        """
+        kept: List[Dict[str, str]] = []
+        total = 0
+        for message in reversed(self.history):
+            content = message["content"]
+            if len(content) > MAX_MESSAGE_CHARS:
+                content = content[:MAX_MESSAGE_CHARS] + "\n[...trimmed...]"
+            if kept and total + len(content) > MAX_CONTEXT_CHARS:
+                break
+            total += len(content)
+            kept.append({"role": message["role"], "content": content})
+        kept.reverse()
+        return kept
 
     def set_state(self, key: str, value: Any) -> None:
         """Set a scratch value for this session."""

@@ -47,19 +47,109 @@ def _sse(payload: Dict[str, Any]) -> str:
     return f"data: {json.dumps(payload)}\n\n"
 
 
+# "go" and "c" are also ordinary words ("go step by step", "a, b, c"), so
+# they only count when the message names them as a language.
+_AMBIGUOUS_LANGUAGES = {"go", "c"}
+_LANGUAGE_ALIASES = {"golang": "go", "cpp": "c++", "csharp": "c#"}
+_NAMED_BEFORE = re.compile(r"(?:\bin|\busing|\bwith|\binto|\bfor)\s+$")
+_NAMED_AFTER = re.compile(r"^\s+(?:code|language|solution|program|implementation|version)\b")
+
+
+def _language_pattern(name: str) -> str:
+    # Word-boundary match, but "c++"/"c#" contain regex metacharacters.
+    return r"(?<![a-z0-9])" + re.escape(name) + r"(?![a-z0-9+#])"
+
+
 def detect_language(text: str) -> Optional[str]:
-    """Find a supported language named in the user's message.
+    """Find the supported language the user's message names, if any.
 
     Lets "solve two sum in java" go straight to an answer instead of asking
-    which language the user wants.
+    which language the user wants. When several are named, the first one in
+    the text wins.
     """
     lowered = text.lower()
-    for language in SUPPORTED_LANGUAGES:
-        # Word-boundary match, but "c++"/"c#" contain regex metacharacters.
-        pattern = r"(?<![a-z0-9])" + re.escape(language) + r"(?![a-z0-9+#])"
-        if re.search(pattern, lowered):
+    if lowered.strip() in SUPPORTED_LANGUAGES:
+        return lowered.strip()
+
+    found: List[tuple] = []
+    names = [(lang, lang) for lang in SUPPORTED_LANGUAGES] + list(_LANGUAGE_ALIASES.items())
+    for name, language in names:
+        for match in re.finditer(_language_pattern(name), lowered):
+            if name in _AMBIGUOUS_LANGUAGES and not (
+                _NAMED_BEFORE.search(lowered[: match.start()])
+                or _NAMED_AFTER.match(lowered[match.end():])
+            ):
+                continue
+            found.append((match.start(), language))
+            break
+    return min(found)[1] if found else None
+
+
+_FENCE_LANGUAGES = {
+    "py": "python", "python": "python", "java": "java", "cpp": "c++", "c++": "c++",
+    "c": "c", "cs": "c#", "csharp": "c#", "js": "javascript", "javascript": "javascript",
+    "ts": "typescript", "typescript": "typescript", "go": "go", "golang": "go",
+    "rs": "rust", "rust": "rust", "kt": "kotlin", "kotlin": "kotlin", "swift": "swift",
+    "rb": "ruby", "ruby": "ruby", "php": "php", "scala": "scala",
+}
+
+
+def language_of_code(text: str) -> Optional[str]:
+    """Return the language of the first fenced code block (```java), if known."""
+    for tag in re.findall(r"```([\w+#]+)", text):
+        language = _FENCE_LANGUAGES.get(tag.lower())
+        if language:
             return language
     return None
+
+
+# --- Is this message asking for a LeetCode problem? -------------------------
+# The title lookup accepts any title found inside the message, so on its own
+# "explain binary search" became LeetCode #704 and the user was asked which
+# language they wanted instead of getting an explanation. A match is only used
+# when the message asks for a problem: a link, a number, "leetcode", "solve",
+# or the problem's title on its own ("two sum", "two sum in java").
+_LEETCODE_URL = re.compile(r"leetcode\.com/problems/")
+_LEETCODE_WORD = re.compile(r"\b(?:leetcode|lc)\b")
+_NUMBERED = re.compile(r"^\s*#?\s*\d{1,4}\s*(?:\.\s*[a-z]|$)")  # "1", "#1", "1. Two Sum"
+_PROBLEM_NUMBER = re.compile(r"\b(?:problem|question)\s*(?:no\.?\s*)?#?\s*\d{1,4}\b")
+_SOLVE = re.compile(r"\b(?:solve|solving|solution|solutions|code for|approach for|answer to)\b")
+_TITLE_FILLER = {
+    "the", "a", "an", "problem", "question", "please", "in", "using", "with",
+    "code", "program", "language", "pls", "plz",
+}
+# The title on its own is short; longer messages need one of the signals above.
+_MAX_TITLE_ONLY_WORDS = 10
+
+
+def _asks_for_problem(text: str) -> bool:
+    lowered = text.lower()
+    return bool(
+        _LEETCODE_URL.search(lowered)
+        or _LEETCODE_WORD.search(lowered)
+        or _NUMBERED.match(lowered)
+        or _PROBLEM_NUMBER.search(lowered)
+        or _SOLVE.search(lowered)
+    )
+
+
+def _normalise(text: str) -> List[str]:
+    return re.sub(r"[^a-z0-9+#]+", " ", text.lower()).split()
+
+
+def should_look_up_leetcode(text: str) -> bool:
+    """Whether a LeetCode lookup could matter for this message at all."""
+    return _asks_for_problem(text) or len(text.split()) <= _MAX_TITLE_ONLY_WORDS
+
+
+def is_intended_leetcode_match(text: str, scraped: Dict[str, Any]) -> bool:
+    """Accept a lookup result only when the message was asking for that problem."""
+    if _asks_for_problem(text):
+        return True
+    title = _normalise(scraped.get("title") or "")
+    names = set(SUPPORTED_LANGUAGES) | set(_LANGUAGE_ALIASES)
+    words = [w for w in _normalise(text) if w not in _TITLE_FILLER and w not in names]
+    return bool(title) and words == title
 
 
 def _problem_text(scraped: Dict[str, Any]) -> str:
@@ -112,17 +202,15 @@ def _solution_prompt(scraped: Dict[str, Any], language: str) -> str:
         f"Here is the LeetCode problem description:\n\n"
         f"```\n{_problem_text(scraped)}\n```"
         f"{_examples_text(scraped)}\n\n"
-        f"Please provide a comprehensive, step-by-step explanation and solution for this "
-        f"problem in the **{language}** programming language. "
-        f"Adhere strictly to the following CS Tutor response structure:\n"
-        f"1.  **Problem Refresher:** Briefly restate the goal.\n"
-        f"2.  **Initial Thoughts / Brute Force (If Applicable):** Explain the simplest "
-        f"approach, its logic, and complexity.\n"
-        f"3.  **Optimized Approach(es):** Describe the core idea, explain the logic "
-        f"step-by-step, provide clean, well-commented **{language}** code, and analyze "
-        f"Time and Space Complexity.\n"
-        f"4.  **Edge Cases/Considerations:** Mention any important edge cases or constraints.\n\n"
-        f"Ensure the code is correct, runnable, and follows {language} best practices."
+        f"Solve it in **{language}**, using these sections:\n"
+        f"### Idea\nThe key insight in 2-3 sentences. If there is an obvious brute "
+        f"force, say in one sentence what it is and why it is too slow.\n"
+        f"### Approach\nNumbered steps. Trace Example 1 briefly if it makes a step clearer.\n"
+        f"### Code\nOne clean, commented **{language}** solution in a fenced code block, "
+        f"using LeetCode's function signature. It must be correct and pass every test.\n"
+        f"### Complexity\nTime and space, each with a one-line reason.\n"
+        f"### Edge cases\nA few short bullets.\n\n"
+        f"No other sections, and don't end with a question."
     )
 
 
@@ -330,16 +418,18 @@ async def stream_response(
         # other. The lookup's result is simply ignored if the intent turns out
         # not to need it.
         started = time.perf_counter()
-        intent, looked_up = await asyncio.gather(
-            gemini_integration.classify_intent_with_llm(user_input),
-            scrape_leetcode_question(user_input),
-        )
+        looked_up = None
+        if should_look_up_leetcode(user_input):
+            intent, looked_up = await asyncio.gather(
+                gemini_integration.classify_intent_with_llm(user_input),
+                scrape_leetcode_question(user_input),
+            )
+        else:
+            intent = await gemini_integration.classify_intent_with_llm(user_input)
         wants_visualization = intent == "visualization"
 
         scraped = None
-        if intent in ("cs_tutor", "visualization") or re.search(
-            r"leetcode\.com/problems/", user_input.lower()
-        ) or re.match(r"^\s*\d+\s*[.]?", user_input):
+        if looked_up and is_intended_leetcode_match(user_input, looked_up):
             scraped = looked_up
         logger.info(
             f"[{session_id}] intent={intent} leetcode={bool(scraped)} "
@@ -517,7 +607,8 @@ async def visualize_endpoint(
     if user is None:
         check_rate_limit(request)
 
-    language = detect_language(body.context) or "python"
+    # The language of the code the user just read, else one they named.
+    language = language_of_code(body.context) or detect_language(body.context) or "python"
     try:
         result = await gemini_integration.generate_scene(body.context, body.trace, language)
     except gemini_integration.GenerationError as exc:

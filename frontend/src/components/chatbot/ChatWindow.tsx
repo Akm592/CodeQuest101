@@ -89,19 +89,15 @@ const MessageItem = React.memo<{
     message: Message;
     index: number;
     isLastMessage: boolean;
-}>(({ message, index, isLastMessage }) => (
+}>(({ message, isLastMessage }) => (
     <motion.div
         key={message.id}
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.95, height: 0, marginBottom: 0 }}
-        transition={{
-            duration: 0.4,
-            ease: [0.4, 0.0, 0.2, 1],
-            delay: Math.min(index * 0.05, 0.3),
-            layout: { duration: 0.3 }
-        }}
-        layout
+        // No per-index delay and no `layout`: opening a saved chat replayed a
+        // staggered entrance for every message, and layout animation
+        // re-measured the list on every streamed chunk.
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
         className="mb-4 last:mb-0"
     >
         <MessageBubble message={message} isLastMessage={isLastMessage} />

@@ -41,6 +41,70 @@ const SuggestionChips: React.FC<{
   </div>
 );
 
+/**
+ * A fenced code block. Its own component, with its own copied state: it used
+ * to be defined inside MessageBubble and cached with incomplete deps, so the
+ * "copied" tick read a stale value and never appeared, and every block in a
+ * message shared one flag.
+ */
+const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, code }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard
+      ?.writeText(code)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
+  };
+
+  return (
+    <div className="relative group my-3 sm:my-4 text-xs sm:text-sm rounded-xl overflow-hidden border border-white/10 shadow-lg bg-background w-full">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-white/5 border-b border-white/5">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate">
+          {language}
+        </span>
+        <button
+          onClick={handleCopy}
+          className={`flex items-center gap-1.5 justify-center px-2 py-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${copied
+            ? 'bg-viz-found/20 text-viz-found'
+            : 'bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground'
+            }`}
+          aria-label={copied ? "Copied" : "Copy code"}
+        >
+          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          <span>{copied ? "Copied" : "Copy"}</span>
+        </button>
+      </div>
+      <div className="relative overflow-x-auto">
+        <SyntaxHighlighter
+          style={atomOneDark}
+          language={language}
+          PreTag="div"
+          customStyle={{
+            margin: 0,
+            padding: '0.75rem 1rem',
+            background: 'transparent',
+            fontSize: '0.8125rem',
+            lineHeight: '1.55',
+            minWidth: '100%'
+          }}
+          codeTagProps={{
+            style: {
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+              whiteSpace: 'pre',
+              overflowWrap: 'normal'
+            }
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </div>
+    </div>
+  );
+};
+
 interface MessageBubbleProps {
   message: ChatMessage;
   isLastMessage?: boolean;
@@ -89,10 +153,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       setShowModal(true);
     }
   };
-  const [codeCopied, setCodeCopied] = useState(false);
-
-  const resolvedTheme = typeof window !== 'undefined' &&
-    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
   const isUserMessage = message.sender === "user";
   const isStreaming = message.isStreaming || !!streamingText;
@@ -121,78 +181,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       tableCount > 0;
   }, [currentText]);
 
-  // Enhanced Code Block Component with mobile responsiveness
-  const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
-    const match = /language-(\w+)/.exec(className || '');
-    const language = match ? match[1] : 'text';
-    const codeString = String(children).replace(/\n$/, '');
-
-    const handleCopy = () => {
-      navigator.clipboard.writeText(codeString);
-      setCodeCopied(true);
-      setTimeout(() => setCodeCopied(false), 2000);
-    };
-
-    if (inline) {
-      return (
-        <code
-          className={`px-1.5 sm:px-2 py-1 rounded-md font-mono text-xs sm:text-sm font-medium break-all ${isUserMessage
-            ? 'bg-white/20 text-foreground'
-            : 'bg-black/40 text-primary border border-primary/20'
-            }`}
-          {...props}
-        >
-          {children}
-        </code>
-      );
-    }
-
-    return (
-      <div className="relative group my-3 sm:my-4 text-xs sm:text-sm rounded-xl overflow-hidden border border-white/10 shadow-lg bg-background w-full">
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-white/5 border-b border-white/5">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate">
-            {language}
-          </span>
-          <button
-            onClick={handleCopy}
-            className={`flex items-center justify-center p-1.5 rounded-md text-xs transition-all duration-200 flex-shrink-0 ml-2 ${codeCopied
-              ? 'bg-viz-found/20 text-viz-found'
-              : 'bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground'
-              }`}
-            aria-label={codeCopied ? "Copied" : "Copy code"}
-          >
-            {codeCopied ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
-          </button>
-        </div>
-        <div className="relative overflow-x-auto">
-          <SyntaxHighlighter
-            style={atomOneDark}
-            language={language}
-            PreTag="div"
-            customStyle={{
-              margin: 0,
-              padding: '0.75rem 0.75rem',
-              background: 'transparent',
-              fontSize: '0.7rem',
-              lineHeight: '1.4',
-              minWidth: '100%'
-            }}
-            codeTagProps={{
-              style: {
-                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-                whiteSpace: 'pre',
-                overflowWrap: 'normal'
-              }
-            }}
-            {...props}
-          >
-            {codeString}
-          </SyntaxHighlighter>
-        </div>
-      </div>
-    );
-  };
-
   // Inside a user bubble the background IS the teal accent, so every colour
   // here has to come from the bubble's own foreground. The previous values were
   // written for a dark bubble and quietly broke on the light one:
@@ -208,7 +196,30 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   // Enhanced markdown components with mobile-responsive styling
   const memoizedComponents = useMemo((): Components => ({
-    code: CodeBlock,
+    // react-markdown 9 no longer passes `inline` to `code`, so every inline
+    // `dp[i]` used to render as a full block with a header and copy button.
+    // Fenced code is the only `code` inside a `pre`, so blocks are drawn here
+    // and `code` itself is always inline.
+    pre: ({ children }) => {
+      const child = React.Children.toArray(children)[0];
+      if (React.isValidElement(child)) {
+        const props = child.props as { className?: string; children?: React.ReactNode };
+        const language = /language-([\w+#-]+)/.exec(props.className || "")?.[1] ?? "text";
+        return <CodeBlock language={language} code={String(props.children ?? "").replace(/\n$/, "")} />;
+      }
+      return <pre>{children}</pre>;
+    },
+    code: ({ node, className, children, ...props }) => (
+      <code
+        className={`px-1.5 py-0.5 rounded-md font-mono text-[0.85em] font-medium break-words ${isUserMessage
+          ? 'bg-white/20 text-current'
+          : 'bg-black/40 text-primary border border-primary/20'
+          } ${className ?? ""}`}
+        {...props}
+      >
+        {children}
+      </code>
+    ),
     h1: ({ node, ...props }) => (
       <h1 className={`text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-3 sm:mb-4 pb-2 border-b border-current/30 ${tone.heading}`} {...props} />
     ),
@@ -274,7 +285,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <td className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-b border-current/10 ${tone.muted}`} {...props} />
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [resolvedTheme, isUserMessage]);
+  }), [isUserMessage]);
 
   const bubbleClassName = useMemo(() => {
     const baseStyle = `px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border break-words transition-colors duration-200`;
@@ -358,11 +369,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <>
       <motion.div
-        layout
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-        transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.9 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         className={containerClassName}
       >
         <div className={`mb-1.5 flex items-center gap-2 ${isUserMessage ? 'flex-row-reverse' : 'flex-row'}`}>

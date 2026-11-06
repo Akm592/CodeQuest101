@@ -67,3 +67,16 @@ def test_stale_sessions_are_evicted():
     memory.get_session("new")
     # With a zero TTL everything but the session just touched is collectable.
     assert len(memory.sessions) <= 1
+
+
+def test_history_is_capped_by_length_newest_first():
+    from app.memory.chat_memory import MAX_CONTEXT_CHARS, MAX_MESSAGE_CHARS
+
+    session = ChatSession("budget", max_history_length=10)
+    for i in range(10):
+        session.add_message("bot", f"{i}" * (MAX_MESSAGE_CHARS + 500))
+    history = session.get_history()
+    assert history[-1]["content"].startswith("9")
+    assert all(len(m["content"]) <= MAX_MESSAGE_CHARS + 20 for m in history)
+    assert sum(len(m["content"]) for m in history) <= MAX_CONTEXT_CHARS + 40
+    assert len(history) < 10

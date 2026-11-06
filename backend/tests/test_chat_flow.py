@@ -466,3 +466,17 @@ def test_intent_and_leetcode_lookup_run_side_by_side(client, leetcode_flow):
     events = frames(response)
     assert "error" not in [e["type"] for e in events]
     assert answer_text(events) == "Here is the solution.\n"
+
+
+def test_a_concept_question_matching_a_title_gets_an_explanation(client, leetcode_flow):
+    """"explain binary search" matched LeetCode #704 and asked for a language."""
+    leetcode_flow["chunks"] = ["Binary search halves the range each step."]
+    found = {**SCRAPED, "slug": "binary-search", "title": "Binary Search"}
+    with patch("app.api.chat.scrape_leetcode_question", AsyncMock(return_value=found)):
+        response = client.post(
+            "/chat", json={"user_input": "explain binary search"}, headers={"X-Session-ID": SESSION}
+        )
+    events = frames(response)
+    assert "pending" not in [e["type"] for e in events]
+    assert "Binary search halves" in "".join(e.get("content", "") for e in events)
+    assert leetcode_flow["prompt"] == "explain binary search"

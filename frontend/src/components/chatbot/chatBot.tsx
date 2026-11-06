@@ -138,6 +138,28 @@ const useAPI = () => api;
 
 SuggestionsScreen.displayName = 'SuggestionsScreen';
 
+/** A sidebar name for a chat: the first words of its first message. */
+function chatTitle(text: string): string {
+  const words = text.replace(/\s+/g, " ").trim().split(" ").slice(0, 7).join(" ");
+  return words.length > 48 ? `${words.slice(0, 47)}…` : words || "New Chat";
+}
+
+/** What to tell the user when a reply could not be fetched at all. */
+function chatErrorText(error: { status?: number; message?: string }): string {
+  if (error.status === 429) {
+    return error.message
+      ? `${error.message}`
+      : "You've reached the guest limit for now. Sign in to keep chatting.";
+  }
+  if (error.status && error.status >= 500) {
+    return "The tutor is having trouble right now. Please try again in a moment.";
+  }
+  if (!error.status) {
+    return "Couldn't reach the tutor. Check your connection and try again.";
+  }
+  return `Something went wrong (${error.status}). Please try again.`;
+}
+
 // --- Main ChatInterface Component ---
 const ChatInterface = () => {
   // --- Hooks and Context ---
@@ -245,6 +267,29 @@ const ChatInterface = () => {
     };
 
     chatDispatch({ type: 'ADD_MESSAGE', payload: userMessage });
+    // Every chat used to stay "New Chat" in the sidebar: the row is created
+    // before the first message, so nothing ever named it.
+    if (user && chatState.messages.length === 0) {
+      const sessionId = sessionState.session.id;
+      const current = sessionState.sessions.find((s) => s.id === sessionId);
+      if (!current?.session_name || current.session_name === "New Chat") {
+        const name = chatTitle(textToSend);
+        const updatedAt = new Date().toISOString();
+        sessionDispatch({
+          type: 'SET_SESSIONS',
+          payload: sessionState.sessions.map((s) =>
+            s.id === sessionId ? { ...s, session_name: name, updated_at: updatedAt } : s,
+          ),
+        });
+        void supabase
+          .from("chat_sessions")
+          .update({ session_name: name, updated_at: updatedAt })
+          .eq("id", sessionId)
+          .then(({ error }) => {
+            if (error) console.error("Could not name the chat:", error);
+          });
+      }
+    }
     if (!messageText) {
       chatDispatch({ type: 'SET_INPUT_VALUE', payload: "" });
     }
@@ -255,17 +300,15 @@ const ChatInterface = () => {
     // UPDATE_MESSAGE edited both.
     let botMessageId = `bot-${uuidv4()}`;
     let accumulatedBotText = "";
+    const controller = new AbortController();
 
     try {
       chatDispatch({ type: 'SET_TYPING', payload: true });
       clearSlowStart();
       slowTimerRef.current = window.setTimeout(() => setSlowStart(true), 8000);
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      abortControllerRef.current = new AbortController();
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = controller;
 
       // `pending` carries the LeetCode context the backend handed us on the
       // previous turn. Echoing it back keeps the two-message "which language?"
@@ -283,12 +326,13 @@ const ChatInterface = () => {
           preferred_language: preferredLanguage || null,
           pending,
         },
-        abortControllerRef.current.signal,
+        controller.signal,
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Unknown server error" }));
-        throw new Error(`HTTP error ${response.status}: ${errorData.detail || response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        const detail = typeof errorData?.detail === "string" ? errorData.detail : "";
+        throw Object.assign(new Error(detail || response.statusText), { status: response.status });
       }
 
       const reader = response.body?.getReader();
@@ -311,7 +355,7 @@ const ChatInterface = () => {
               if (isFirstChunk) {
                 chatDispatch({
                   type: 'ADD_MESSAGE',
-                  payload: { id: botMessageId, sender: "bot", text: accumulatedBotText, timestamp: now() },
+                  payload: { id: botMessageId, sender: "bot", text: accumulatedBotText, timestamp: now(), isStreaming: true },
                 });
                 isFirstChunk = false;
               } else {
@@ -378,7 +422,7 @@ const ChatInterface = () => {
         if (done) {
           parser.push(decoder.decode());
           parser.end();
-          chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { timestamp: now() } } });
+          chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { timestamp: now(), isStreaming: false } } });
           break;
         }
         parser.push(decoder.decode(value, { stream: true }));
@@ -387,26 +431,33 @@ const ChatInterface = () => {
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error("API Error:", error);
-        chatDispatch({ type: 'SET_ERROR', payload: error.message || "Failed to get response from the server." });
-
+        // Shown once, as a message in the chat, in words a user can act on.
+        // It used to be a toast and a bubble both reading "HTTP error 429: ...".
         const errorMessage: Message = {
           id: `error-${uuidv4()}`,
           sender: "bot",
-          text: `Sorry, I encountered an error: ${error.message}. Please check the connection or try again later.`,
+          text: chatErrorText(error),
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
         chatDispatch({ type: 'ADD_MESSAGE', payload: errorMessage });
       }
     } finally {
-      chatDispatch({ type: 'SET_TYPING', payload: false });
-      chatDispatch({ type: 'SET_LOADING', payload: false });
-      clearSlowStart();
-      abortControllerRef.current = null;
+      chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { isStreaming: false } } });
+      // Only this request's own state: a newer request may already own these.
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+        chatDispatch({ type: 'SET_TYPING', payload: false });
+        chatDispatch({ type: 'SET_LOADING', payload: false });
+        clearSlowStart();
+      }
     }
-  }, [chatState.inputValue, chatState.isLoading, sessionState.session?.id, preferredLanguage]);
+  }, [chatState.inputValue, chatState.isLoading, chatState.messages.length, sessionState.session?.id, sessionState.sessions, preferredLanguage, user]);
 
   const handleSessionSelect = useCallback(async (sessionId: string) => {
     if (sessionId === sessionState.selectedSessionId) return;
+    // A reply still streaming belongs to the chat being left. Without this
+    // its text was added to whichever chat was opened next.
+    abortControllerRef.current?.abort();
 
     sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionId });
     sessionDispatch({ type: 'SET_SESSION', payload: { id: sessionId } });
@@ -462,6 +513,7 @@ const ChatInterface = () => {
 
   const handleNewChat = useCallback(async () => {
     if (sessionState.isCreatingSession) return;
+    abortControllerRef.current?.abort();
 
     try {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
@@ -842,14 +894,21 @@ const ChatInterface = () => {
                     animate={{ opacity: 1 }}
                     className="flex flex-col space-y-6 pb-4" // Added padding bottom to avoid cut-off
                   >
+                    {/* Errors show once, in the toast; the in-list copy had a
+                        "Retry" that only hid the message. Virtualization stays
+                        off: its rows are a fixed 120px, and markdown answers
+                        are taller, so long chats overlapped. */}
                     <ChatWindow
                       messages={chatState.messages}
                       isLoading={chatState.isTyping}
-                      error={chatState.error}
-                      onRetry={() => chatDispatch({ type: 'SET_ERROR', payload: null })}
-                      enableVirtualization={chatState.messages.length > 100}
+                      enableVirtualization={false}
                     />
-                    {chatState.isTyping && <TypingIndicator slow={slowStart} />}
+                    {/* Only until the reply starts: the answer's own cursor
+                        shows it is still streaming. */}
+                    {chatState.isTyping &&
+                      chatState.messages[chatState.messages.length - 1]?.sender === "user" && (
+                        <TypingIndicator slow={slowStart} />
+                      )}
                   </motion.div>
                 )}
               </AnimatePresence>

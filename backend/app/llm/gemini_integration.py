@@ -87,7 +87,9 @@ async def _each_model(role: str) -> AsyncGenerator[str, None]:
 
 
 chat_config_defaults = dict(
-    temperature=0.8,
+    # Lower than the old 0.8: answers are mostly code and complexity, where
+    # variety means mistakes.
+    temperature=0.5,
     top_p=0.9,
     top_k=20,
     max_output_tokens=10000,
