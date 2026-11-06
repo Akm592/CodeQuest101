@@ -1,206 +1,141 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Card, CardContent } from "./ui/card";
+import { useCallback, useMemo, useState } from "react";
+import { ArrowRight } from "lucide-react";
+
+import { useAlgorithmPlayer } from "../hooks/useAlgorithmPlayer";
+import { buildRotateSteps, DEFAULT_MATRIX, parseMatrix, type Matrix, type RotationStep } from "../lib/algorithms/rotateImageSteps";
 import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
-import { Slider } from "./ui/slider";
-import { PlayCircle, PauseCircle, RotateCcw, ArrowRight } from "lucide-react";
+import VisualizerControls from "./Visualizer/VisualizerControls";
+
+// Rotate an n×n matrix 90° clockwise in place: transpose, then reverse each row.
+//
+// The old page highlighted pairs of cells but never moved a value, so the left
+// grid stayed as typed and the right grid showed the finished answer from the
+// first frame. Each step now carries the matrix as it is after that swap.
+
+const PHASE_TEXT: Record<RotationStep["phase"], string> = {
+  transpose: "Step 1 of 2: transpose (swap across the diagonal)",
+  reverse: "Step 2 of 2: reverse each row",
+};
 
 const RotateImageVisualizer = () => {
-  const [matrix, setMatrix] = useState([
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9],
-  ]);
-  const [step, setStep] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState(1000);
+  const [matrix, setMatrix] = useState<Matrix>(DEFAULT_MATRIX);
+  const [draft, setDraft] = useState(JSON.stringify(DEFAULT_MATRIX));
+  const [error, setError] = useState<string | null>(null);
 
-  interface RotationStep {
-    type: "swap" | "reverse";
-    i: number;
-    j: number;
-    i2?: number;
-    j2?: number;
-  }
+  const steps = useMemo(() => buildRotateSteps(matrix), [matrix]);
+  const player = useAlgorithmPlayer(steps, { initialDelayMs: 700 });
+  const current = player.current;
+  const grid = current?.grid ?? matrix;
+  const done = player.status === "finished" || (steps.length > 0 && player.index === steps.length - 1);
 
-  const rotateMatrix = useCallback((mat: number[][]): RotationStep[] => {
-    const n = mat.length;
-    const steps: RotationStep[] = [];
-
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        steps.push({ type: "swap", i, j, i2: j, j2: i });
-      }
+  const apply = useCallback(() => {
+    const parsed = parseMatrix(draft);
+    if (typeof parsed === "string") {
+      setError(parsed);
+      return;
     }
+    setError(null);
+    setMatrix(parsed); // new steps identity: the player rewinds itself
+  }, [draft]);
 
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < Math.floor(n / 2); j++) {
-        steps.push({ type: "swap", i, j, i2: i, j2: n - 1 - j });
-      }
-    }
+  const cellClass = (i: number, j: number) => {
+    const active =
+      current && ((current.a[0] === i && current.a[1] === j) || (current.b[0] === i && current.b[1] === j));
+    if (active) return "border-viz-swap bg-viz-swap/20 text-foreground scale-105";
+    if (done) return "border-viz-found/50 bg-viz-found/15 text-foreground";
+    return "border-border bg-muted text-foreground";
+  };
 
-    return steps;
-  }, []);
-
-  const rotationSteps = useMemo(
-    () => rotateMatrix([...matrix]),
-    [matrix, rotateMatrix]
-  );
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isRunning && step < rotationSteps.length) {
-      timer = setTimeout(() => {
-        setStep((prevStep) => prevStep + 1);
-      }, speed);
-    } else if (step >= rotationSteps.length) {
-      setIsRunning(false);
-    }
-    return () => clearTimeout(timer);
-  }, [step, rotationSteps.length, isRunning, speed]);
-
-  const reset = useCallback(() => {
-    setStep(0);
-    setIsRunning(false);
-  }, []);
-
-  const toggleRunning = useCallback(() => setIsRunning((prev) => !prev), []);
-
-  const handleMatrixChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      try {
-        const newMatrix: number[][] = JSON.parse(e.target.value);
-        if (
-          Array.isArray(newMatrix) &&
-          newMatrix.every((row) => Array.isArray(row))
-        ) {
-          setMatrix(newMatrix);
-          reset();
-        }
-      } catch {
-        // Invalid input, do nothing
-      }
-    },
-    [reset]
-  );
-
-  const getCellStyle = useCallback(
-    (i: number, j: number) => {
-      if (step > 0 && step <= rotationSteps.length) {
-        const currentStep = rotationSteps[step - 1];
-        if (
-          currentStep.type === "swap" &&
-          ((i === currentStep.i && j === currentStep.j) ||
-            (i === currentStep.i2 && j === currentStep.j2))
-        ) {
-          return "bg-muted border-border";
-        }
-      }
-      return "border-gray-300";
-    },
-    [step, rotationSteps]
-  );
-
-  const renderMatrix = useCallback(
-    (mat: number[][], isRotated = false) => (
-      <div
-        className="grid gap-1"
-        style={{
-          gridTemplateColumns: `repeat(${mat[0].length}, minmax(0, 1fr))`,
-        }}
-      >
-        {mat.map((row, i) =>
-          row.map((cell, j) => {
-            const value = isRotated ? mat[mat.length - 1 - j][i] : cell;
-            return (
-              <div
-                key={`${isRotated ? "rotated-" : ""}${i}-${j}`}
-                className={`w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-md text-xs sm:text-sm md:text-base font-medium transition-all duration-300 ${
-                  isRotated && step >= rotationSteps.length
-                    ? "bg-muted border-border"
-                    : getCellStyle(i, j)
-                }`}
-              >
-                {value}
-              </div>
-            );
-          })
+  const renderGrid = (m: Matrix, highlight: boolean, label: string) => (
+    <figure className="flex flex-col items-center gap-2">
+      <figcaption className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</figcaption>
+      <div className="grid gap-1 sm:gap-1.5" style={{ gridTemplateColumns: `repeat(${m.length}, minmax(0, 1fr))` }}>
+        {m.map((row, i) =>
+          row.map((cell, j) => (
+            <div
+              key={`${i}-${j}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-md border-2 font-mono text-sm font-medium transition-all duration-300 sm:h-12 sm:w-12 md:h-14 md:w-14 ${
+                highlight ? cellClass(i, j) : "border-border bg-muted/50 text-muted-foreground"
+              }`}
+            >
+              {cell}
+            </div>
+          )),
         )}
       </div>
-    ),
-    [getCellStyle, step, rotationSteps.length]
+    </figure>
   );
 
+  let status = "Press Start to rotate the matrix 90° clockwise.";
+  if (current) {
+    const [ai, aj] = current.a;
+    const [bi, bj] = current.b;
+    status = `Swap (${ai},${aj}) ↔ (${bi},${bj})`;
+  }
+  if (done) status = "Done: the matrix is rotated 90° clockwise.";
+  if (steps.length === 0) status = "A 1×1 matrix is already rotated.";
+
   return (
-    <div className="w-full">
-    <Card className="mx-auto w-full overflow-hidden shadow-lg">
-      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <div className="space-y-4">
-          <Input
-            type="text"
-            value={JSON.stringify(matrix)}
-            onChange={handleMatrixChange}
-            placeholder="Enter matrix (e.g., [[1,2,3],[4,5,6],[7,8,9]])"
-            className="w-full border-2 border-gray-300 focus:border-gray-500 rounded-md p-2"
-          />
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium">Speed:</span>
-            <Slider
-              value={[speed]}
-              onValueChange={(value) => setSpeed(value[0])}
-              min={100}
-              max={2000}
-              step={100}
-              className="flex-grow"
+    <Card className="mx-auto w-full max-w-3xl overflow-hidden">
+      <CardContent className="space-y-5 p-4 sm:p-6">
+        <div className="space-y-2">
+          <label htmlFor="rotate-matrix" className="block text-sm font-medium text-muted-foreground">
+            Square matrix
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              id="rotate-matrix"
+              value={draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setError(null);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && apply()}
+              placeholder="[[1,2,3],[4,5,6],[7,8,9]]"
+              className="font-mono text-sm"
+              aria-invalid={Boolean(error)}
             />
+            <Button variant="outline" onClick={apply} disabled={!draft.trim()} className="sm:w-auto">
+              Apply
+            </Button>
           </div>
+          {error && (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          )}
         </div>
-        <div className="flex justify-center space-x-4">
-          <Button
-            onClick={toggleRunning}
-            disabled={step >= rotationSteps.length}
-            className="flex items-center space-x-2 bg-muted hover:bg-muted text-white"
-          >
-            {isRunning ? <PauseCircle size={20} /> : <PlayCircle size={20} />}
-            <span>{isRunning ? "Pause" : "Start"}</span>
-          </Button>
-          <Button
-            onClick={reset}
-            className="flex items-center space-x-2 bg-gray-500 hover:bg-muted/70 text-white"
-          >
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
-        </div>
-        <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-          {renderMatrix(matrix)}
-          <ArrowRight
-            size={32}
-            className="text-muted-foreground transform rotate-90 sm:rotate-0"
+
+        <div className="border-t border-border pt-4">
+          <VisualizerControls
+            status={player.status}
+            onPlay={player.play}
+            onPause={player.pause}
+            onReset={player.reset}
+            onStepForward={player.stepForward}
+            onStepBack={player.stepBack}
+            delayMs={player.delayMs}
+            onDelayChange={player.setDelayMs}
+            stepIndex={player.index}
+            stepCount={player.stepCount}
+            disabledReason={steps.length === 0 ? "Nothing to rotate in a 1×1 matrix." : null}
           />
-          {renderMatrix(matrix, true)}
         </div>
-        <div className="text-center space-y-2">
-          <p className="text-lg font-semibold">
-            Step: {step} / {rotationSteps.length}
-          </p>
-          <p className="text-sm sm:text-md">
-            {step > 0 && step <= rotationSteps.length
-              ? rotationSteps[step - 1].type === "swap"
-                ? `Swapping (${rotationSteps[step - 1].i},${
-                    rotationSteps[step - 1].j
-                  }) with (${rotationSteps[step - 1].i2},${
-                    rotationSteps[step - 1].j2
-                  })`
-                : "Reversing row"
-              : step > rotationSteps.length
-              ? "Rotation complete!"
-              : "Ready to start"}
-          </p>
+
+        <div className="flex flex-col items-center justify-center gap-4 overflow-x-auto py-2 sm:flex-row sm:gap-6">
+          {renderGrid(matrix, false, "Original")}
+          <ArrowRight className="h-6 w-6 shrink-0 rotate-90 text-muted-foreground sm:rotate-0" aria-hidden="true" />
+          {renderGrid(grid, true, done ? "Rotated" : "Working")}
+        </div>
+
+        <div className="space-y-1 border-t border-border pt-4 text-center" aria-live="polite">
+          {current && !done && <p className="text-xs font-medium text-primary">{PHASE_TEXT[current.phase]}</p>}
+          <p className="text-sm text-foreground">{status}</p>
         </div>
       </CardContent>
     </Card>
-    </div>
   );
 };
 

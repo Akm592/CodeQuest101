@@ -10,9 +10,8 @@
 // `ui-consistency-check.mjs` needs a preview build and a real Chromium and
 // takes minutes, which is why it is still run by hand; this takes milliseconds.
 //
-// ALLOWLIST: the five files still awaiting migration. Removing an entry is the
-// migration being done. Nothing may be added without deleting a line here, so
-// the list only ever shrinks.
+// ALLOWLIST: files still allowed to hand-roll controls. It is empty now that
+// every visualizer is migrated.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -24,26 +23,10 @@ const SRC = join(ROOT, "src/components");
 const OWNER = "src/components/Visualizer/VisualizerControls.tsx";
 
 /**
- * Still hand-rolling controls, deferred deliberately.
- *
- * BinarySearch and Sorting render into VisualizerLayout's footer rather than
- * inline, and BinarySearch's async `await sleep()` loop cannot honour a pause
- * or a step at all — giving it the shared surface would render four buttons,
- * two of them dead. Migrating those means rewriting them onto
- * useAlgorithmPlayer, which is a behaviour change to a working route and
- * belongs in its own diff.
- *
- * RotateImageVisualizer additionally has a real bug to fix on the way in: its
- * slider is not inverted, so dragging right makes it slower — the opposite of
- * every sibling page.
+ * Files allowed to hand-roll controls. Empty: every visualizer now uses
+ * VisualizerControls. Keep it that way.
  */
-const ALLOWLIST = new Set([
-  "src/components/BinarySearchVisualizer.tsx",
-  "src/components/SortingAlgorithmVisualizer.tsx",
-  "src/components/LongestSubarraySumKVisualizer.tsx",
-  "src/components/FloydsAlgorithmVisualizer.tsx",
-  "src/components/RotateImageVisualizer.tsx",
-]);
+const ALLOWLIST = new Set([]);
 
 /**
  * A file is rolling its own playback speed control when it imports the Slider

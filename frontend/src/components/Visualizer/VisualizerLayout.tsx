@@ -31,7 +31,10 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground relative">
+    // On a phone the page scrolls: the controls are tall there, and a fixed
+    // full-screen layout left the canvas a sliver between header and footer.
+    // From lg up it is a fixed screen with the canvas scrolling inside.
+    <div className="relative flex min-h-dvh w-full bg-background text-foreground lg:h-dvh lg:overflow-hidden">
       {/* Sidebar for Info & Pseudocode */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
@@ -49,10 +52,10 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
               animate={{ x: 0 }}
               exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed lg:relative w-[280px] sm:w-80 h-full bg-card/80 backdrop-blur-xl border-r border-white/10 z-40 lg:z-20 flex flex-col"
+              className="fixed inset-y-0 left-0 lg:relative w-[280px] sm:w-80 h-dvh lg:h-full bg-card/80 backdrop-blur-xl border-r border-white/10 z-40 lg:z-20 flex flex-col"
             >
               <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between">
-                <h2 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                <h2 className="text-lg font-semibold text-foreground">
                   Algorithm Info
                 </h2>
                 <Button 
@@ -114,7 +117,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
       </AnimatePresence>
 
       {/* Main Visualizer Area */}
-      <main className="flex-grow flex flex-col relative h-full w-full min-w-0">
+      <main className="relative flex w-full min-w-0 flex-grow flex-col lg:h-full">
         {/* Top header. Back lives here rather than in the sidebar footer: the
             sidebar starts collapsed, so the exit used to be invisible. */}
         <VisualizerHeader
@@ -136,14 +139,14 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
         />
 
         {/* Canvas Area */}
-        <div className="flex-grow p-4 sm:p-8 flex items-center justify-center overflow-auto bg-black/20">
-           <div className="w-full h-full flex items-center justify-center min-h-[300px]">
+        <div className="flex flex-grow items-center justify-center bg-black/20 p-4 sm:p-8 lg:overflow-auto">
+           <div className="flex min-h-[300px] w-full items-center justify-center lg:h-full">
               {children}
            </div>
         </div>
 
         {/* Controls Bar */}
-        <footer className="h-auto shrink-0 border-t border-white/10 bg-card/80 p-4 backdrop-blur-xl sm:p-6">
+        <footer className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur-xl sm:p-6">
            <div className="container mx-auto max-w-7xl">
               {controls}
            </div>

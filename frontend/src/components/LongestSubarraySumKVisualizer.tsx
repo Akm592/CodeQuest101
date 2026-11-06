@@ -1,320 +1,160 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button"; // Adjust path
-import { Input } from "./ui/input"; // Adjust path
-import { Slider } from "./ui/slider"; // Adjust path
-import { PlayCircle, PauseCircle, RotateCcw, CheckCircle, XCircle, Target } from "lucide-react"; // Added icons
+import { useMemo, useState } from "react";
+import { CheckCircle, Target, XCircle } from "lucide-react";
 
-const MIN_SPEED_MS = 100;
-const MAX_SPEED_MS = 2000;
-const DEFAULT_SPEED_MS = 1000;
+import { useAlgorithmPlayer } from "../hooks/useAlgorithmPlayer";
+import { buildSubarraySteps, parseNonNegativeArray, type WindowStep } from "../lib/algorithms/subarraySumSteps";
+import { Card, CardContent } from "./ui/card";
+import { Input } from "./ui/input";
+import VisualizerControls from "./Visualizer/VisualizerControls";
+
+// Longest subarray with sum K, sliding window.
+//
+// The steps are computed up front, so the page can pause, step both ways and
+// change speed mid-run. The old page ran the algorithm one timer tick at a
+// time and could only go forwards.
+//
+// The window only works for non-negative numbers: with a negative value,
+// shrinking from the left can make the sum grow again. Negative input is
+// refused with that explanation rather than giving a wrong answer.
+
+const NO_STEPS: WindowStep[] = [];
 
 const LongestSubarraySumKVisualizer = () => {
-  const [arr, setArr] = useState<number[]>([10, 5, 2, 7, 1, 9]);
-  const [arrInput, setArrInput] = useState<string>("10, 5, 2, 7, 1, 9"); // Separate state for input
-  const [k, setK] = useState<number | string>(15);
-  const [kInput, setKInput] = useState<string>("15"); // Separate state for input
-  const [left, setLeft] = useState<number>(-1); // Start at -1 to indicate not started
-  const [right, setRight] = useState<number>(-1);
-  const [currentSum, setCurrentSum] = useState<number>(0);
-  const [maxLength, setMaxLength] = useState<number>(0);
-  const [resultIndices, setResultIndices] = useState<{ start: number; end: number } | null>(null); // Store best range {start, end} inclusive
-  const [status, setStatus] = useState<"idle" | "running" | "paused" | "finished">("idle");
-  const [speedValue, setSpeedValue] = useState(MAX_SPEED_MS + MIN_SPEED_MS - DEFAULT_SPEED_MS);
-  const [inputError, setInputError] = useState<string | null>(null);
-  const [operationLog, setOperationLog] = useState<string>("Enter array and target sum K.");
+  const [arrInput, setArrInput] = useState("10, 5, 2, 7, 1, 9");
+  const [kInput, setKInput] = useState("15");
 
-  const calculateDelay = (sliderValue: number): number => {
-    return MAX_SPEED_MS + MIN_SPEED_MS - sliderValue;
-  }
+  const parsedArr = useMemo(() => parseNonNegativeArray(arrInput), [arrInput]);
+  const k = kInput.trim() === "" ? NaN : Number(kInput);
 
-  const reset = useCallback(() => {
-    setLeft(-1);
-    setRight(-1);
-    setCurrentSum(0);
-    setMaxLength(0);
-    setResultIndices(null);
-    setStatus("idle");
-    setInputError(null);
-    setOperationLog("Ready. Click 'Start' to find the longest subarray.");
-  }, []);
+  let inputError: string | null = null;
+  if (typeof parsedArr === "string") inputError = parsedArr;
+  else if (!Number.isFinite(k)) inputError = "Target K must be a number.";
 
-  // Reset when array or k changes via input
-  useEffect(() => {
-     reset();
-  }, [arr, k, reset]);
+  const arr = useMemo(() => (typeof parsedArr === "string" ? [] : parsedArr), [parsedArr]);
+  const steps = useMemo(() => (inputError ? NO_STEPS : buildSubarraySteps(arr, k)), [arr, k, inputError]);
+  const player = useAlgorithmPlayer(steps, { initialDelayMs: 800 });
+  const step = player.current;
+  const finished = step?.action === "done";
+  const locked = player.status === "running";
 
-  // The core algorithm step logic
-  const performStep = useCallback(() => {
-      let l = left === -1 ? 0 : left; // Initialize if first step
-      let r = right === -1 ? 0 : right;
-      let sum = currentSum;
-      let maxLen = maxLength;
-      let bestStart = resultIndices?.start ?? -1;
-      let bestEnd = resultIndices?.end ?? -1;
-      let log = "";
-
-      if (r < arr.length) {
-          // Expand window by moving right pointer
-          sum += arr[r];
-          log = `Window expands right: [${l}...${r}]. Added ${arr[r]}. New Sum: ${sum}.`;
-          r++; // Increment right pointer for the next state
-
-          // Shrink window if sum exceeds k
-          while (sum > Number(k) && l < r) {
-              sum -= arr[l];
-              log += ` Sum > K. Shrink left: Remove ${arr[l]}. New Sum: ${sum}.`;
-              l++; // Increment left pointer
-          }
-
-          // Check if current window sum equals k
-          if (sum === Number(k)) {
-              const currentLength = r - l;
-              log += ` Sum === K. Current length: ${currentLength}.`;
-              if (currentLength > maxLen) {
-                  maxLen = currentLength;
-                  bestStart = l;
-                  bestEnd = r - 1; // r is exclusive (points to next element)
-                  log += ` New Max Length found: ${maxLen}.`;
-                  setResultIndices({ start: bestStart, end: bestEnd });
-              }
-          }
-
-          // Update state for next iteration
-          setCurrentSum(sum);
-          setLeft(l);
-          setRight(r);
-          setMaxLength(maxLen);
-          setOperationLog(log);
-
-      } else {
-          // Right pointer reached the end
-          setStatus("finished");
-          if (resultIndices) {
-               setOperationLog(`Finished. Longest subarray found with length ${maxLen} from index ${resultIndices.start} to ${resultIndices.end}.`);
-          } else {
-               setOperationLog(`Finished. No subarray found with sum ${k}. Max Length: 0.`);
-          }
-      }
-
-  }, [left, right, currentSum, maxLength, resultIndices, arr, k]);
-
-
-  // Animation control using useEffect
-  useEffect(() => {
-    let timer: NodeJS.Timeout | undefined;
-    if (status === "running") {
-      const delay = calculateDelay(speedValue);
-      timer = setTimeout(() => {
-        performStep();
-      }, delay);
+  const cellClass = (i: number) => {
+    const base =
+      "relative flex h-10 w-10 items-center justify-center rounded-md border-2 font-mono text-sm font-medium transition-all duration-200 sm:h-12 sm:w-12";
+    if (!step) return `${base} border-border bg-muted text-foreground`;
+    if (finished) {
+      return step.best && i >= step.best.start && i <= step.best.end
+        ? `${base} border-viz-found bg-viz-found/20 text-foreground`
+        : `${base} border-border bg-muted/50 text-muted-foreground`;
     }
-    return () => clearTimeout(timer);
-  }, [status, speedValue, performStep]);
-
-  const handleStartPause = () => {
-      if (status === "idle" || status === "finished") {
-           // Validate inputs before starting
-           const kNum = Number(k);
-           if (isNaN(kNum)) {
-                setInputError("Target sum K must be a valid number.");
-                return;
-           }
-           if (arr.length === 0) {
-                setInputError("Array cannot be empty.");
-                return;
-           }
-            setInputError(null);
-            reset(); // Reset state before starting/restarting
-            setStatus("running");
-            // Initialize pointers for the first step
-            setLeft(0);
-            setRight(0);
-            setCurrentSum(0);
-            setOperationLog("Algorithm started. Expanding window...");
-      } else if (status === "running") {
-        setStatus("paused");
-        setOperationLog("Paused.");
-      } else if (status === "paused") {
-        setStatus("running");
-         setOperationLog("Resumed.");
-      }
+    const inWindow = i >= step.left && i <= step.right;
+    if (!inWindow) return `${base} border-border bg-muted/50 text-muted-foreground`;
+    if (step.action === "match") return `${base} border-viz-found bg-viz-found/20 text-foreground`;
+    if (step.action === "add" && i === step.right) return `${base} border-viz-current bg-viz-current/20 text-foreground`;
+    return `${base} border-primary/60 bg-primary/10 text-foreground`;
   };
 
-  const handleArrInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setArrInput(e.target.value);
-       // Basic validation while typing (optional)
-      const nums = e.target.value.split(/[\s,]+/).filter(Boolean).map(Number);
-      if (nums.some(isNaN)) {
-          setInputError("Array contains non-numeric values.");
-      } else {
-          setInputError(null);
-          // Update the actual array state used by the algorithm
-          setArr(nums);
-          // Resetting happens via useEffect on `arr` change
-      }
-  }
-
-   const handleKInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-       setKInput(e.target.value);
-       const num = Number(e.target.value);
-        if (e.target.value === "" || isNaN(num)) {
-            setInputError("Target K must be a number.");
-        } else {
-             setInputError(null);
-             setK(num);
-              // Resetting happens via useEffect on `k` change
-        }
-   }
-
-   // --- Rendering ---
-   const getCellClass = (index: number): string => {
-       let baseClass = "w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center border rounded text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out";
-       let colorClass = "bg-muted border-border text-muted-foreground"; // Default
-
-       // Current window highlight
-       if (status !== "idle" && status !== "finished" && index >= left && index < right && left !== -1 && right !== -1) {
-           colorClass = "bg-muted border-primary text-foreground ring-1 ring-primary/50";
-       }
-
-        // Highlight the best found subarray when finished
-        if (status === "finished" && resultIndices && index >= resultIndices.start && index <= resultIndices.end) {
-             colorClass = "bg-green-800/50 border-viz-found text-green-300 ring-1 ring-green-500/50";
-        }
-
-        // Pointer indicators (can use borders or pseudo-elements)
-        if (index === left && left !== -1) baseClass += " border-l-blue-400 border-l-2";
-        if (index === right - 1 && right > left && right !== -1) baseClass += " border-r-red-400 border-r-2"; // Right pointer is exclusive
-
-       return `${baseClass} ${colorClass}`;
-   }
-
+  const best = step?.best ?? null;
+  const bestLength = best ? best.end - best.start + 1 : 0;
 
   return (
-    // Dark theme page container
-    <div className="flex w-full items-center justify-center">
-      {/* Dark Card */}
-      <Card className="w-full max-w-4xl mx-auto shadow-xl overflow-hidden">
-        <CardContent className="p-4 sm:p-6 space-y-5">
-          {/* Input Section */}
-          <div className="space-y-3">
-             <div className="space-y-1">
-                 <label htmlFor="arrayInput" className="text-sm font-medium text-muted-foreground">Array (comma/space-separated numbers):</label>
-                 <Input
-                    id="arrayInput"
-                    type="text"
-                    value={arrInput}
-                    onChange={handleArrInputChange}
-                    placeholder="e.g., 10, 5, 2, 7, 1, 9"
-                    disabled={status === 'running' || status === 'paused'}
-                    className="h-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70 font-mono text-sm"
-                  />
-             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-               <div className="w-full sm:w-1/2 space-y-1">
-                    <label htmlFor="kInput" className="text-sm font-medium text-muted-foreground">Target Sum (K):</label>
-                    <div className="relative">
-                         <Target className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                         <Input
-                             id="kInput"
-                            type="number" // Keep type number for better mobile input
-                            value={kInput}
-                            onChange={handleKInputChange}
-                            placeholder="Enter K"
-                             disabled={status === 'running' || status === 'paused'}
-                            className="h-10 pl-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70"
-                          />
-                    </div>
-               </div>
-               {/* Speed Control */}
-               <div className="w-full sm:w-1/2 flex flex-col justify-center space-y-1 pt-2 sm:pt-0">
-                   <label className="text-sm font-medium text-muted-foreground text-center sm:text-left">Animation Speed:</label>
-                    <div className="flex items-center gap-3">
-                         <Slider
-                            value={[speedValue]}
-                            onValueChange={(value) => setSpeedValue(value[0])}
-                            min={MIN_SPEED_MS}
-                            max={MAX_SPEED_MS}
-                            step={50}
-                             className="flex-grow [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
-                            disabled={status === 'running' || status === 'paused'}
-                            aria-label="Animation Speed Control"
-                        />
-                        <span className="text-xs font-mono text-muted-foreground w-14 text-right">
-                          {`${calculateDelay(speedValue)} ms`}
-                        </span>
-                    </div>
-               </div>
+    <Card className="mx-auto w-full max-w-4xl overflow-hidden">
+      <CardContent className="space-y-5 p-4 sm:p-6">
+        <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
+          <div className="space-y-1">
+            <label htmlFor="arrayInput" className="text-sm font-medium text-muted-foreground">
+              Array (non-negative, comma or space separated)
+            </label>
+            <Input
+              id="arrayInput"
+              value={arrInput}
+              onChange={(e) => setArrInput(e.target.value)}
+              placeholder="10, 5, 2, 7, 1, 9"
+              disabled={locked}
+              className="font-mono text-sm"
+              aria-invalid={typeof parsedArr === "string"}
+            />
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="kInput" className="text-sm font-medium text-muted-foreground">
+              Target sum K
+            </label>
+            <div className="relative">
+              <Target className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Input
+                id="kInput"
+                type="number"
+                value={kInput}
+                onChange={(e) => setKInput(e.target.value)}
+                disabled={locked}
+                className="pl-9 font-mono text-sm"
+              />
             </div>
-            {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
           </div>
+        </div>
 
-           {/* Control Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-border">
-            <Button
-              onClick={handleStartPause}
-              disabled={arr.length === 0 || k === "" || inputError !== null} // Disable if inputs are invalid
-               className={`flex items-center justify-center gap-2 font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60 ${
-                    status === 'running' ? 'bg-warning text-background hover:bg-warning/90'
-                    : status === 'paused' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-               }`}
-            >
-              {status === 'running' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
-              <span>{status === 'running' ? "Pause" : status === 'paused' ? "Resume" : status === 'finished' ? "Restart" : "Start"}</span>
-            </Button>
-            <Button
-              onClick={reset}
-              className="flex items-center justify-center gap-2 border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground font-semibold w-full sm:w-auto px-6 py-2.5 disabled:opacity-60"
-              disabled={status === 'idle' && left === -1} // Disable if already reset
-            >
-              <RotateCcw size={18} />
-              <span>Reset</span>
-            </Button>
-          </div>
+        <div className="border-t border-border pt-4">
+          <VisualizerControls
+            status={player.status}
+            onPlay={player.play}
+            onPause={player.pause}
+            onReset={player.reset}
+            onStepForward={player.stepForward}
+            onStepBack={player.stepBack}
+            delayMs={player.delayMs}
+            onDelayChange={player.setDelayMs}
+            stepIndex={player.index}
+            stepCount={player.stepCount}
+            disabledReason={inputError}
+          />
+        </div>
 
-           {/* Visualization Area */}
-          <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 p-2 bg-black/20 rounded border border-border min-h-[60px]">
-            {arr.length > 0 ? arr.map((num, index) => (
-              <div key={index} className={getCellClass(index)}>
-                {num}
+        <div className="flex min-h-[4.5rem] flex-wrap justify-center gap-1.5 rounded-lg border border-border bg-black/20 p-3">
+          {arr.length > 0 ? (
+            arr.map((num, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div className={cellClass(i)}>{num}</div>
+                <span className="h-4 font-mono text-[10px] text-muted-foreground">
+                  {step && !finished && i === step.left && "L"}
+                  {step && !finished && i === step.left && i === step.right && " "}
+                  {step && !finished && i === step.right && "R"}
+                  {(!step || finished) && i}
+                </span>
               </div>
-            )) : <p className="text-muted-foreground text-sm">Enter array data above.</p>}
-          </div>
+            ))
+          ) : (
+            <p className="self-center text-sm text-muted-foreground">Enter an array above.</p>
+          )}
+        </div>
 
-           {/* Status/Result Display */}
-          <div className="text-center space-y-1 pt-3">
-             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
-                <span>Current Sum: <span className="font-bold text-primary font-mono">{currentSum}</span></span>
-                <span>Max Length: <span className="font-bold text-warning font-mono">{maxLength}</span></span>
-                <span>Target (K): <span className="font-bold text-foreground font-mono">{k}</span></span>
-                <span>L Index: <span className={`font-bold font-mono ${left !== -1 ? 'text-viz-pointer' : 'text-muted-foreground'}`}>{left !== -1 ? left : '-'}</span></span>
-                <span>R Index: <span className={`font-bold font-mono ${right !== -1 ? 'text-destructive' : 'text-muted-foreground'}`}>{right !== -1 ? right : '-'}</span></span>
-            </div>
-             {/* Final Result */}
-            {status === 'finished' && (
-              <div className={`font-semibold mt-3 text-base flex items-center justify-center gap-2 ${resultIndices ? 'text-viz-found' : 'text-destructive'}`}>
-                {resultIndices ? (
-                     <>
-                        <CheckCircle size={18}/>
-                        Longest subarray found: [{arr.slice(resultIndices.start, resultIndices.end + 1).join(", ")}] (Length: {maxLength})
-                     </>
-                 ) : (
-                     <>
-                         <XCircle size={18} />
-                        No subarray found with sum {k}.
-                     </>
-                 )}
-              </div>
-            )}
-             {/* Operation Log */}
-             <div className="mt-2 pt-2 border-t border-border">
-                 <p className="text-xs text-muted-foreground font-mono break-words min-h-[18px]">{operationLog}</p>
-             </div>
+        <dl className="grid grid-cols-3 gap-2 text-center text-sm">
+          <div className="rounded-lg border border-border bg-muted/40 p-2">
+            <dt className="text-xs text-muted-foreground">Window sum</dt>
+            <dd className="font-mono font-semibold text-foreground">{step ? step.sum : 0}</dd>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-2">
+            <dt className="text-xs text-muted-foreground">Target K</dt>
+            <dd className="font-mono font-semibold text-foreground">{Number.isFinite(k) ? k : "–"}</dd>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-2">
+            <dt className="text-xs text-muted-foreground">Best length</dt>
+            <dd className="font-mono font-semibold text-foreground">{bestLength}</dd>
+          </div>
+        </dl>
+
+        <div className="border-t border-border pt-3 text-center" aria-live="polite">
+          {finished ? (
+            <p className={`flex items-center justify-center gap-2 font-medium ${best ? "text-viz-found" : "text-destructive"}`}>
+              {best ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+              {best
+                ? `Longest: [${arr.slice(best.start, best.end + 1).join(", ")}], length ${bestLength}`
+                : `No subarray adds up to ${k}.`}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">{step ? step.log : "Press Start to slide the window."}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

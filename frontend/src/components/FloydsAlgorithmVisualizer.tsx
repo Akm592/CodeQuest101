@@ -1,512 +1,219 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "./ui/card"; // Adjust path
-import { Button } from "./ui/button"; // Adjust path
-import { Slider } from "./ui/slider"; // Adjust path
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"; // Adjust path
-import { Label } from "./ui/label"; // Added Label
-import {
-  PlayCircle,
-  PauseCircle,
-  RotateCcw,
-  Plus,
-  Minus,
-  ChevronRight,
+import React, { useMemo, useState } from "react";
+import { Minus, Plus } from "lucide-react";
 
-  ExternalLink,
+import { useAlgorithmPlayer } from "../hooks/useAlgorithmPlayer";
+import { buildFloydSteps, MAX_NODES, type FloydMode as Mode } from "../lib/algorithms/floydSteps";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import VisualizerControls from "./Visualizer/VisualizerControls";
 
-} from "lucide-react"; // Added Loader2
+// Floyd's tortoise and hare, in two modes:
+//   cycle  — does the list loop? If so, where does the loop start?
+//   middle — the middle node (LeetCode 876: the second middle for even length).
+//
+// Steps are computed up front so the page can pause, step back and change
+// speed. The old page advanced from a setInterval, could only step forward,
+// and its "Create cycle" button always pointed the tail at the middle node.
 
-interface Node {
-  value: number;
-  next: number | null;
-  id: string; // Added ID for unique key prop
-}
-
-const MIN_SPEED_MS = 100;
-const MAX_SPEED_MS = 1500;
-const DEFAULT_SPEED_MS = 750;
+const SPACING = 76;
+const PAD = 36;
+const R = 20;
 
 const FloydsAlgorithmVisualizer: React.FC = () => {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [tortoise, setTortoise] = useState<number | null>(null); // Index of tortoise
-  const [hare, setHare] = useState<number | null>(null);       // Index of hare
-  const [cycleDetected, setCycleDetected] = useState<boolean>(false);
-  const [detectedAtNode, setDetectedAtNode] = useState<number | null>(null); // Store where cycle was detected
-  const [middleNodes, setMiddleNodes] = useState<number[]>([]); // Indices of middle nodes
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
-  const [speedValue, setSpeedValue] = useState(MAX_SPEED_MS + MIN_SPEED_MS - DEFAULT_SPEED_MS); // Slider maps inversely
-  const [mode, setMode] = useState<"cycle" | "middle">("cycle");
-  const [step, setStep] = useState<number>(0);
-  const [explanation, setExplanation] = useState<string>("");
-  const [currentOperation, setCurrentOperation] = useState<string | null>(null); // For detailed step info
+  const [mode, setMode] = useState<Mode>("cycle");
+  const [count, setCount] = useState(6);
+  const [cycleTo, setCycleTo] = useState<number | null>(2);
 
-  const generateId = () => Math.random().toString(36).substring(7);
+  const effectiveCycle = mode === "cycle" ? cycleTo : null;
+  const steps = useMemo(() => buildFloydSteps(count, effectiveCycle, mode), [count, effectiveCycle, mode]);
+  const player = useAlgorithmPlayer(steps, { initialDelayMs: 800 });
+  const step = player.current;
+  const locked = player.status === "running";
 
-  const initializeList = useCallback((type: "cycle" | "middle") => {
-    let initialNodesData: { value: number; next: number | null }[];
-    if (type === "cycle") {
-      initialNodesData = [
-        { value: 1, next: 1 }, { value: 2, next: 2 }, { value: 3, next: 3 },
-        { value: 4, next: 4 }, { value: 5, next: 2 }, // Cycle back to node index 2 (value 3)
-      ];
-    } else {
-      initialNodesData = [
-        { value: 1, next: 1 }, { value: 2, next: 2 }, { value: 3, next: 3 },
-        { value: 4, next: 4 }, { value: 5, next: null },
-      ];
-    }
-    setNodes(initialNodesData.map(n => ({ ...n, id: generateId() })));
-    setTortoise(0);
-    setHare(0);
-    setCycleDetected(false);
-    setDetectedAtNode(null);
-    setMiddleNodes([]);
-    setIsRunning(false);
-    setIsPaused(false);
-    setStep(0);
-    setExplanation("Ready to start.");
-    setCurrentOperation("Initialization complete.");
-  }, []);
+  const changeCount = (delta: number) => {
+    const n = Math.min(MAX_NODES, Math.max(2, count + delta));
+    setCount(n);
+    if (cycleTo !== null && cycleTo >= n) setCycleTo(n - 1);
+  };
 
-  // Initialize on mode change or mount
-  useEffect(() => {
-    initializeList(mode);
-  }, [mode, initializeList]);
+  const width = PAD * 2 + (count - 1) * SPACING;
+  const height = 150;
+  const y = 82;
+  const x = (i: number) => PAD + i * SPACING;
 
-  const resetSimulation = useCallback(() => {
-    setTortoise(0);
-    setHare(0);
-    setCycleDetected(false);
-    setDetectedAtNode(null);
-    setMiddleNodes([]);
-    setStep(0);
-    setExplanation("Ready to start.");
-    setCurrentOperation("Simulation reset.");
-    setIsRunning(false);
-    setIsPaused(false);
-  }, []);
-
-  const calculateDelay = (sliderValue: number): number => {
-    return MAX_SPEED_MS + MIN_SPEED_MS - sliderValue;
-  }
-
-  // const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-  const stepForwardAlgorithm = useCallback(async () => {
-    if (tortoise === null || hare === null || nodes.length === 0) return;
-
-    let nextTortoise = tortoise;
-    let nextHare = hare;
-    let explanationText = "";
-    let operationText = "";
-
-    // Move Tortoise
-    if (nodes[tortoise]?.next !== null) {
-      nextTortoise = nodes[tortoise].next as number;
-      operationText += `Tortoise moves: ${nodes[tortoise].value} -> ${nodes[nextTortoise].value}. `;
-    } else {
-      operationText += "Tortoise reached end. ";
-      // In middle node mode, if tortoise reaches end, hare should also stop or have stopped
-      if (mode === "middle") {
-         setIsRunning(false); // Tortoise reaching end stops middle search immediately
-         // We calculate middle based on tortoise position when hare finishes
-         return;
-      }
-    }
-
-    // Move Hare
-    const hareMove1 = nodes[hare]?.next;
-    const hareMove2 = hareMove1 !== null ? nodes[hareMove1]?.next : null;
-
-    if (hareMove1 !== null && hareMove2 !== null) {
-       nextHare = hareMove2;
-       operationText += `Hare moves: ${nodes[hare].value} -> ${nodes[hareMove1 as number].value} -> ${nodes[nextHare].value}.`;
-    } else if (hareMove1 !== null) {
-       nextHare = hareMove1; // Hare moves one step if it can't move two
-       operationText += `Hare moves: ${nodes[hare].value} -> ${nodes[nextHare].value} (end reached).`;
-       if (mode === 'cycle') setIsRunning(false); // Hare reaching end stops cycle search
-    } else {
-        operationText += "Hare reached end.";
-        if (mode === 'cycle') setIsRunning(false); // Hare reaching end stops cycle search
-    }
-
-    setTortoise(nextTortoise);
-    setHare(nextHare);
-    setStep(prev => prev + 1);
-    setCurrentOperation(operationText);
-
-    // Check conditions after move
-    if (mode === 'cycle') {
-        if (nextTortoise === nextHare && nextTortoise !== null) {
-             setCycleDetected(true);
-             setDetectedAtNode(nextTortoise);
-             explanationText = `Cycle detected! Tortoise and Hare met at node ${nodes[nextTortoise].value}.`;
-             setIsRunning(false);
-        } else if (nextHare === null || nodes[nextHare]?.next === null) {
-             explanationText = "No cycle found. Hare reached the end.";
-             setIsRunning(false);
-        } else {
-             explanationText = `Step ${step + 1}: Tortoise at ${nodes[nextTortoise].value}, Hare at ${nodes[nextHare].value}.`;
-        }
-    } else { // Middle mode
-        // Hare stopping determines the end
-        if (hareMove1 === null || hareMove2 === null) {
-             // Hare has finished (or can't move two steps). Tortoise is at/near the middle.
-             const middleIndex = nextTortoise; // Tortoise position when hare finishes
-             if (nodes.length % 2 === 1) { // Odd length
-                setMiddleNodes([middleIndex]);
-                explanationText = `Hare finished. Middle node is ${nodes[middleIndex].value} (index ${middleIndex}).`;
-             } else { // Even length
-                // For even, the standard definition often uses the first of the two middle nodes
-                // Tortoise position is correct here.
-                setMiddleNodes([middleIndex]);
-                 explanationText = `Hare finished. First middle node is ${nodes[middleIndex].value} (index ${middleIndex}).`;
-                // If you want to highlight both: find the node before tortoise
-                // let prevTortoise = Object.keys(nodes).find(key => nodes[key].next === middleIndex);
-                // setMiddleNodes(prevTortoise ? [parseInt(prevTortoise), middleIndex] : [middleIndex]);
-             }
-             setIsRunning(false);
-        } else {
-             explanationText = `Step ${step + 1}: Tortoise at ${nodes[nextTortoise].value}, Hare at ${nodes[nextHare].value}.`;
-        }
-    }
-    setExplanation(explanationText);
-
-  }, [tortoise, hare, nodes, step, mode]);
-
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-    if (isRunning && !isPaused) {
-      const delay = calculateDelay(speedValue);
-      intervalId = setInterval(() => {
-        stepForwardAlgorithm();
-      }, delay);
-    }
-    return () => clearInterval(intervalId);
-  }, [isRunning, isPaused, speedValue, stepForwardAlgorithm]);
-
-
-  // --- Node Manipulation ---
-  const addNode = useCallback(() => {
-    if (isRunning) return;
-    setNodes((prevNodes) => {
-      if (prevNodes.length >= 10) { // Limit size
-          alert("Maximum 10 nodes allowed for clarity.");
-          return prevNodes;
-      };
-      const newNodeValue = prevNodes.length > 0 ? prevNodes[prevNodes.length - 1].value + 1 : 1;
-      const newNode: Node = { value: newNodeValue, next: null, id: generateId() };
-      const updatedNodes = [...prevNodes];
-      if (updatedNodes.length > 0) {
-        updatedNodes[updatedNodes.length - 1].next = updatedNodes.length; // Point last node to new node index
-      }
-       resetSimulation(); // Reset state after modification
-       return [...updatedNodes, newNode];
-    });
-  }, [isRunning, resetSimulation]);
-
-  const removeNode = useCallback(() => {
-     if (isRunning) return;
-    setNodes((prevNodes) => {
-      if (prevNodes.length <= 1) return prevNodes; // Keep at least one node
-      const updatedNodes = prevNodes.slice(0, -1);
-      if (updatedNodes.length > 0) {
-        // Ensure the new last node points to null, unless cycle mode is active
-        if (mode === 'middle' || updatedNodes[updatedNodes.length - 1].next === prevNodes.length -1) {
-             updatedNodes[updatedNodes.length - 1].next = null;
-        }
-        // If the removed node was part of a cycle target, reset the cycle? Or just point to null?
-        // For simplicity, we reset the simulation state after removal.
-      }
-      resetSimulation(); // Reset state after modification
-      return updatedNodes;
-    });
-  }, [isRunning, mode, resetSimulation]);
-
-  const toggleCycle = useCallback(() => {
-    if (isRunning || mode !== "cycle") return;
-    setNodes((prevNodes) => {
-      if (prevNodes.length < 2) return prevNodes; // Need at least 2 nodes for a cycle
-      const updatedNodes = JSON.parse(JSON.stringify(prevNodes)); // Deep copy
-      const lastNodeIndex = updatedNodes.length - 1;
-      const lastNode = updatedNodes[lastNodeIndex];
-
-      if (lastNode.next === null) {
-        // Create cycle back to a random-ish node (e.g., middle)
-        const cycleTargetIndex = Math.max(0, Math.floor(lastNodeIndex / 2)); // Point to middle-ish node
-        lastNode.next = cycleTargetIndex;
-      } else {
-        // Remove cycle
-        lastNode.next = null;
-      }
-       resetSimulation(); // Reset state after modification
-      return updatedNodes;
-    });
-  }, [isRunning, mode, resetSimulation]);
-
-
-  // --- Control Actions ---
-  const runAlgorithm = useCallback(() => {
-    if (nodes.length === 0) return;
-    resetSimulation(); // Reset state before starting
-    setIsRunning(true);
-    setIsPaused(false);
-    setExplanation("Starting algorithm...");
-    setCurrentOperation("Algorithm started.");
-    // Initial state is set by reset, first step happens in useEffect
-  }, [nodes, resetSimulation]);
-
-  const pauseResume = useCallback(() => {
-    if (!isRunning) return;
-    setIsPaused((prev) => !prev);
-    setExplanation(isPaused ? "Resumed." : "Paused.");
-    setCurrentOperation(isPaused ? "Resumed." : "Paused.");
-  }, [isRunning, isPaused]);
-
-  const handleStepForward = () => {
-      if (isRunning && !isPaused) return; // Don't step manually if automatically running
-      if (nodes.length === 0) return;
-      if (!isRunning && !isPaused && step === 0) { // If idle, start simulation paused
-          resetSimulation();
-          setIsRunning(true);
-          setIsPaused(true);
-          setExplanation("Starting step-by-step.");
-          setCurrentOperation("Simulation started paused.");
-          // Need a small delay to allow state update before first step
-          setTimeout(() => stepForwardAlgorithm(), 50);
-      } else {
-          setIsPaused(true); // Ensure it's paused for manual stepping
-          stepForwardAlgorithm();
-      }
-  }
-
-  // --- Rendering ---
-  const renderNodes = () => {
-      // Simple horizontal layout for now
-      const nodeSpacing = 90; // Distance between node centers
-      const containerPadding = 20;
-      const svgWidth = nodes.length * nodeSpacing + containerPadding * 2;
-      const svgHeight = 150; // Fixed height
-      const yPosition = svgHeight / 2;
-
-      return (
-        <div className="flex justify-center items-center min-h-[180px] overflow-x-auto py-4 bg-black/20 rounded border border-border relative">
-            {nodes.length === 0 ? <p className="text-muted-foreground">Add nodes to begin</p> :
-             <svg width={svgWidth} height={svgHeight} style={{ overflow: "visible" }}>
-                <AnimatePresence>
-                    {/* Render Arrows First */}
-                     {nodes.map((node, index) => {
-                         if (node.next === null) return null;
-                         const targetIndex = node.next;
-                         const sourceX = containerPadding + index * nodeSpacing;
-                         const targetX = containerPadding + targetIndex * nodeSpacing;
-                         const isCycle = targetIndex <= index; // Simple check for cycle arrow
-
-                         const pathData = isCycle
-                            ? `M ${sourceX} ${yPosition - 15} C ${sourceX + nodeSpacing/2} ${yPosition - 60}, ${targetX - nodeSpacing/2} ${yPosition - 60}, ${targetX} ${yPosition - 15}` // Arc up for cycle
-                            : `M ${sourceX + 20} ${yPosition} L ${targetX - 20} ${yPosition}`; // Straight line
-
-                         return (
-                            <motion.path
-                                key={`${node.id}-arrow`}
-                                d={pathData}
-                                stroke="rgb(100 116 139)" // gray-500
-                                strokeWidth="1.5"
-                                fill="none"
-                                markerEnd="url(#arrowhead-gray)"
-                                initial={{ pathLength: 0, opacity: 0 }}
-                                animate={{ pathLength: 1, opacity: 1 }}
-                                transition={{ duration: 0.5, ease: "easeInOut" }}
-                            />
-                         );
-                     })}
-
-                    {/* Render Nodes */}
-                     {nodes.map((node, index) => {
-                        const x = containerPadding + index * nodeSpacing;
-                        const isTortoise = index === tortoise;
-                        const isHare = index === hare;
-                        const isMiddle = middleNodes.includes(index);
-                        const isDetect = cycleDetected && index === detectedAtNode;
-
-                        let borderColor = "border-border"; // Default
-                        if (isDetect) borderColor = "border-yellow-400 ring-2 ring-yellow-400/50";
-                        else if (isTortoise && isHare) borderColor = "border-purple-500 ring-2 ring-purple-500/50"; // Met
-                        else if (isTortoise) borderColor = "border-viz-pointer";
-                        else if (isHare) borderColor = "border-destructive";
-                        else if (isMiddle) borderColor = "border-viz-found";
-
-                         let bgColor = "bg-muted"; // Default
-                         if (isDetect) bgColor = "bg-warning/50";
-
-                         let shadowClass = "";
-                         if (isTortoise) shadowClass += " shadow-lg shadow-blue-500/30";
-                         if (isHare) shadowClass += " shadow-lg shadow-red-500/30";
-                         if (isMiddle) shadowClass += " shadow-lg shadow-green-500/30";
-
-
-                        return (
-                            <motion.g
-                                key={node.id}
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.5 }}
-                                transform={`translate(${x}, ${yPosition})`}
-                            >
-                                 <foreignObject x="-24" y="-24" width="48" height="48">
-                                     <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all duration-300 ${borderColor} ${bgColor} ${shadowClass}`}>
-                                        <span className="text-foreground">{node.value}</span>
-                                    </div>
-                                 </foreignObject>
-
-                                 {/* Labels */}
-                                 {isTortoise && (
-                                    <motion.text
-                                        x="0" y="-30" textAnchor="middle" fontSize="10" fill="#60a5fa" // blue-400
-                                        initial={{ y: -35, opacity: 0 }} animate={{ y: -30, opacity: 1 }}
-                                    > T </motion.text>
-                                 )}
-                                 {isHare && (
-                                    <motion.text
-                                        x="0" y="42" textAnchor="middle" fontSize="10" fill="#f87171" // red-400
-                                        initial={{ y: 47, opacity: 0 }} animate={{ y: 42, opacity: 1 }}
-                                    > H </motion.text>
-                                 )}
-                                  {isMiddle && (
-                                    <motion.text
-                                        x="30" y="0" textAnchor="middle" fontSize="10" fill="#4ade80" // green-400
-                                         initial={{ x: 35, opacity: 0 }} animate={{ x: 30, opacity: 1 }}
-                                    > M </motion.text>
-                                  )}
-                            </motion.g>
-                        );
-                    })}
-                 </AnimatePresence>
-                 {/* Define arrowhead */}
-                 <defs>
-                     <marker id="arrowhead-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse">
-                         <polygon points="0 0, 8 3, 0 6" fill="rgb(100 116 139)" /> {/* gray-500 */}
-                     </marker>
-                 </defs>
-            </svg>
-            }
-        </div>
-      );
-  }
+  const nodeColor = (i: number) => {
+    if (step?.answer === i) return "hsl(var(--viz-found))";
+    if (step && step.tortoise === i && step.hare === i) return "hsl(var(--viz-visited))";
+    if (step?.tortoise === i) return "hsl(var(--viz-pointer))";
+    if (step?.hare === i) return "hsl(var(--viz-compare))";
+    if (step?.met === i) return "hsl(var(--viz-visited) / 0.6)";
+    return "hsl(var(--border))";
+  };
 
   return (
-    // Dark theme page container
-    <div className="flex w-full items-center justify-center">
-      {/* Dark Card */}
-      <Card className="w-full max-w-5xl mx-auto shadow-xl overflow-hidden">
-        <CardContent className="p-4 sm:p-6 space-y-5">
-          {/* Mode Selection */}
-          <div className="flex justify-center">
-            <Select
-              value={mode}
-              onValueChange={(value: "cycle" | "middle") => {
-                  if (!isRunning) setMode(value);
-              }}
-              disabled={isRunning}
-            >
-              <SelectTrigger className="w-full sm:w-[250px] bg-muted border-border text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70">
-                <SelectValue placeholder="Select Algorithm Mode" />
+    <Card className="mx-auto w-full max-w-5xl overflow-hidden">
+      <CardContent className="space-y-5 p-4 sm:p-6">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <span className="block text-sm font-medium text-muted-foreground">Problem</span>
+            <Select value={mode} onValueChange={(v: Mode) => setMode(v)} disabled={locked}>
+              <SelectTrigger className="w-[13rem]" aria-label="Problem">
+                <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-muted border-border text-muted-foreground">
-                <SelectItem value="cycle" className="hover:bg-primary/15 focus:bg-primary/15">Cycle Detection</SelectItem>
-                <SelectItem value="middle" className="hover:bg-primary/15 focus:bg-primary/15">Find Middle Node</SelectItem>
+              <SelectContent>
+                <SelectItem value="cycle">Detect a cycle</SelectItem>
+                <SelectItem value="middle">Find the middle node</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Visualization Area */}
-          {renderNodes()}
-
-          {/* Node Manipulation Controls */}
-           <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
-             <Button onClick={addNode} disabled={isRunning || nodes.length >= 10} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
-               <Plus size={14} className="mr-1" /> Add Node
-             </Button>
-             <Button onClick={removeNode} disabled={isRunning || nodes.length <= 1} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
-               <Minus size={14} className="mr-1" /> Remove Node
-             </Button>
-             {mode === "cycle" && (
-               <Button onClick={toggleCycle} disabled={isRunning || nodes.length < 2} className="text-sm bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
-                 {nodes[nodes.length - 1]?.next !== null ? "Remove Cycle" : "Create Cycle"}
-               </Button>
-             )}
-           </div>
-
-          {/* Simulation Controls */}
-          <div className="flex flex-wrap justify-center gap-2 pt-4 border-t border-border">
-            <Button onClick={runAlgorithm} disabled={isRunning || nodes.length === 0} className="text-sm bg-primary hover:bg-primary text-primary-foreground disabled:opacity-60">
-              <PlayCircle size={16} className="mr-1" /> Start/Restart
-            </Button>
-            <Button onClick={pauseResume} disabled={!isRunning} className={`text-sm disabled:opacity-60 ${isPaused ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90' : 'bg-warning text-background hover:bg-warning/90'}`}>
-              {isPaused ? <PlayCircle size={16} className="mr-1" /> : <PauseCircle size={16} className="mr-1" />}
-              {isPaused ? "Resume" : "Pause"}
-            </Button>
-             <Button onClick={handleStepForward} disabled={isRunning && !isPaused} className="text-sm bg-gray-600 hover:bg-gray-500 disabled:opacity-60">
-               <ChevronRight size={16} className="mr-1" /> Step Forward
-             </Button>
-            <Button onClick={resetSimulation} className="text-sm border border-border bg-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground text-white disabled:opacity-60">
-              <RotateCcw size={16} className="mr-1" /> Reset
-            </Button>
-           {/* Step Backward might be complex to implement accurately, omitting for now */}
-           {/* <Button onClick={stepBackward} disabled={step === 0 || isRunning} className="text-sm bg-gray-600 hover:bg-gray-500 disabled:opacity-60">
-               <ChevronLeft size={16} className="mr-1" /> Step Back
-             </Button> */}
+          <div className="space-y-1">
+            <span className="block text-sm font-medium text-muted-foreground">Nodes</span>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" onClick={() => changeCount(-1)} disabled={locked || count <= 2} aria-label="Remove a node">
+                <Minus />
+              </Button>
+              <span className="w-8 text-center font-mono text-sm">{count}</span>
+              <Button variant="outline" size="icon" onClick={() => changeCount(1)} disabled={locked || count >= MAX_NODES} aria-label="Add a node">
+                <Plus />
+              </Button>
+            </div>
           </div>
 
-          {/* Speed Control */}
-          <div className="pt-4">
-            <Label className="block text-sm font-medium text-muted-foreground mb-1 text-center">
-              Animation Speed: {calculateDelay(speedValue)}ms
-            </Label>
-            <Slider
-              min={MIN_SPEED_MS}
-              max={MAX_SPEED_MS}
-              step={50}
-              value={[speedValue]}
-              onValueChange={(value) => setSpeedValue(value[0])}
-              className="w-full max-w-xs mx-auto [&>span:first-child]:h-2 [&>span>span]:bg-primary [&>span:first-child]:bg-muted text-foreground"
-              disabled={isRunning && !isPaused}
-            />
-          </div>
+          {mode === "cycle" && (
+            <div className="space-y-1">
+              <span className="block text-sm font-medium text-muted-foreground">Last node points to</span>
+              <Select
+                value={cycleTo === null ? "none" : String(cycleTo)}
+                onValueChange={(v) => setCycleTo(v === "none" ? null : Number(v))}
+                disabled={locked}
+              >
+                <SelectTrigger className="w-[11rem]" aria-label="Last node points to">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nothing (no cycle)</SelectItem>
+                  {Array.from({ length: count }, (_, i) => (
+                    <SelectItem key={i} value={String(i)}>
+                      Node {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
 
-          {/* Explanation Panel */}
-          <motion.div
-            className="mt-4 p-4 bg-muted text-foreground border border-border rounded-lg min-h-[100px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+        <div className="border-t border-border pt-4">
+          <VisualizerControls
+            status={player.status}
+            onPlay={player.play}
+            onPause={player.pause}
+            onReset={player.reset}
+            onStepForward={player.stepForward}
+            onStepBack={player.stepBack}
+            delayMs={player.delayMs}
+            onDelayChange={player.setDelayMs}
+            stepIndex={player.index}
+            stepCount={player.stepCount}
+          />
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-border bg-black/20 py-2">
+          <svg
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            className="mx-auto block"
+            role="img"
+            aria-label={`Linked list of ${count} nodes${effectiveCycle !== null ? `, last node points back to node ${effectiveCycle + 1}` : ""}`}
           >
-            <h3 className="font-semibold text-foreground mb-1 text-sm">Status & Explanation:</h3>
-             <p className="text-xs sm:text-sm text-muted-foreground mb-1 font-mono">{currentOperation || " "}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">{explanation || "Controls are above the visualization."}</p>
-             {explanation.includes("Learn more:") && (
-               <a
-                 href={explanation.split("Learn more: ")[1]}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="text-primary hover:text-primary text-xs sm:text-sm inline-flex items-center mt-2 underline"
-               >
-                 Learn more on LeetCode <ExternalLink size={14} className="ml-1" />
-               </a>
-             )}
-          </motion.div>
-        </CardContent>
-      </Card>
-    </div>
+            <defs>
+              <marker id="floyd-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L8,4 L0,8 z" fill="hsl(var(--muted-foreground))" />
+              </marker>
+            </defs>
+
+            {Array.from({ length: count - 1 }, (_, i) => (
+              <line
+                key={`e${i}`}
+                x1={x(i) + R}
+                y1={y}
+                x2={x(i + 1) - R - 2}
+                y2={y}
+                stroke="hsl(var(--muted-foreground))"
+                strokeWidth={1.5}
+                markerEnd="url(#floyd-arrow)"
+              />
+            ))}
+
+            {effectiveCycle !== null && (
+              <path
+                d={
+                  effectiveCycle === count - 1
+                    ? `M ${x(count - 1) + 8} ${y - R + 2} C ${x(count - 1) + 50} ${y - 70}, ${x(count - 1) - 50} ${y - 70}, ${x(count - 1) - 8} ${y - R}`
+                    : `M ${x(count - 1)} ${y - R} C ${x(count - 1)} ${y - 70}, ${x(effectiveCycle)} ${y - 70}, ${x(effectiveCycle)} ${y - R - 2}`
+                }
+                fill="none"
+                stroke="hsl(var(--viz-visited))"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                markerEnd="url(#floyd-arrow)"
+              />
+            )}
+
+            {Array.from({ length: count }, (_, i) => (
+              <g key={i}>
+                <circle
+                  cx={x(i)}
+                  cy={y}
+                  r={R}
+                  fill="hsl(var(--muted))"
+                  stroke={nodeColor(i)}
+                  strokeWidth={step && (step.tortoise === i || step.hare === i || step.answer === i) ? 3 : 1.5}
+                  style={{ transition: "stroke 200ms" }}
+                />
+                <text x={x(i)} y={y + 5} textAnchor="middle" fontSize={14} fontWeight={600} fill="hsl(var(--foreground))">
+                  {i + 1}
+                </text>
+                {step?.tortoise === i && (
+                  <text x={x(i) - (step.hare === i ? 8 : 0)} y={y + R + 18} textAnchor="middle" fontSize={12} fontWeight={700} fill="hsl(var(--viz-pointer))">
+                    T
+                  </text>
+                )}
+                {step?.hare === i && (
+                  <text x={x(i) + (step.tortoise === i ? 8 : 0)} y={y + R + 18} textAnchor="middle" fontSize={12} fontWeight={700} fill="hsl(var(--viz-compare))">
+                    H
+                  </text>
+                )}
+              </g>
+            ))}
+            {step && step.hare === null && (
+              <text x={width - 6} y={y + R + 18} textAnchor="end" fontSize={11} fill="hsl(var(--viz-compare))">
+                H: past the end
+              </text>
+            )}
+          </svg>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-viz-pointer" /> T: tortoise, 1 step
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-viz-compare" /> H: hare, 2 steps
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-viz-found" /> Answer
+          </span>
+        </div>
+
+        <p className="min-h-[2.5rem] border-t border-border pt-3 text-center text-sm text-foreground" aria-live="polite">
+          {step ? step.log : "Press Start to move the two pointers."}
+        </p>
+      </CardContent>
+    </Card>
   );
 };
 
