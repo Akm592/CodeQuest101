@@ -38,6 +38,7 @@ import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
 import { buildKMeansSteps } from "../ml/kMeans";
 import { buildLrSteps, samplePoints } from "../ml/linearRegression";
 import { buildMlpSteps, makeDataset } from "../ml/mlp";
+import { buildNbSteps, TEST_EMAILS, trainNb, TRAINING_EMAILS } from "../ml/naiveBayes";
 import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
 import {
   attentionGuide,
@@ -52,6 +53,8 @@ import {
   linearRegressionGuide,
   lrGuideStepFor,
   mlpGuideStepFor,
+  naiveBayesGuide,
+  naiveBayesGuideStepFor,
   neuralNetworkGuide,
   samplingGuide,
   samplingGuideStepFor,
@@ -238,6 +241,16 @@ const cases: [string, GuideCase][] = [
         ),
       ),
       finalStages: ["done"],
+    },
+  ],
+  [
+    "naive Bayes",
+    {
+      guide: naiveBayesGuide,
+      runs: [1, 0].flatMap((alpha) =>
+        [...TEST_EMAILS.map((t) => t.text), "free zebra"].map((text) => run(buildNbSteps(trainNb(TRAINING_EMAILS, alpha), text), naiveBayesGuideStepFor)),
+      ),
+      finalStages: ["decide"],
     },
   ],
 ];

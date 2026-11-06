@@ -376,6 +376,41 @@ for _ in range(40):
     ok &= all(dt.predict(tree, r) == lab for r, lab in zip(rows, labs))
 check("an unlimited tree fits every training point (distinct values, 40 sets)", ok)
 
+print("\nnaive Bayes")
+nbm = load("naive_bayes")
+words = "win free money now prize claim cash meeting lunch project notes today monday".split()
+ok = True
+for _ in range(60):
+    texts = [" ".join(rng.choice(words) for _ in range(rng.randint(2, 6))) for _ in range(rng.randint(4, 12))]
+    labels = [rng.choice(["spam", "ham"]) for _ in texts]
+    if len(set(labels)) < 2:
+        continue
+    model = nbm.NaiveBayes(alpha=1.0).fit(texts, labels)
+    probe = " ".join(rng.choice(words) for _ in range(rng.randint(1, 5)))
+    # Independent: multiply the raw probabilities out, then divide by the total.
+    raw = {}
+    for c in ["spam", "ham"]:
+        cnt = {}
+        tot = 0
+        for t, lab in zip(texts, labels):
+            if lab == c:
+                for w in t.split():
+                    cnt[w] = cnt.get(w, 0) + 1
+                    tot += 1
+        vocab = {w for t in texts for w in t.split()}
+        pr = labels.count(c) / len(labels)
+        for w in probe.split():
+            if w in vocab:
+                pr *= (cnt.get(w, 0) + 1) / (tot + len(vocab))
+        raw[c] = pr
+    got = model.predict_proba(probe)
+    ok &= abs(got["spam"] - raw["spam"] / (raw["spam"] + raw["ham"])) < 1e-9
+check("probabilities match multiplying everything out (60 random sets)", ok)
+m = nbm.NaiveBayes(alpha=1.0).fit(["a b", "a c", "d e"], ["s", "s", "h"])
+check("smoothed word chances add up to 1 over the vocabulary", abs(sum(m.word_prob(w, "s") for w in m.vocab) - 1) < 1e-12)
+m0 = nbm.NaiveBayes(alpha=0.0).fit(["free offer", "free cash"], ["spam", "ham"])  # "offer" never appears in ham
+check("with alpha = 0 an unseen-in-class word rules the class out", m0.predict_proba("free offer")["ham"] == 0.0)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

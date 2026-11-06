@@ -9,6 +9,8 @@ export const C = {
   violet: "hsl(var(--viz-visited))",
   amber: "hsl(var(--viz-compare))",
   red: "hsl(var(--viz-swap))",
+  /** Red light enough for text; viz-swap is for fills and lines. */
+  redText: "hsl(var(--destructive-bright))",
   green: "hsl(var(--viz-found))",
   sky: "hsl(var(--viz-pointer))",
   idle: "hsl(var(--viz-idle))",

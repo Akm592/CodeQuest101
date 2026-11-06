@@ -18,6 +18,7 @@ import {
   Layers,
   LineChart,
   ListTree,
+  MailCheck,
   MessageSquareText,
   Network,
   RotateCw,
@@ -94,6 +95,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Linear Regression", description: "Fit a line by shrinking the error", icon: <LineChart />, key: "linearRegression", level: "Easy" },
     { title: "K-Means Clustering", description: "Find groups with no labels", icon: <Boxes />, key: "kMeans", level: "Easy" },
     { title: "Decision Tree", description: "20 questions: Gini, splits and overfitting", icon: <GitFork />, key: "decisionTree", level: "Medium" },
+    { title: "Naive Bayes", description: "A spam filter that weighs every word", icon: <MailCheck />, key: "naiveBayes", level: "Easy" },
     { title: "Neural Network", description: "Watch it train: forward, backprop, update", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
     { title: "Self-Attention", description: "How a transformer links “it” to “cat”", icon: <ScanEye />, key: "attention", level: "Medium" },
     { title: "Next-Token Sampling", description: "Temperature, top-k and top-p, explained", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
@@ -112,7 +114,7 @@ export type VisualizationKey =
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

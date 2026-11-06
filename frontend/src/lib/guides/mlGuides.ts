@@ -11,11 +11,13 @@ import type { GdStep } from "../ml/gradientDescent";
 import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
 import type { MlpStep } from "../ml/mlp";
+import type { NbStep } from "../ml/naiveBayes";
 import type { SamplingStep } from "../ml/sampling";
 import decisionTreePy from "./python/decision_tree.py?raw";
 import gradientDescentPy from "./python/gradient_descent.py?raw";
 import kMeansPy from "./python/k_means.py?raw";
 import linearRegressionPy from "./python/linear_regression.py?raw";
+import naiveBayesPy from "./python/naive_bayes.py?raw";
 import samplingPy from "./python/sampling.py?raw";
 import selfAttentionPy from "./python/self_attention.py?raw";
 import tinyMlpPy from "./python/tiny_mlp.py?raw";
@@ -355,3 +357,48 @@ export const decisionTreeGuide: AlgorithmGuide = {
 };
 
 export const decisionTreeGuideStepFor = (s: TreeStep) => s.phase;
+
+export const naiveBayesGuide: AlgorithmGuide = {
+  title: "Naive Bayes",
+  whenToUseHeading: ML_HEADING,
+  idea: [
+    "Naive Bayes guesses a class by weighing evidence. For an email it asks: how common is spam in general, and how much more often does each of these words show up in spam than in normal email? Each word nudges the guess one way or the other.",
+    "Those word chances come straight from counting the training data: “free” appeared 4 times among the 26 spam words, so it's common in spam. Smoothing adds a pretend count of 1 to every word, so a word that never appeared in one class doesn't make that class impossible.",
+    "It's called naive because it treats every word as separate evidence, as if “free” and “money” had nothing to do with each other. That's clearly not true, yet the method still sorts emails surprisingly well, which is why it became a classic method for spam filtering.",
+  ],
+  whenToUse: [
+    "Text: spam filters, sorting support tickets, sentiment, language detection.",
+    "When you have little training data, or need something fast to train and explain.",
+    "As a quick baseline to beat before trying heavier models.",
+  ],
+  stages: [
+    { id: "prior", title: "Start from the prior", detail: "Before reading anything, the guess is just how common each class was in training.", pseudo: "score[c] = log P(c)" },
+    { id: "word", title: "Add each word's evidence", detail: "Look up how likely the word is in each class (counted from training, plus smoothing) and multiply it in, or add its log.", pseudo: "score[c] += log P(word | c)" },
+    { id: "skip", title: "Skip words it never saw", detail: "A word that never appeared in training carries no evidence either way, so it's ignored.", pseudo: "if word not in vocab: continue" },
+    { id: "normalise", title: "Turn scores into chances", detail: "Divide each score by the total so the two add up to 100%. Both classes share the same divisor, P(email), so it never changes the winner.", pseudo: "P(c | email) = score[c] / Σ score" },
+    { id: "decide", title: "Pick the bigger one", detail: "The class with the higher chance wins.", pseudo: "predict = argmax_c score[c]" },
+  ],
+  legend: [
+    { tone: "swap", label: "Pushes towards spam" },
+    { tone: "current", label: "Pushes towards not spam" },
+    { tone: "idle", label: "Ignored (never seen)" },
+  ],
+  complexity: {
+    time: "O(words) to classify",
+    space: "O(classes × vocabulary)",
+    why: "Training is a single pass of counting. Classifying an email is one table look-up per word per class.",
+  },
+  pitfalls: [
+    "Forgetting smoothing: one word that never appeared in a class sets that class's chance to exactly 0, whatever the other words say.",
+    "Multiplying many small probabilities underflows to 0 on a computer. Add logs instead.",
+    "Don't trust the percentages: scikit-learn calls Naive Bayes “a decent classifier” but “a bad estimator” of probabilities. Because repeated or related words are counted as separate evidence, it is often far more confident than it should be.",
+  ],
+  tryThis: [
+    "Pick “free offer today meeting” and switch smoothing off: “meeting” never appears in spam, so spam becomes impossible.",
+    "Type “free free free free” and watch the confidence shoot towards 100%.",
+    "Type a word the filter has never seen and see it skipped.",
+  ],
+  python: naiveBayesPy,
+};
+
+export const naiveBayesGuideStepFor = (s: NbStep) => s.phase;
