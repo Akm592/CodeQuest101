@@ -669,8 +669,17 @@ async def chat_endpoint(
                 chat_session.add_message(role, message.get("content") or "")
             chat_history = chat_session.get_history()
 
+    if chat_request.regenerate:
+        # The question is already stored and in the history; only the answer
+        # is replaced. Without the rewind the model would see its own previous
+        # answer and the question twice.
+        chat_session.rewind_last_turn()
+        if db is not None:
+            await db.delete_last_answer(session_id)
+        chat_history = chat_session.get_history()
+
     chat_session.add_message("user", user_input)
-    if db is not None:
+    if db is not None and not chat_request.regenerate:
         await db.store_message(
             session_id=session_id,
             sender_type="user",

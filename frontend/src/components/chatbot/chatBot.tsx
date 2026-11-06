@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff, PanelLeft } from "lucide-react";
+import { Send, Square, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff, PanelLeft } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
@@ -8,11 +8,12 @@ import ChatSidebar from "./ChatSidebar";
 import SettingsModal from "./SettingsModal";
 import DeleteSessionModal from "./DeleteSessionModal";
 import { supabase } from "../../lib/supabaseClient";
-import { api, postChatStream, PendingContext } from "../../lib/api";
+import { api, checkBackend, postChatStream, PendingContext, type ChatStreamBody } from "../../lib/api";
+import { browserSessionStorage, clearGuestChat, loadGuestChat, saveGuestChat } from "../../lib/guestChat";
 import { isNearBottom } from "../../lib/scroll";
 import { v4 as uuidv4 } from "uuid";
 import SuggestionsScreen from "./SuggestionsScreen";
-import { buildVizContext, type ChatMessage } from "./types";
+import { buildVizContext, type ChatMessage, type MessageActions } from "./types";
 import { createSseParser } from "../../lib/chatStream";
 import { parseSuggestions } from "../../lib/scene/validate";
 
@@ -53,7 +54,8 @@ type ChatAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_INPUT_VALUE'; payload: string }
-  | { type: 'CLEAR_CHAT' };
+  | { type: 'CLEAR_CHAT' }
+  | { type: 'REWIND_LAST_ANSWER' };
 
 const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
@@ -78,6 +80,13 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       return { ...state, inputValue: action.payload };
     case 'CLEAR_CHAT':
       return { ...state, messages: [], error: null };
+    case 'REWIND_LAST_ANSWER': {
+      // Drop everything after the last question: the answer being replaced,
+      // or the error that stood in for it.
+      let last = state.messages.length - 1;
+      while (last >= 0 && state.messages[last].sender !== "user") last--;
+      return { ...state, messages: state.messages.slice(0, last + 1) };
+    }
     default:
       return state;
   }
@@ -234,6 +243,18 @@ const ChatInterface = () => {
   // Context the backend asked us to hold between turns. A ref, not state,
   // because handleSendMessage must read the latest value without re-subscribing.
   const pendingRef = useRef<PendingContext | null>(null);
+  // The body of the last turn sent, so Regenerate can ask the same thing
+  // again, including any LeetCode context it carried.
+  const lastRequestRef = useRef<ChatStreamBody | null>(null);
+  // Whether that turn reached the backend. If it didn't (offline, rate
+  // limited), the backend holds nothing to replace, and asking it to
+  // regenerate would rewind the turn before it instead.
+  const lastReachedBackendRef = useRef(false);
+  const [canRegenerate, setCanRegenerate] = useState(false);
+  // What the header shows. It used to be a "System Online" light that pulsed
+  // whatever the backend was doing, including while it was asleep or down.
+  const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking");
+  const stopRequestedRef = useRef(false);
   // True once a reply has taken long enough to start that the backend is
   // probably waking up; see TypingIndicator.
   const [slowStart, setSlowStart] = useState(false);
@@ -247,9 +268,12 @@ const ChatInterface = () => {
   // --- Memoized Values ---
 
   // --- Memoized Handlers ---
-  const handleSendMessage = useCallback(async (messageText?: string) => {
-    const textToSend = (messageText || chatState.inputValue).trim();
-    if (!textToSend || chatState.isLoading || !sessionState.session?.id) {
+  const handleSendMessage = useCallback(async (messageText?: string, options?: { regenerate?: boolean }) => {
+    const regenerate = !!options?.regenerate && !!lastRequestRef.current;
+    const textToSend = regenerate
+      ? lastRequestRef.current!.user_input
+      : (messageText || chatState.inputValue).trim();
+    if (!textToSend || chatState.isTyping || !sessionState.session?.id) {
       if (!sessionState.session?.id) {
         chatDispatch({ type: 'SET_ERROR', payload: "No active chat session. Please start a new chat." });
       }
@@ -266,10 +290,14 @@ const ChatInterface = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    chatDispatch({ type: 'ADD_MESSAGE', payload: userMessage });
+    if (regenerate) {
+      chatDispatch({ type: 'REWIND_LAST_ANSWER' });
+    } else {
+      chatDispatch({ type: 'ADD_MESSAGE', payload: userMessage });
+    }
     // Every chat used to stay "New Chat" in the sidebar: the row is created
     // before the first message, so nothing ever named it.
-    if (user && chatState.messages.length === 0) {
+    if (!regenerate && user && chatState.messages.length === 0) {
       const sessionId = sessionState.session.id;
       const current = sessionState.sessions.find((s) => s.id === sessionId);
       if (!current?.session_name || current.session_name === "New Chat") {
@@ -290,7 +318,7 @@ const ChatInterface = () => {
           });
       }
     }
-    if (!messageText) {
+    if (!messageText && !regenerate) {
       chatDispatch({ type: 'SET_INPUT_VALUE', payload: "" });
     }
 
@@ -309,6 +337,8 @@ const ChatInterface = () => {
 
       abortControllerRef.current?.abort();
       abortControllerRef.current = controller;
+      stopRequestedRef.current = false;
+      setCanRegenerate(false);
 
       // `pending` carries the LeetCode context the backend handed us on the
       // previous turn. Echoing it back keeps the two-message "which language?"
@@ -319,15 +349,15 @@ const ChatInterface = () => {
       const pending = pendingRef.current;
       pendingRef.current = null;
 
-      const response = await postChatStream(
-        sessionState.session.id,
-        {
-          user_input: textToSend,
-          preferred_language: preferredLanguage || null,
-          pending,
-        },
-        controller.signal,
-      );
+      const body: ChatStreamBody = regenerate
+        ? { ...lastRequestRef.current!, regenerate: lastReachedBackendRef.current }
+        : { user_input: textToSend, preferred_language: preferredLanguage || null, pending };
+      lastRequestRef.current = { ...body, regenerate: false };
+      lastReachedBackendRef.current = false;
+
+      const response = await postChatStream(sessionState.session.id, body, controller.signal);
+      setBackendStatus("online");
+      lastReachedBackendRef.current = response.ok;
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -370,6 +400,9 @@ const ChatInterface = () => {
               // The backend needs another turn to finish this request and
               // has handed us the context it will need.
               pendingRef.current = event.data as PendingContext;
+              if (!isFirstChunk) {
+                chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { askLanguage: true } } });
+              }
               break;
             case "suggestions": {
               const suggestions = parseSuggestions(event.data);
@@ -429,8 +462,12 @@ const ChatInterface = () => {
       }
 
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
+      if (error.name === 'AbortError' && stopRequestedRef.current) {
+        // Stopped by the user: keep what arrived, and say it was cut short.
+        chatDispatch({ type: 'UPDATE_MESSAGE', payload: { id: botMessageId, updates: { stopped: true } } });
+      } else if (error.name !== 'AbortError') {
         console.error("API Error:", error);
+        if (!error.status) setBackendStatus("offline");
         // Shown once, as a message in the chat, in words a user can act on.
         // It used to be a toast and a bubble both reading "HTTP error 429: ...".
         const errorMessage: Message = {
@@ -446,12 +483,37 @@ const ChatInterface = () => {
       // Only this request's own state: a newer request may already own these.
       if (abortControllerRef.current === controller) {
         abortControllerRef.current = null;
+        setCanRegenerate(true);
         chatDispatch({ type: 'SET_TYPING', payload: false });
         chatDispatch({ type: 'SET_LOADING', payload: false });
         clearSlowStart();
       }
     }
-  }, [chatState.inputValue, chatState.isLoading, chatState.messages.length, sessionState.session?.id, sessionState.sessions, preferredLanguage, user]);
+  }, [chatState.inputValue, chatState.isTyping, chatState.messages.length, sessionState.session?.id, sessionState.sessions, preferredLanguage, user]);
+
+  // Stable handles for the message bubbles, which are memoised: passing
+  // handleSendMessage itself would re-render every bubble on each keystroke.
+  const sendRef = useRef(handleSendMessage);
+  sendRef.current = handleSendMessage;
+  const handleQuickReply = useCallback((text: string) => {
+    void sendRef.current(text);
+  }, []);
+  const handleRegenerate = useCallback(() => {
+    void sendRef.current(undefined, { regenerate: true });
+  }, []);
+  const handleStop = useCallback(() => {
+    stopRequestedRef.current = true;
+    abortControllerRef.current?.abort();
+  }, []);
+  const messageActions = React.useMemo<MessageActions>(
+    () => ({
+      onQuickReply: handleQuickReply,
+      onRegenerate: handleRegenerate,
+      busy: chatState.isTyping,
+      canRegenerate,
+    }),
+    [handleQuickReply, handleRegenerate, chatState.isTyping, canRegenerate],
+  );
 
   const handleSessionSelect = useCallback(async (sessionId: string) => {
     if (sessionId === sessionState.selectedSessionId) return;
@@ -462,6 +524,8 @@ const ChatInterface = () => {
     sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: sessionId });
     sessionDispatch({ type: 'SET_SESSION', payload: { id: sessionId } });
     pendingRef.current = null;
+    lastRequestRef.current = null;
+    setCanRegenerate(false);
 
     if (!user) {
       // Guest sessions are ephemeral: there is no stored history to fetch.
@@ -511,9 +575,18 @@ const ChatInterface = () => {
     }
   }, [sessionState.selectedSessionId, api, user]);
 
-  const handleNewChat = useCallback(async () => {
+  const handleNewChat = useCallback(async (force?: unknown) => {
     if (sessionState.isCreatingSession) return;
+    // The current chat is already empty: reuse it instead of adding another
+    // empty "New Chat" row each press. `force` (from deleting the current
+    // chat) always makes a new one.
+    if (force !== true && sessionState.session?.id && chatState.messages.length === 0 && !chatState.isTyping) {
+      setIsSidebarOpen(false);
+      return;
+    }
     abortControllerRef.current?.abort();
+    lastRequestRef.current = null;
+    setCanRegenerate(false);
 
     try {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: true });
@@ -570,7 +643,7 @@ const ChatInterface = () => {
       sessionDispatch({ type: 'SET_CREATING_SESSION', payload: false });
       chatDispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [sessionState.isCreatingSession, createChatSession, user]);
+  }, [sessionState.isCreatingSession, sessionState.session?.id, chatState.messages.length, chatState.isTyping, createChatSession, user]);
 
   const handleDeleteSession = useCallback(async () => {
     if (!sessionToDelete || !user) return;
@@ -597,7 +670,7 @@ const ChatInterface = () => {
           if (remainingSessions.length > 0) {
             handleSessionSelect(remainingSessions[0].id);
           } else {
-            await handleNewChat();
+            await handleNewChat(true);
           }
         }
       }
@@ -679,7 +752,19 @@ const ChatInterface = () => {
       else {
         try {
           chatDispatch({ type: 'SET_LOADING', payload: true });
-          // Guest sessions are ephemeral - auto-create one for smoother UX
+          // A refresh used to wipe a guest's conversation. Bring back the one
+          // this tab was having, if there is one; otherwise start fresh.
+          const saved = loadGuestChat(browserSessionStorage());
+          if (saved) {
+            const now = new Date().toISOString();
+            const record = { id: saved.sessionId, session_name: "Guest Chat", created_at: now, updated_at: now };
+            sessionDispatch({ type: 'SET_SESSIONS', payload: [record] });
+            sessionDispatch({ type: 'SET_SESSION', payload: record });
+            sessionDispatch({ type: 'SET_SELECTED_SESSION', payload: record.id });
+            chatDispatch({ type: 'SET_MESSAGES', payload: saved.messages });
+            pendingRef.current = saved.pending;
+            return;
+          }
           await handleNewChat();
         } catch (err) {
           console.error("Guest init error", err);
@@ -692,6 +777,30 @@ const ChatInterface = () => {
     initChatSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, getChatSession, createChatSession]);
+
+  // Keep a guest's chat across a refresh. Saved once a reply has finished, not
+  // on every streamed chunk. A signed-in user's chats live in the database,
+  // so any guest chat left in this tab is dropped.
+  useEffect(() => {
+    const storage = browserSessionStorage();
+    if (user) {
+      clearGuestChat(storage);
+      return;
+    }
+    const sessionId = sessionState.session?.id;
+    if (!sessionId || chatState.isTyping) return;
+    saveGuestChat(storage, { sessionId, messages: chatState.messages, pending: pendingRef.current });
+  }, [user, sessionState.session?.id, chatState.messages, chatState.isTyping]);
+
+  useEffect(() => {
+    let cancelled = false;
+    checkBackend().then((ok) => {
+      if (!cancelled) setBackendStatus((current) => (current === "online" ? current : ok ? "online" : "offline"));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Track whether the reader is at the bottom of the list, and keep them there
   // when the list itself shrinks. With interactive-widget=resizes-content the
@@ -805,15 +914,27 @@ const ChatInterface = () => {
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
               <h1 className="truncate text-sm font-semibold tracking-wide text-foreground">
-                AI Architect
-                <span className="ml-2 hidden font-normal text-muted-foreground sm:inline">| v2.0</span>
+                CodeQuest Tutor
               </h1>
             </div>
 
             <div className="flex shrink-0 items-center">
-              <div className="mr-2 hidden items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground md:flex">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-viz-found" />
-                <span>System Online</span>
+              <div
+                role="status"
+                className="mr-2 hidden items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground md:flex"
+              >
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    backendStatus === "online"
+                      ? "bg-viz-found"
+                      : backendStatus === "offline"
+                        ? "bg-destructive"
+                        : "animate-pulse bg-viz-compare"
+                  }`}
+                />
+                <span>
+                  {backendStatus === "online" ? "Online" : backendStatus === "offline" ? "Offline" : "Connecting…"}
+                </span>
               </div>
 
               <button
@@ -902,6 +1023,7 @@ const ChatInterface = () => {
                       messages={chatState.messages}
                       isLoading={chatState.isTyping}
                       enableVirtualization={false}
+                      actions={messageActions}
                     />
                     {/* Only until the reply starts: the answer's own cursor
                         shows it is still streaming. */}
@@ -934,30 +1056,40 @@ const ChatInterface = () => {
                   value={chatState.inputValue}
                   onChange={(e) => chatDispatch({ type: 'SET_INPUT_VALUE', payload: e.target.value })}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && !chatState.isTyping) {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      handleSendMessage();
+                      // While a reply streams, Enter waits: the draft is kept.
+                      if (!chatState.isTyping) handleSendMessage();
                     }
                   }}
                   placeholder="Ask anything about code..."
                   rows={1}
                   className="scrollbar-thin scrollbar-thumb-white/10 min-h-[56px] w-full resize-none rounded-2xl bg-transparent px-4 py-4 pr-16 text-base leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5"
-                  disabled={chatState.isTyping || (!sessionState.session?.id)}
+                  // Not disabled while a reply streams: the next question can be
+                  // drafted meanwhile, and on mobile disabling it closed the keyboard.
+                  disabled={!sessionState.session?.id}
                 />
 
                 <div className="absolute bottom-1.5 right-1.5">
-                  <button
-                    onClick={() => handleSendMessage()}
-                    disabled={chatState.isTyping || !chatState.inputValue.trim() || (!sessionState.session?.id)}
-                    aria-label="Send message"
-                    className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {chatState.isTyping ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
+                  {chatState.isTyping ? (
+                    <button
+                      onClick={handleStop}
+                      aria-label="Stop answering"
+                      title="Stop"
+                      className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 bg-white/10 text-foreground transition-all active:scale-95 hover:bg-white/20"
+                    >
+                      <Square className="h-4 w-4 fill-current" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleSendMessage()}
+                      disabled={!chatState.inputValue.trim() || (!sessionState.session?.id)}
+                      aria-label="Send message"
+                      className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                       <Send className="w-5 h-5" />
-                    )}
-                  </button>
+                    </button>
+                  )}
                 </div>
               </div>
               <p className="mt-2 text-center text-[10px] font-medium uppercase tracking-widest text-muted-foreground">

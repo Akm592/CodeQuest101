@@ -4,7 +4,7 @@ import { FixedSizeList as VirtualList } from 'react-window';
 import MessageBubble from "./MessageBubble";
 import { AlertCircle } from "lucide-react";
 
-import type { ChatMessage as Message } from "./types";
+import type { ChatMessage as Message, MessageActions } from "./types";
 
 interface ChatWindowProps {
     messages: Message[];
@@ -15,6 +15,7 @@ interface ChatWindowProps {
     maxMessagesBeforeVirtualization?: number;
     className?: string;
     autoScroll?: boolean;
+    actions?: MessageActions;
 }
 
 const ErrorMessage = React.memo(({ error, onRetry }: { error: string; onRetry?: () => void }) => (
@@ -89,7 +90,8 @@ const MessageItem = React.memo<{
     message: Message;
     index: number;
     isLastMessage: boolean;
-}>(({ message, isLastMessage }) => (
+    actions?: MessageActions;
+}>(({ message, isLastMessage, actions }) => (
     <motion.div
         key={message.id}
         // No per-index delay and no `layout`: opening a saved chat replayed a
@@ -100,7 +102,7 @@ const MessageItem = React.memo<{
         transition={{ duration: 0.2 }}
         className="mb-4 last:mb-0"
     >
-        <MessageBubble message={message} isLastMessage={isLastMessage} />
+        <MessageBubble message={message} isLastMessage={isLastMessage} actions={actions} />
     </motion.div>
 ));
 MessageItem.displayName = 'MessageItem';
@@ -113,7 +115,8 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
     enableVirtualization = false,
     maxMessagesBeforeVirtualization = 100,
     className = "",
-    autoScroll = true
+    autoScroll = true,
+    actions,
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const virtualListRef = useRef<VirtualList>(null);
@@ -209,6 +212,7 @@ const ChatWindow = forwardRef<HTMLDivElement, ChatWindowProps>(({
                         message={message}
                         index={index}
                         isLastMessage={index === messagesCount - 1}
+                        actions={actions}
                     />
                 ))}
             </AnimatePresence>

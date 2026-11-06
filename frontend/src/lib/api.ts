@@ -250,6 +250,8 @@ export interface ChatStreamBody {
   user_input: string;
   preferred_language?: string | null;
   pending?: PendingContext | null;
+  /** Replace the last answer instead of adding a turn. */
+  regenerate?: boolean;
 }
 
 /**
@@ -304,6 +306,20 @@ let warmed = false;
  * /health on page load overlaps the wake-up with them reading the page and
  * typing. Fire-and-forget: no auth, no retries, failures ignored.
  */
+/** Whether /health answers within ``timeoutMs`` (long enough for a cold start). */
+export async function checkBackend(timeoutMs = 60_000): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, { cache: "no-store", signal: controller.signal });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function warmBackend(): void {
   if (warmed) return;
   warmed = true;

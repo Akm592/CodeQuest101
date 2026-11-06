@@ -59,6 +59,13 @@ class ChatSession:
         kept.reverse()
         return kept
 
+    def rewind_last_turn(self) -> None:
+        """Drop the last answer and the question it replied to (for regenerate)."""
+        while self.history and self.history[-1]["role"] != "user":
+            self.history.pop()
+        if self.history:
+            self.history.pop()
+
     def set_state(self, key: str, value: Any) -> None:
         """Set a scratch value for this session."""
         self.state[key] = value

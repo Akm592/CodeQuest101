@@ -4,12 +4,12 @@ import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { Copy, Check, Play, Sparkles, User } from "lucide-react";
+import { Copy, Check, Play, Sparkles, User, RotateCcw } from "lucide-react";
 import VisualizationModal from "../Visualizer/VisualizationModal";
 import ScenePlayer, { type SceneSource } from "../visualizer-player/ScenePlayer";
 import { legacyToScene } from "../../lib/scene/legacy";
 import type { Suggestion } from "../../lib/scene/types";
-import type { ChatMessage } from "./types";
+import type { ChatMessage, MessageActions } from "./types";
 
 // Messages whose suggestion has already been auto-opened. Module-level, not
 // component state: a bubble remounts when the list re-renders, and the player
@@ -105,15 +105,72 @@ const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, cod
   );
 };
 
+/** One tap answers "which language?". */
+const QUICK_LANGUAGES = ["Python", "Java", "C++", "JavaScript", "Go", "C#"];
+
+const LanguageButtons: React.FC<{ onPick: (language: string) => void }> = ({ onPick }) => (
+  <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Choose a language">
+    {QUICK_LANGUAGES.map((language) => (
+      <button
+        key={language}
+        type="button"
+        onClick={() => onPick(language)}
+        className="min-h-11 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/20"
+      >
+        {language}
+      </button>
+    ))}
+  </div>
+);
+
+/** Copy answer / Regenerate under a bot message. */
+const AnswerActions: React.FC<{
+  text: string;
+  canRegenerate: boolean;
+  onRegenerate?: () => void;
+}> = ({ text, canRegenerate, onRegenerate }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
+  };
+  const button =
+    "inline-flex min-h-11 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground";
+  return (
+    <div className="flex items-center gap-1">
+      {text && (
+        <button type="button" onClick={copy} className={button} aria-label={copied ? "Copied" : "Copy answer"}>
+          {copied ? <Check className="h-3.5 w-3.5 text-viz-found" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      )}
+      {canRegenerate && onRegenerate && (
+        <button type="button" onClick={onRegenerate} className={button} aria-label="Regenerate answer">
+          <RotateCcw className="h-3.5 w-3.5" />
+          Regenerate
+        </button>
+      )}
+    </div>
+  );
+};
+
 interface MessageBubbleProps {
   message: ChatMessage;
   isLastMessage?: boolean;
   streamingText?: string;
+  actions?: MessageActions;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
+  isLastMessage = false,
   streamingText,
+  actions,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [player, setPlayer] = useState<{ title: string; source: SceneSource; ai: boolean } | null>(null);
@@ -380,7 +437,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
           {/* Always legible. Hover-to-reveal means never, on a touch screen. */}
           <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            {isUserMessage ? 'You' : 'AI Architect'}
+            {isUserMessage ? 'You' : 'Tutor'}
           </span>
         </div>
 
@@ -390,9 +447,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isUserMessage && message.suggestions && message.suggestions.length > 0 && (
           <SuggestionChips suggestions={message.suggestions} onOpen={openSuggestion} />
         )}
-        <span className={`text-muted-foreground text-[10px] mt-1.5 px-1 ${isUserMessage ? 'mr-1' : 'ml-1'}`}>
-          {message.timestamp}
-        </span>
+        {!isUserMessage && message.askLanguage && isLastMessage && actions && !actions.busy && (
+          <LanguageButtons onPick={actions.onQuickReply} />
+        )}
+        <div className={`mt-1 flex items-center gap-2 px-1 ${isUserMessage ? 'mr-1 flex-row-reverse' : 'ml-1'}`}>
+          <span className="text-muted-foreground text-[10px]">{message.timestamp}</span>
+          {message.stopped && (
+            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Stopped</span>
+          )}
+          {!isUserMessage && !isStreaming && !message.isVisualization && (
+            <AnswerActions
+              text={message.text}
+              canRegenerate={isLastMessage && !!actions && actions.canRegenerate && !actions.busy}
+              onRegenerate={actions?.onRegenerate}
+            />
+          )}
+        </div>
       </motion.div>
 
       {player && (

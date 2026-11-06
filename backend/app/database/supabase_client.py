@@ -199,6 +199,37 @@ class SupabaseManager:
             logger.error(f"Error renaming session {session_id}: {exc}", exc_info=True)
             return False
 
+    async def delete_last_answer(self, session_id: str) -> bool:
+        """Delete the bot messages after the session's last user message.
+
+        Used by regenerate, so a reload shows the new answer only.
+        """
+        if not _is_uuid(session_id):
+            return False
+        messages = await self.get_messages_by_session_id(session_id)
+        if not messages:
+            return True
+        trailing = []
+        for message in reversed(messages):
+            if message.get("sender_type") == "user":
+                break
+            if message.get("id"):
+                trailing.append(message["id"])
+        if not trailing:
+            return True
+        try:
+            await (
+                self._client.table("messages")
+                .delete()
+                .in_("id", trailing)
+                .eq("session_id", str(session_id))
+                .execute()
+            )
+            return True
+        except Exception as exc:
+            logger.error(f"Error deleting the last answer in {session_id}: {exc}", exc_info=True)
+            return False
+
     async def store_message(
         self,
         session_id: str,

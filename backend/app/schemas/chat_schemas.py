@@ -50,6 +50,9 @@ class ChatRequest(BaseModel):
     # When set, the "which language?" round trip is skipped entirely.
     preferred_language: Optional[str] = Field(default=None, max_length=24)
     pending: Optional[PendingContext] = None
+    # Replace the last answer instead of adding a turn: the question is not
+    # stored again, and the previous answer is removed from the history.
+    regenerate: bool = False
 
     @field_validator("preferred_language")
     @classmethod
