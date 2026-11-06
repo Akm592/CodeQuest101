@@ -4,7 +4,7 @@ import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { Copy, Check, Play, Sparkles, User, RotateCcw } from "lucide-react";
+import { Copy, Check, Play, Sparkles, RotateCcw } from "lucide-react";
 import VisualizationModal from "../Visualizer/VisualizationModal";
 import ScenePlayer, { type SceneSource } from "../visualizer-player/ScenePlayer";
 import { legacyToScene } from "../../lib/scene/legacy";
@@ -21,7 +21,7 @@ const SuggestionChips: React.FC<{
   suggestions: Suggestion[];
   onOpen: (s: Suggestion) => void;
 }> = ({ suggestions, onOpen }) => (
-  <div className="mt-2 w-full max-w-full sm:max-w-2xl" data-viz-suggestions="">
+  <div className="mt-4 w-full max-w-full" data-viz-suggestions="">
     <p className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
       <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" /> See it step by step
     </p>
@@ -215,43 +215,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isStreaming = message.isStreaming || !!streamingText;
   const currentText = streamingText || message.text;
 
-  // Detect complex content that should skip typewriter effect
-  const isComplexContent = useMemo(() => {
-    if (!currentText) return false;
-
-    const codeBlockCount = (currentText.match(/```/g) || []).length;
-    const headerCount = (currentText.match(/^#{1,6}\s/gm) || []).length;
-    const listCount = (currentText.match(/^[*\-+]\s/gm) || []).length;
-    const orderedListCount = (currentText.match(/^\d+\.\s/gm) || []).length;
-    const wordCount = currentText.split(/\s+/).length;
-    const lineCount = currentText.split('\n').length;
-    const boldCount = (currentText.match(/\*\*.*?\*\*/g) || []).length;
-    const tableCount = (currentText.match(/\|.*\|/g) || []).length;
-
-    return codeBlockCount >= 1 ||
-      headerCount > 2 ||
-      listCount > 4 ||
-      orderedListCount > 3 ||
-      wordCount > 300 ||
-      lineCount > 15 ||
-      boldCount > 3 ||
-      tableCount > 0;
-  }, [currentText]);
-
   // Inside a user bubble the background IS the teal accent, so every colour
-  // here has to come from the bubble's own foreground. The previous values were
-  // written for a dark bubble and quietly broke on the light one:
-  // text-primary on bg-primary is 1:1 (invisible), text-foreground is ~1.9:1.
-  // Any user message with bold text, a link or a list was unreadable.
+  // there has to come from the bubble's own foreground: text-primary on
+  // bg-primary is 1:1 (invisible). In answers, accent colour is kept for
+  // links and code; headings and bold were teal too, which made every answer
+  // a patchwork of highlights with nothing standing out.
   const tone = {
-    heading: isUserMessage ? "text-current" : "text-primary",
-    strong: isUserMessage ? "text-current" : "text-primary",
     body: isUserMessage ? "text-current" : "text-foreground",
     muted: isUserMessage ? "text-current opacity-90" : "text-muted-foreground",
     link: isUserMessage ? "text-current" : "text-primary",
   };
 
-  // Enhanced markdown components with mobile-responsive styling
   const memoizedComponents = useMemo((): Components => ({
     // react-markdown 9 no longer passes `inline` to `code`, so every inline
     // `dp[i]` used to render as a full block with a header and copy button.
@@ -266,11 +240,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
       return <pre>{children}</pre>;
     },
+    // A quiet tint, no border: wrapped across lines, a bordered pill broke
+    // into two half-boxes. box-decoration-clone keeps both halves padded.
     code: ({ node, className, children, ...props }) => (
       <code
-        className={`px-1.5 py-0.5 rounded-md font-mono text-[0.85em] font-medium break-words ${isUserMessage
-          ? 'bg-white/20 text-current'
-          : 'bg-black/40 text-primary border border-primary/20'
+        className={`rounded px-1.5 py-0.5 font-mono text-[0.875em] [box-decoration-break:clone] ${isUserMessage
+          ? 'bg-black/15 text-current'
+          : 'bg-white/[0.08] text-foreground'
           } ${className ?? ""}`}
         {...props}
       >
@@ -278,96 +254,72 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </code>
     ),
     h1: ({ node, ...props }) => (
-      <h1 className={`text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-3 sm:mb-4 pb-2 border-b border-current/30 ${tone.heading}`} {...props} />
+      <h1 className={`mt-6 mb-3 text-xl font-semibold first:mt-0 ${tone.body}`} {...props} />
     ),
     h2: ({ node, ...props }) => (
-      <h2 className={`text-lg sm:text-xl font-semibold mt-4 sm:mt-5 mb-2 sm:mb-3 ${tone.heading}`} {...props} />
+      <h2 className={`mt-6 mb-2 text-lg font-semibold first:mt-0 ${tone.body}`} {...props} />
     ),
     h3: ({ node, ...props }) => (
-      <h3 className={`text-base sm:text-lg font-semibold mt-3 sm:mt-4 mb-2 ${tone.body}`} {...props} />
+      <h3 className={`mt-5 mb-2 text-base font-semibold first:mt-0 ${tone.body}`} {...props} />
     ),
     h4: ({ node, ...props }) => (
-      <h4 className={`text-sm sm:text-base font-semibold mt-3 mb-2 ${tone.body}`} {...props} />
+      <h4 className={`mt-4 mb-1.5 text-base font-semibold first:mt-0 ${tone.body}`} {...props} />
     ),
     h5: ({ node, ...props }) => (
-      <h5 className={`text-sm font-semibold mt-2 sm:mt-3 mb-2 ${tone.muted}`} {...props} />
+      <h5 className={`mt-3 mb-1.5 text-sm font-semibold first:mt-0 ${tone.body}`} {...props} />
     ),
     h6: ({ node, ...props }) => (
-      <h6 className={`text-xs sm:text-sm font-semibold mt-2 mb-2 ${tone.muted}`} {...props} />
+      <h6 className={`mt-3 mb-1.5 text-sm font-semibold first:mt-0 ${tone.muted}`} {...props} />
     ),
     p: ({ node, ...props }) => (
-      <p className={`my-2 sm:my-3 leading-6 sm:leading-7 text-sm sm:text-base ${tone.body}`} {...props} />
+      <p className={`my-3 text-[15px] leading-7 first:mt-0 last:mb-0 ${tone.body}`} {...props} />
     ),
     ul: ({ node, ...props }) => (
-      <ul className={`list-disc list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base ${tone.muted}`} {...props} />
+      <ul className={`my-3 list-outside list-disc space-y-1.5 pl-5 text-[15px] leading-7 first:mt-0 last:mb-0 ${tone.body}`} {...props} />
     ),
     ol: ({ node, ...props }) => (
-      <ol className={`list-decimal list-outside pl-4 sm:pl-6 my-2 sm:my-3 space-y-1 sm:space-y-2 text-sm sm:text-base ${tone.muted}`} {...props} />
+      <ol className={`my-3 list-outside list-decimal space-y-1.5 pl-5 text-[15px] leading-7 first:mt-0 last:mb-0 ${tone.body}`} {...props} />
     ),
     li: ({ node, ...props }) => (
-      <li className="pl-1 leading-5 sm:leading-6" {...props} />
+      <li className="pl-1 marker:text-muted-foreground" {...props} />
     ),
     a: ({ node, ...props }) => (
       <a
-        className={`underline font-medium transition-colors duration-200 break-words ${tone.link}`}
+        className={`break-words font-medium underline underline-offset-2 ${tone.link}`}
         target="_blank"
         rel="noopener noreferrer"
         {...props}
       />
     ),
     strong: ({ node, ...props }) => (
-      <strong className={`font-semibold ${tone.strong}`} {...props} />
+      <strong className="font-semibold text-current" {...props} />
     ),
     em: ({ node, ...props }) => (
-      <em className={`italic ${tone.muted}`} {...props} />
+      <em className="italic" {...props} />
     ),
     blockquote: ({ node, ...props }) => (
-      <blockquote className={`border-l-4 border-current/40 pl-4 sm:pl-6 py-2 sm:py-3 my-3 sm:my-4 bg-black/10 rounded-r-lg italic text-sm sm:text-base ${tone.muted}`} {...props} />
+      <blockquote className={`my-3 border-l-2 border-primary/50 pl-4 ${tone.muted}`} {...props} />
     ),
     hr: ({ node, ...props }) => (
-      <hr className="my-4 sm:my-6 border-white/10" {...props} />
+      <hr className="my-5 border-border" {...props} />
     ),
     table: ({ node, ...props }) => (
-      <div className="overflow-x-auto my-3 sm:my-4 -mx-2 sm:mx-0">
-        <table className="min-w-full border border-white/10 rounded-lg text-xs sm:text-sm" {...props} />
+      <div className="my-4 overflow-x-auto rounded-lg border border-border">
+        <table className="min-w-full text-sm [&_tr:last-child_td]:border-b-0" {...props} />
       </div>
     ),
     thead: ({ node, ...props }) => (
-      <thead className="bg-white/5" {...props} />
+      <thead className="bg-white/[0.04]" {...props} />
     ),
+    // Left-aligned like the cells under them, and not shouted in capitals.
     th: ({ node, ...props }) => (
-      <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-white/10" {...props} />
+      <th className="border-b border-border px-3 py-2 text-left font-medium text-muted-foreground" {...props} />
     ),
     td: ({ node, ...props }) => (
-      <td className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-b border-current/10 ${tone.muted}`} {...props} />
+      <td className={`border-b border-border px-3 py-2 align-top ${tone.body}`} {...props} />
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [isUserMessage]);
-
-  const bubbleClassName = useMemo(() => {
-    const baseStyle = `px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border break-words transition-colors duration-200`;
-
-    // max-w-full, not max-w-[calc(100vw-2rem)]. The bubble sits inside a
-    // max-w-5xl column that already has three levels of horizontal padding, so
-    // a viewport-derived width was both wrong for the space available and
-    // wrong on desktop, where 100vw includes the scrollbar gutter.
-    const sizeClass = isComplexContent
-      ? 'max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl'
-      : 'max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl';
-
-    // The user bubble was `from-primary to-blue-600` with text-white. Two
-    // problems: blue-600 is the pre-rebrand accent, and white on teal-400
-    // measures 1.87:1 — the same contrast failure fixed everywhere else, which
-    // survived here only because the UI checker never renders a message.
-    // primary/primary-foreground is the pairing every button already uses.
-    const styleClass = isUserMessage
-      ? 'bg-primary text-primary-foreground border-transparent ml-auto rounded-br-md'
-      : 'bg-card text-foreground border-border mr-auto rounded-bl-md';
-
-    return `${baseStyle} ${sizeClass} ${styleClass}`;
-  }, [isUserMessage, isComplexContent]);
-
-  const containerClassName = `flex flex-col ${isUserMessage ? "items-end" : "items-start"} mb-4 sm:mb-6 group`;
 
   // Content rendering logic
   const renderContent = () => {
@@ -388,33 +340,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
 
     if (currentText) {
-      // For streaming messages, always display immediately
-      if (isStreaming) {
-        return (
-          <div className="prose prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={memoizedComponents}
-            >
-              {currentText}
-            </ReactMarkdown>
-            {/* Show typing cursor during streaming */}
-            <span className="inline-block w-1.5 h-4 bg-primary ml-1 animate-pulse" />
-          </div>
-        );
-      }
-
       // Shown in full as soon as it arrives. Simple answers used to be typed
-      // out again at 15ms a character after they had already arrived, adding
-      // ~20 seconds to a 1,500-character reply.
+      // out again at 15ms a character after they had already arrived.
       return (
-        <div className="prose prose-invert max-w-none prose-p:my-1.5 sm:prose-p:my-2 prose-headings:my-2 sm:prose-headings:my-3 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-1.5 sm:prose-ul:my-2 prose-ol:my-1.5 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={memoizedComponents}
-          >
+        <div className="max-w-none break-words">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={memoizedComponents}>
             {currentText}
           </ReactMarkdown>
+          {isStreaming && (
+            <span className="ml-0.5 inline-block h-4 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-primary" aria-hidden="true" />
+          )}
         </div>
       );
     }
@@ -422,47 +357,63 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     return <span className="italic text-muted-foreground text-sm">(Empty message)</span>;
   };
 
+  // A question asking for a choice has nothing worth copying.
+  const showCopy = !message.askLanguage;
 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className={containerClassName}
+        className="group"
       >
-        <div className={`mb-1.5 flex items-center gap-2 ${isUserMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-          <div className={`flex h-7 w-7 items-center justify-center rounded-full border border-border ${isUserMessage ? 'bg-primary text-primary-foreground' : 'bg-popover text-primary'}`}>
-            {isUserMessage ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+        {isUserMessage ? (
+          // The user's turn: a compact bubble on the right. No avatar or "YOU"
+          // label; which side it is on already says who wrote it.
+          <div className="flex justify-end">
+            <div
+              className="max-w-[85%] break-words rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground sm:max-w-[75%]"
+              title={message.timestamp}
+            >
+              {renderContent()}
+            </div>
           </div>
-          {/* Always legible. Hover-to-reveal means never, on a touch screen. */}
-          <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            {isUserMessage ? 'You' : 'Tutor'}
-          </span>
-        </div>
-
-        <div className={bubbleClassName}>
-          {renderContent()}
-        </div>
-        {!isUserMessage && message.suggestions && message.suggestions.length > 0 && (
-          <SuggestionChips suggestions={message.suggestions} onOpen={openSuggestion} />
+        ) : (
+          // The tutor's turn: full column width, no card around it, so code
+          // blocks and tables get the room and read as part of the page.
+          <div className="flex gap-3">
+            <div
+              className="mt-0.5 hidden h-7 w-7 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10 text-primary sm:grid"
+              aria-hidden="true"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="sr-only">Tutor:</span>
+              {renderContent()}
+              {message.suggestions && message.suggestions.length > 0 && (
+                <SuggestionChips suggestions={message.suggestions} onOpen={openSuggestion} />
+              )}
+              {message.askLanguage && isLastMessage && actions && !actions.busy && (
+                <LanguageButtons onPick={actions.onQuickReply} />
+              )}
+              {!isStreaming && !message.isVisualization && (
+                <div className="-ml-2.5 mt-1.5 flex flex-wrap items-center gap-x-1">
+                  <AnswerActions
+                    text={showCopy ? message.text : ""}
+                    canRegenerate={isLastMessage && !!actions && actions.canRegenerate && !actions.busy}
+                    onRegenerate={actions?.onRegenerate}
+                  />
+                  {message.stopped && (
+                    <span className="px-2.5 text-xs text-muted-foreground">Stopped</span>
+                  )}
+                  <span className="px-2.5 text-xs text-muted-foreground">{message.timestamp}</span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
-        {!isUserMessage && message.askLanguage && isLastMessage && actions && !actions.busy && (
-          <LanguageButtons onPick={actions.onQuickReply} />
-        )}
-        <div className={`mt-1 flex items-center gap-2 px-1 ${isUserMessage ? 'mr-1 flex-row-reverse' : 'ml-1'}`}>
-          <span className="text-muted-foreground text-[10px]">{message.timestamp}</span>
-          {message.stopped && (
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Stopped</span>
-          )}
-          {!isUserMessage && !isStreaming && !message.isVisualization && (
-            <AnswerActions
-              text={message.text}
-              canRegenerate={isLastMessage && !!actions && actions.canRegenerate && !actions.busy}
-              onRegenerate={actions?.onRegenerate}
-            />
-          )}
-        </div>
       </motion.div>
 
       {player && (

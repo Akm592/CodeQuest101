@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Square, Loader2, MessageSquarePlus, X, Settings, Sparkles, CloudOff, PanelLeft } from "lucide-react";
+import { Send, Square, Loader2, MessageSquarePlus, X, Settings, CloudOff, PanelLeft } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 import TypingIndicator from "./TypingIndicator";
 import { useAuth } from "../../contexts/AuthContext";
@@ -12,7 +12,7 @@ import { api, checkBackend, postChatStream, PendingContext, type ChatStreamBody 
 import { browserSessionStorage, clearGuestChat, loadGuestChat, saveGuestChat } from "../../lib/guestChat";
 import { isNearBottom } from "../../lib/scroll";
 import { v4 as uuidv4 } from "uuid";
-import SuggestionsScreen from "./SuggestionsScreen";
+import ChatWelcome from "./ChatWelcome";
 import { buildVizContext, type ChatMessage, type MessageActions } from "./types";
 import { createSseParser } from "../../lib/chatStream";
 import { parseSuggestions } from "../../lib/scene/validate";
@@ -143,9 +143,6 @@ const useAPI = () => api;
 
 // Guest sessions are ephemeral - no localStorage persistence
 
-// --- SuggestionsScreen Component ---
-
-SuggestionsScreen.displayName = 'SuggestionsScreen';
 
 /** A sidebar name for a chat: the first words of its first message. */
 function chatTitle(text: string): string {
@@ -893,83 +890,75 @@ const ChatInterface = () => {
           its bottom gets cut off whenever the URL bar is showing. */}
       <div className="relative z-10 flex h-full min-h-0 flex-1 flex-col">
 
-        {/* A normal flex child rather than an absolutely-positioned bar. The old
-            version was `absolute top-4` with the main region clearing it via a
-            magic pt-20, which broke as soon as the title wrapped at 360px. */}
-        <header className="z-20 shrink-0 px-3 pt-3 sm:px-4 sm:pt-4">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-white/10 bg-card/80 px-2 py-2 shadow-lg backdrop-blur-md sm:px-4">
-            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-              {/* Lives here rather than floating over the header. It used to be
-                  `fixed left-4 top-4`, landing exactly on top of this bar. */}
-              <button
-                onClick={toggleSidebar}
-                aria-label="Open chat history"
-                aria-expanded={isSidebarOpen}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground lg:hidden"
-              >
-                <PanelLeft className="h-5 w-5" />
-              </button>
+        {/* A full-width bar, the same 64px as the sidebar's header so their
+            bottom borders line up. It used to be a floating pill, and answers
+            scrolled visibly behind it and were cut mid-line. */}
+        <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/80 px-2 backdrop-blur-md sm:px-4">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-3">
+            <button
+              onClick={toggleSidebar}
+              aria-label="Open chat history"
+              aria-expanded={isSidebarOpen}
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground lg:hidden"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </button>
+            <h1 className="truncate text-sm font-semibold text-foreground sm:text-base">CodeQuest Tutor</h1>
+            <span
+              role="status"
+              className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground"
+              title={backendStatus === "online" ? "Online" : backendStatus === "offline" ? "Offline" : "Connecting…"}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  backendStatus === "online"
+                    ? "bg-viz-found"
+                    : backendStatus === "offline"
+                      ? "bg-destructive"
+                      : "animate-pulse bg-viz-compare"
+                }`}
+              />
+              <span className="hidden sm:inline">
+                {backendStatus === "online" ? "Online" : backendStatus === "offline" ? "Offline" : "Connecting…"}
+              </span>
+            </span>
+          </div>
 
-              <div className="hidden shrink-0 rounded-full border border-primary/20 bg-primary/10 p-2 sm:block">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <h1 className="truncate text-sm font-semibold tracking-wide text-foreground">
-                CodeQuest Tutor
-              </h1>
-            </div>
-
-            <div className="flex shrink-0 items-center">
-              <div
-                role="status"
-                className="mr-2 hidden items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground md:flex"
-              >
-                <div
-                  className={`h-2 w-2 rounded-full ${
-                    backendStatus === "online"
-                      ? "bg-viz-found"
-                      : backendStatus === "offline"
-                        ? "bg-destructive"
-                        : "animate-pulse bg-viz-compare"
-                  }`}
-                />
-                <span>
-                  {backendStatus === "online" ? "Online" : backendStatus === "offline" ? "Offline" : "Connecting…"}
-                </span>
-              </div>
-
-              <button
-                onClick={handleNewChat}
-                disabled={sessionState.isCreatingSession}
-                className="group grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground disabled:opacity-50"
-                title="New Chat"
-                aria-label="New chat"
-              >
-                {sessionState.isCreatingSession ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <MessageSquarePlus className="h-5 w-5 transition-colors group-hover:text-primary" />
-                )}
-              </button>
-              <button
-                onClick={() => setShowSettingsModal(true)}
-                className="group grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
-                title="Settings"
-                aria-label="Settings"
-              >
-                <Settings className="h-5 w-5 transition-colors group-hover:text-primary" />
-              </button>
-            </div>
+          <div className="flex shrink-0 items-center">
+            {/* The sidebar has its own New Chat; this copy is for phones, where
+                the sidebar is a closed drawer. */}
+            <button
+              onClick={handleNewChat}
+              disabled={sessionState.isCreatingSession}
+              className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground disabled:opacity-50 lg:hidden"
+              title="New chat"
+              aria-label="New chat"
+            >
+              {sessionState.isCreatingSession ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <MessageSquarePlus className="h-5 w-5" />
+              )}
+            </button>
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings className="h-5 w-5" />
+            </button>
           </div>
         </header>
 
-        <main className="flex min-h-0 flex-1 justify-center overflow-hidden px-2 pb-0 pt-2 sm:px-4">
-          <div className="flex flex-col h-full w-full max-w-5xl mx-auto">
-            {/* Account state, not message state: this must sit alongside the
-                conversation rather than replacing it. */}
-            {authDegraded && (
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {/* Account state, not message state: this must sit alongside the
+              conversation rather than replacing it. */}
+          {authDegraded && (
+            <div className="mx-auto w-full max-w-3xl px-3 pt-3 sm:px-6">
               <div
                 role="status"
-                className="mx-2 mb-2 flex items-start gap-3 rounded-xl border border-viz-compare/30 bg-viz-compare/10 px-4 py-3 text-sm text-viz-compare sm:mx-4"
+                className="flex items-start gap-3 rounded-xl border border-viz-compare/30 bg-viz-compare/10 px-4 py-3 text-sm text-viz-compare"
               >
                 <CloudOff className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>
@@ -977,11 +966,16 @@ const ChatInterface = () => {
                   conversation won&apos;t be saved.
                 </span>
               </div>
-            )}
-            <div
-              ref={chatWindowRef}
-              className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain px-2 py-4 sm:px-4 sm:py-6"
-            >
+            </div>
+          )}
+          {/* The scroll area spans the full width, so its scrollbar sits at the
+              window edge; the conversation inside is one readable column, the
+              same width as the composer below it. */}
+          <div
+            ref={chatWindowRef}
+            className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
+          >
+            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-3 py-6 sm:px-6">
               <AnimatePresence mode="wait">
                 {chatState.isLoading && chatState.messages.length === 0 ? (
                   <motion.div
@@ -989,32 +983,22 @@ const ChatInterface = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex items-center justify-center h-full"
+                    className="flex flex-1 items-center justify-center"
                   >
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-teal-500 animate-spin" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-                      </div>
-                    </div>
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" aria-label="Loading" />
                   </motion.div>
                 ) : !chatState.isLoading && chatState.messages.length === 0 ? (
                   <motion.div
-                    key="suggestions"
-                    initial={{ opacity: 0, y: 20 }}
+                    key="welcome"
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="h-full flex items-center justify-center"
+                    exit={{ opacity: 0 }}
+                    className="flex flex-1"
                   >
-                    <SuggestionsScreen onSuggestionClick={handleSendMessage} />
+                    <ChatWelcome onPick={handleQuickReply} />
                   </motion.div>
                 ) : (
-                  <motion.div
-                    key="chat"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col space-y-6 pb-4" // Added padding bottom to avoid cut-off
-                  >
+                  <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col">
                     {/* Errors show once, in the toast; the in-list copy had a
                         "Retry" that only hid the message. Virtualization stays
                         off: its rows are a fixed 120px, and markdown answers
@@ -1035,68 +1019,71 @@ const ChatInterface = () => {
                 )}
               </AnimatePresence>
             </div>
+          </div>
 
-            {/* Composer. pb allows for the Android gesture bar / iOS home
-                indicator, which otherwise sit on top of the send button. */}
-            <div
-              className="shrink-0 px-2 pb-2 pt-2 sm:px-4 sm:pb-4"
-              style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
-            >
-              <div className="relative rounded-2xl border border-white/10 bg-card/80 shadow-2xl backdrop-blur-xl transition-all duration-300 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50">
-                <textarea
-                  ref={(el) => {
-                    if (el) {
-                      el.style.height = "auto";
-                      const maxHeight = 150;
-                      const scrollHeight = el.scrollHeight;
-                      el.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
-                      el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'; // Only show scroll if needed
-                    }
-                  }}
-                  value={chatState.inputValue}
-                  onChange={(e) => chatDispatch({ type: 'SET_INPUT_VALUE', payload: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      // While a reply streams, Enter waits: the draft is kept.
-                      if (!chatState.isTyping) handleSendMessage();
-                    }
-                  }}
-                  placeholder="Ask anything about code..."
-                  rows={1}
-                  className="scrollbar-thin scrollbar-thumb-white/10 min-h-[56px] w-full resize-none rounded-2xl bg-transparent px-4 py-4 pr-16 text-base leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5"
-                  // Not disabled while a reply streams: the next question can be
-                  // drafted meanwhile, and on mobile disabling it closed the keyboard.
-                  disabled={!sessionState.session?.id}
-                />
-
-                <div className="absolute bottom-1.5 right-1.5">
-                  {chatState.isTyping ? (
-                    <button
-                      onClick={handleStop}
-                      aria-label="Stop answering"
-                      title="Stop"
-                      className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 bg-white/10 text-foreground transition-all active:scale-95 hover:bg-white/20"
-                    >
-                      <Square className="h-4 w-4 fill-current" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleSendMessage()}
-                      disabled={!chatState.inputValue.trim() || (!sessionState.session?.id)}
-                      aria-label="Send message"
-                      className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <p className="mt-2 text-center text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                AI-generated • may be wrong
-              </p>
+          {/* Composer. pb allows for the Android gesture bar / iOS home
+              indicator, which otherwise sit on top of the send button. */}
+          <div
+            className="mx-auto w-full max-w-3xl shrink-0 px-3 pt-2 sm:px-6"
+            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          >
+            {/* @tailwindcss/forms gives every textarea its own border, blue
+                focus border and ring; they are turned off on the textarea.
+                The button sits beside the text in a flex row. It used to be
+                absolutely placed over a fixed-height box and hung off its
+                bottom edge; the box alone shows focus now, not the box and
+                the textarea's own ring. */}
+            <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/80 p-2 shadow-lg backdrop-blur-xl transition-colors focus-within:border-primary/60">
+              <textarea
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = "auto";
+                    const maxHeight = 160;
+                    const scrollHeight = el.scrollHeight;
+                    el.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
+                    el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+                  }
+                }}
+                value={chatState.inputValue}
+                onChange={(e) => chatDispatch({ type: 'SET_INPUT_VALUE', payload: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    // While a reply streams, Enter waits: the draft is kept.
+                    if (!chatState.isTyping) handleSendMessage();
+                  }
+                }}
+                placeholder="Ask about algorithms or LeetCode…"
+                aria-label="Message"
+                rows={1}
+                className="scrollbar-thin scrollbar-thumb-white/10 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-2.5 text-base leading-6 text-foreground shadow-none placeholder:text-muted-foreground focus:border-0 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                // Not disabled while a reply streams: the next question can be
+                // drafted meanwhile, and on mobile disabling it closed the keyboard.
+                disabled={!sessionState.session?.id}
+              />
+              {chatState.isTyping ? (
+                <button
+                  onClick={handleStop}
+                  aria-label="Stop answering"
+                  title="Stop"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/10 text-foreground transition-colors hover:bg-white/20"
+                >
+                  <Square className="h-4 w-4 fill-current" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleSendMessage()}
+                  disabled={!chatState.inputValue.trim() || (!sessionState.session?.id)}
+                  aria-label="Send message"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              )}
             </div>
-
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              The tutor can make mistakes. Check important code.
+            </p>
           </div>
         </main>
 

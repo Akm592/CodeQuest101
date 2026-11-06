@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -17,7 +17,6 @@ import { SignUpPage } from "./components/Auth/SignUpPage";
 import { ForgotPassword } from "./components/Auth/ForgotPassword";
 import NotFoundPage from "./components/404";
 import About from "./components/About";
-import LoadingScreen from "./components/LoadingScreen";
 import ScrollToHash from "./components/ScrollToHash";
 import VisualizerPage from "./components/Visualizer/VisualizerPage";
 import type { VisualizationKey } from "./components/homepage/catalog";
@@ -131,23 +130,14 @@ const VisualizeWrapper = () => {
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
   // Wake the backend while the user is still reading; see warmBackend.
+  // There is no splash screen any more: it held every page behind a fixed
+  // 1.8s "System initializing" animation that was waiting on nothing.
   useEffect(() => warmBackend(), []);
-
-  useEffect(() => {
-    // Simulate a loading process
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1800); // Drastically reduced for better UX
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <>
-      {loading && <LoadingScreen onFinished={() => setLoading(false)} />}
-      <div style={{ display: loading ? 'none' : 'block' }}>
+      <div>
         <AuthProvider>
           <Router>
             <ScrollToHash />

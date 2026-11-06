@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
 /**
  * @param slow  No reply has started after several seconds: most likely the
@@ -8,7 +9,7 @@ import { motion } from "framer-motion";
 const TypingIndicator = ({ slow = false }: { slow?: boolean }) => {
   const dotVariants = {
     initial: { y: 0, opacity: 0.4 },
-    animate: { y: -6, opacity: 1 },
+    animate: { y: -3, opacity: 1 },
   };
 
   const dotTransition = (delay: number) => ({
@@ -20,46 +21,33 @@ const TypingIndicator = ({ slow = false }: { slow?: boolean }) => {
   });
 
   return (
+    // Laid out like an answer (avatar, then content) so the reply appears in
+    // the place the dots were.
     <motion.div
-      className="flex items-end gap-3 mb-6 px-2 sm:px-0"
-      initial={{ opacity: 0, y: 10 }}
+      className="mt-8 flex items-center gap-3"
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10, transition: { duration: 0.15 } }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+      transition={{ duration: 0.2 }}
+      role="status"
+      aria-label="The tutor is answering"
     >
-      {/* Bot Avatar */}
-      <div className="w-8 h-8 rounded-full flex items-center justify-center border border-white/10 shadow-lg bg-popover text-primary">
-        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+        <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
       </div>
-
-      <div className="bg-card/90 backdrop-blur-lg border border-white/10
-                      text-foreground rounded-3xl rounded-bl-none px-5 py-4 shadow-lg min-w-[80px] flex items-center justify-center">
-        <div className="flex space-x-1.5 items-center h-4">
+      <div className="flex h-7 items-center gap-1.5">
+        {[0, 0.15, 0.3].map((delay) => (
           <motion.span
-            className="w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(20,184,166,0.5)]"
+            key={delay}
+            className="h-1.5 w-1.5 rounded-full bg-primary"
             variants={dotVariants}
             initial="initial"
             animate="animate"
-            transition={dotTransition(0)}
+            transition={dotTransition(delay)}
           />
-          <motion.span
-            className="w-2 h-2 bg-secondary rounded-full shadow-[0_0_10px_hsl(var(--secondary)/0.5)]"
-            variants={dotVariants}
-            initial="initial"
-            animate="animate"
-            transition={dotTransition(0.15)}
-          />
-          <motion.span
-            className="w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-            variants={dotVariants}
-            initial="initial"
-            animate="animate"
-            transition={dotTransition(0.3)}
-          />
-        </div>
+        ))}
       </div>
       {slow && (
-        <p className="mb-1 max-w-xs text-xs leading-snug text-muted-foreground" role="status">
+        <p className="text-xs leading-snug text-muted-foreground">
           Waking up the server. The first reply after a quiet spell can take up to a minute.
         </p>
       )}

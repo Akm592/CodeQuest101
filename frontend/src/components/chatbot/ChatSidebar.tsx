@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { MessageCircle, Plus, CalendarDays, X, Loader2, Sparkles, FolderOpen } from "lucide-react";
+import { MessageCircle, Plus, CalendarDays, X, Loader2, FolderOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ChatSessionInfo {
   id: string;
@@ -201,13 +202,15 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-2 border-b border-border p-4 sm:p-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <h2 className="truncate font-bold tracking-wide text-foreground">CodeQuest</h2>
-          </div>
+        {/* 64px, the same as the chat header, so the two bottom borders form
+            one line. The brand matches the rest of the site and leads home. */}
+        <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+          <Link to="/" className="flex min-w-0 items-center gap-2 rounded-lg text-lg font-bold text-primary transition-opacity hover:opacity-90">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-primary/30 bg-primary/20 font-mono text-base text-primary">
+              {"{}"}
+            </span>
+            <span className="truncate">CodeQuest101</span>
+          </Link>
           {/* Closing from inside the drawer: the header control is covered by
               the scrim while it is open. */}
           <button
@@ -219,7 +222,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
           </button>
         </div>
 
-        <div className="p-4 sm:p-5 pt-0 sm:pt-0">
+        <div className="p-4">
           <button
             onClick={handleCreateSession}
             disabled={isCreatingSession}
@@ -235,8 +238,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         </div>
 
         {/* Sessions List */}
-        <div className="scrollbar-thin scrollbar-thumb-white/5 hover:scrollbar-thumb-white/10 flex-1 overflow-y-auto overscroll-y-contain px-4 py-4">
-          <h3 className="mb-4 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">History</h3>
+        <div className="scrollbar-thin scrollbar-thumb-white/5 hover:scrollbar-thumb-white/10 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-4">
+          <h3 className="mb-2 px-2 text-xs font-medium text-muted-foreground">Recent chats</h3>
 
           {sortedSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">

@@ -40,8 +40,13 @@ const Header = () => {
     }
   };
 
+  // "Visualizations" is a section of the home page, so it is active only when
+  // scrolled to by link. It used to light up on every visit to the home page,
+  // as if the hero were the visualizations.
   const isActiveLink = (match: string) =>
-    match === "/" ? location.pathname === "/" : location.pathname.startsWith(match);
+    match === "/"
+      ? location.pathname === "/" && location.hash === "#visualizations"
+      : location.pathname.startsWith(match);
 
   return (
     <header

@@ -100,7 +100,7 @@ const MessageItem = React.memo<{
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
-        className="mb-4 last:mb-0"
+        className="mb-8 last:mb-0"
     >
         <MessageBubble message={message} isLastMessage={isLastMessage} actions={actions} />
     </motion.div>
