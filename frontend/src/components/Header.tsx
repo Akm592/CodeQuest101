@@ -50,7 +50,7 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-background/80 backdrop-blur-md border-b border-white/5 py-2 shadow-lg" : "bg-transparent py-4"
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "glass-strong !rounded-none !border-x-0 !border-t-0 py-2" : "bg-transparent py-4"
         }`}
     >
       <div className="container mx-auto px-4">
@@ -67,13 +67,13 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <div className="flex items-center bg-white/5 rounded-full px-4 py-1.5 border border-white/5 mr-4 backdrop-blur-sm">
+            <div className="glass-pill mr-4 flex items-center p-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.to}
                   className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300 ${isActiveLink(link.match)
-                      ? "bg-primary/20 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
+                      ? "bg-white/[0.12] text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.15)]"
                       : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                     }`}
                 >
@@ -87,7 +87,7 @@ const Header = () => {
                 <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" />
               ) : user ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
+                  <div className="glass-pill flex items-center gap-2 px-3 py-1.5">
                     <div className="h-6 w-6 rounded-full flex items-center justify-center bg-primary text-xs text-primary-foreground ring-2 ring-background">
                       {user.user_metadata?.avatar_url ? (
                         <img
@@ -117,7 +117,7 @@ const Header = () => {
                     Log in
                   </Link>
                   <Link to="/signup">
-                    <button className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:bg-primary/90 hover:shadow-[0_0_20px_hsl(var(--primary)/0.4)] transition-all duration-300">
+                    <button className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium shadow-[inset_0_1px_0_hsl(0_0%_100%/0.35)] transition-colors hover:bg-primary/90">
                       Sign Up
                     </button>
                   </Link>
@@ -142,7 +142,7 @@ const Header = () => {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden absolute w-full bg-card border-b border-white/10 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        className={`md:hidden absolute w-full glass-strong !rounded-none !border-x-0 !border-t-0 transition-all duration-300 ease-in-out overflow-hidden ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
       >
         <div className="px-4 pt-4 pb-6 space-y-2">

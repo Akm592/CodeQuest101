@@ -109,15 +109,64 @@
       Roboto,
       sans-serif;
     overflow-x: hidden;
+    /* Ambient light behind the glass. Glass only reads as glass when there
+       is something soft and coloured behind it to blur, so this is the one
+       place colour washes are allowed. Fixed, still, and low: it lights the
+       page rather than decorating it. */
     background-image:
-      radial-gradient(circle at 15% 50%, hsl(var(--primary) / 0.08), transparent 25%),
-      radial-gradient(circle at 85% 30%, hsl(var(--secondary) / 0.08), transparent 25%);
+      radial-gradient(40rem 30rem at 12% 8%, hsl(var(--primary) / 0.16), transparent 70%),
+      radial-gradient(36rem 28rem at 88% 22%, hsl(var(--secondary) / 0.14), transparent 70%),
+      radial-gradient(48rem 32rem at 50% 105%, hsl(205 90% 55% / 0.10), transparent 70%);
     background-attachment: fixed;
   }
 
   /* Visible focus, since almost every control here is a custom surface. */
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Glass. One material in three weights, instead of each surface mixing its
+   own blur, alpha and border.
+     .glass         cards and panels
+     .glass-strong  chrome that text sits on for long: header, sidebar,
+                    composer, modals. More opaque, so body text stays crisp.
+     .glass-pill    small controls: nav, chips, secondary buttons.
+   The inset top line is the specular edge that makes it read as a lens and
+   not just a translucent box. */
+@layer components {
+  .glass,
+  .glass-strong,
+  .glass-pill {
+    background-color: hsl(222 47% 11% / 0.42);
+    background-image: linear-gradient(180deg, hsl(0 0% 100% / 0.07), hsl(0 0% 100% / 0.015) 45%);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.12),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.02),
+      0 12px 40px -16px rgb(0 0 0 / 0.6);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    backdrop-filter: blur(24px) saturate(170%);
+  }
+
+  .glass-strong {
+    background-color: hsl(222 47% 8% / 0.72);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    backdrop-filter: blur(32px) saturate(180%);
+  }
+
+  .glass-pill {
+    border-radius: 9999px;
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.12);
+  }
+
+  /* Hover for interactive glass: a little more light, not a colour glow. */
+  .glass-hover {
+    transition: background-color 200ms, border-color 200ms, transform 200ms;
+  }
+  .glass-hover:hover {
+    background-color: hsl(222 47% 14% / 0.55);
+    border-color: hsl(0 0% 100% / 0.18);
   }
 }
 

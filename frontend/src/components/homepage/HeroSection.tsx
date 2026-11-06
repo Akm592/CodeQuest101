@@ -1,100 +1,89 @@
 import React from 'react';
 import { ArrowRight, Code, Sparkles } from 'lucide-react';
-import { Button } from '../ui/button';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 import { catalogStats } from './catalog';
 
-export const HeroSection: React.FC = () => {
-  return (
-    <section className="relative flex min-h-[85vh] items-center justify-center pt-20">
-      {/* The glow reaches past the bottom of the section (-bottom-40) so it
-          fades out instead of being sliced at the boundary — that slice was a
-          large part of the seam under the hero. It stays at inset-x-0
-          horizontally: overflow-hidden clips this layer's children, not its
-          own box, so a negative inset-x here widens document.scrollWidth. */}
-      <div className="pointer-events-none absolute inset-x-0 -bottom-40 top-0 z-0 overflow-hidden">
-        <div className="absolute left-1/4 top-1/4 h-[600px] w-[600px] animate-pulse rounded-full bg-primary/20 blur-[120px]" />
-        <div className="delay-1000 absolute bottom-1/4 right-1/4 h-[600px] w-[600px] animate-pulse rounded-full bg-secondary/20 blur-[120px]" />
-      </div>
+// No glow blobs and no gradient text: the page's ambient light (index.css)
+// sits behind everything, and the hierarchy comes from weight and tone. The
+// second headline line is the same white at lower opacity.
 
-      <div className="container mx-auto px-4 z-10 relative">
-        <div className="max-w-5xl mx-auto text-center">
+export const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <section className="relative flex min-h-[85vh] items-center justify-center pt-24 sm:pt-28">
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mx-auto max-w-5xl text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-primary mb-8 backdrop-blur-md shadow-[0_0_20px_hsl(var(--primary)/0.1)]"
+            transition={{ duration: 0.4 }}
+            className="glass-pill mb-8 inline-flex items-center gap-2 px-4 py-1.5 text-sm text-muted-foreground"
           >
-            <Sparkles className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">The Future of Coding Education</span>
+            <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+            Watch algorithms run. Ask the tutor.
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8 text-4xl font-black leading-tight tracking-tighter sm:text-6xl lg:text-8xl"
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mb-6 text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl"
           >
-            Visualize Code, <br />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
-              Master Concepts
-            </span>
+            Visualize code.
+            <br />
+            <span className="text-foreground/55">Master concepts.</span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed font-medium"
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
           >
-            CodeQuest101 transforms abstract algorithms into immersive, high-fidelity visualizations.
-            Accelerate your learning path with our interactive playground.
+            Step through algorithms one frame at a time, then ask the AI tutor about the step that didn't click.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
-            <Button
-              size="lg"
-              className="w-full sm:w-auto bg-primary hover:bg-primary/80 text-primary-foreground font-bold h-14 px-10 rounded-2xl shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-all duration-500 group"
-              onClick={() => window.location.href = '/chat'}
+            <button
+              type="button"
+              onClick={() => navigate('/chat')}
+              className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.35),0_8px_24px_-8px_hsl(var(--primary)/0.6)] transition-colors hover:bg-primary/90 sm:w-auto"
             >
-              Start Learning Now
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 hover:bg-white/5 hover:border-primary/50 text-foreground transition-all duration-300 backdrop-blur-sm"
+              Start learning
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button
+              type="button"
               onClick={() => document.getElementById('visualizations')?.scrollIntoView({ behavior: 'smooth' })}
+              className="glass-pill glass-hover inline-flex h-12 w-full items-center justify-center gap-2 px-7 text-sm font-semibold text-foreground sm:w-auto"
             >
-              <Code className="w-5 h-5 mr-2" />
-              Explore Library
-            </Button>
+              <Code className="h-4 w-4" />
+              Explore the library
+            </button>
           </motion.div>
 
-          {/* Stats / Proof */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1 }}
-            className="mt-20 pt-10 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8"
+          {/* Counted from the catalogue below, not asserted. See ./catalog.tsx. */}
+          <motion.dl
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.45 }}
+            className="glass mx-auto mt-16 grid max-w-3xl grid-cols-2 divide-white/10 rounded-3xl md:grid-cols-4 md:divide-x"
           >
-            {/* Counted from the catalogue below, not asserted. See ./catalog.tsx. */}
             {catalogStats.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center">
-                <span className="mb-1 text-3xl font-bold text-foreground">{stat.value}</span>
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
-                  {stat.label}
-                </span>
+              <div key={stat.label} className="flex flex-col-reverse items-center px-4 py-5">
+                <dt className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">{stat.label}</dt>
+                <dd className="text-3xl font-semibold tracking-tight text-foreground">{stat.value}</dd>
               </div>
             ))}
-          </motion.div>
+          </motion.dl>
         </div>
       </div>
     </section>

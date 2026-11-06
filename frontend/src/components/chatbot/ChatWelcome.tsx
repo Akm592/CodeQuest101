@@ -17,7 +17,7 @@ const STARTERS: { title: string; hint: string; prompt: string }[] = [
 
 const ChatWelcome: React.FC<{ onPick: (prompt: string) => void }> = ({ onPick }) => (
   <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center px-2 py-6 text-center">
-    <div className="grid h-12 w-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+    <div className="glass grid h-14 w-14 place-items-center rounded-2xl text-primary">
       <Sparkles className="h-6 w-6" aria-hidden="true" />
     </div>
     <h2 className="mt-5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -32,7 +32,7 @@ const ChatWelcome: React.FC<{ onPick: (prompt: string) => void }> = ({ onPick })
           key={starter.title}
           type="button"
           onClick={() => onPick(starter.prompt)}
-          className="min-h-11 rounded-xl border border-border bg-card/60 px-4 py-3 text-left transition-colors hover:border-primary/40 hover:bg-card"
+          className="glass glass-hover min-h-11 rounded-2xl px-4 py-3.5 text-left hover:-translate-y-0.5"
         >
           <span className="block text-sm font-medium text-foreground">{starter.title}</span>
           <span className="mt-0.5 block text-xs text-muted-foreground">{starter.hint}</span>

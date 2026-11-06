@@ -47,15 +47,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 10 }}
                     transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                    className="bg-background border border-white/10 rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden"
+                    className="glass-strong relative w-full max-w-md overflow-hidden rounded-3xl"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Background Glow */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -mr-32 -mt-32" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none -ml-32 -mb-32" />
 
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 relative z-10">
+                    <div className="relative z-10 flex items-center justify-between border-b border-white/10 p-6">
                         <h2 className="text-xl font-bold text-white tracking-tight">
                             Settings
                         </h2>

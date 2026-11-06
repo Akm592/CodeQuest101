@@ -31,7 +31,7 @@ const SuggestionChips: React.FC<{
           key={s.title}
           type="button"
           onClick={() => onOpen(s)}
-          className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-left text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/20"
+          className="glass-pill glass-hover inline-flex min-h-11 max-w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-foreground"
         >
           <Play className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-hidden="true" />
           <span className="min-w-0">{s.title}</span>
@@ -115,7 +115,7 @@ const LanguageButtons: React.FC<{ onPick: (language: string) => void }> = ({ onP
         key={language}
         type="button"
         onClick={() => onPick(language)}
-        className="min-h-11 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/20"
+        className="glass-pill glass-hover min-h-11 px-4 py-2 text-sm font-medium text-foreground"
       >
         {language}
       </button>
@@ -331,7 +331,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <button
           type="button"
           onClick={openLegacy}
-          className="flex min-h-11 w-full items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-primary/20"
+          className="glass glass-hover flex min-h-11 w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-foreground"
         >
           <Play className="h-4 w-4 shrink-0 fill-primary text-primary" aria-hidden="true" />
           Open visualization{legacyScene ? `: ${legacyScene.title}` : ""}
@@ -373,7 +373,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           // label; which side it is on already says who wrote it.
           <div className="flex justify-end">
             <div
-              className="max-w-[85%] break-words rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground sm:max-w-[75%]"
+              className="max-w-[85%] break-words rounded-[1.25rem] rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.3),0_6px_20px_-10px_hsl(var(--primary)/0.7)] sm:max-w-[75%]"
               title={message.timestamp}
             >
               {renderContent()}

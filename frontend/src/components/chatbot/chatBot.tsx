@@ -865,10 +865,9 @@ const ChatInterface = () => {
 
   return (
     // w-full, not w-screen: 100vw includes the scrollbar gutter.
-    <div className="relative flex h-[100dvh] w-full overflow-hidden overscroll-none bg-background">
-      {/* Background Elements */}
-      <div className="pointer-events-none absolute left-0 top-0 h-[500px] w-full bg-gradient-to-b from-primary/10 to-transparent" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-secondary/5 blur-[100px]" />
+    // No fill of its own: the body's ambient light (index.css) is what the
+    // glass sidebar, header and composer blur.
+    <div className="relative flex h-[100dvh] w-full overflow-hidden overscroll-none">
 
       <ChatSidebar
         sessions={sessionState.sessions}
@@ -893,7 +892,7 @@ const ChatInterface = () => {
         {/* A full-width bar, the same 64px as the sidebar's header so their
             bottom borders line up. It used to be a floating pill, and answers
             scrolled visibly behind it and were cut mid-line. */}
-        <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/80 px-2 backdrop-blur-md sm:px-4">
+        <header className="glass-strong z-20 flex h-16 shrink-0 items-center justify-between gap-2 !rounded-none !border-x-0 !border-t-0 px-2 !shadow-none sm:px-4">
           <div className="flex min-w-0 items-center gap-1 sm:gap-3">
             <button
               onClick={toggleSidebar}
@@ -1033,7 +1032,7 @@ const ChatInterface = () => {
                 absolutely placed over a fixed-height box and hung off its
                 bottom edge; the box alone shows focus now, not the box and
                 the textarea's own ring. */}
-            <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/80 p-2 shadow-lg backdrop-blur-xl transition-colors focus-within:border-primary/60">
+            <div className="glass-strong flex items-end gap-2 rounded-[1.75rem] p-2 pl-3 transition-colors focus-within:border-primary/50">
               <textarea
                 ref={(el) => {
                   if (el) {
@@ -1066,7 +1065,7 @@ const ChatInterface = () => {
                   onClick={handleStop}
                   aria-label="Stop answering"
                   title="Stop"
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/10 text-foreground transition-colors hover:bg-white/20"
+                  className="glass-pill grid h-11 w-11 shrink-0 place-items-center text-foreground transition-colors hover:bg-white/20"
                 >
                   <Square className="h-4 w-4 fill-current" />
                 </button>
@@ -1075,7 +1074,7 @@ const ChatInterface = () => {
                   onClick={() => handleSendMessage()}
                   disabled={!chatState.inputValue.trim() || (!sessionState.session?.id)}
                   aria-label="Send message"
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.35)] transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send className="h-5 w-5" />
                 </button>

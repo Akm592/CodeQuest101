@@ -85,8 +85,8 @@ const SessionItem = React.memo<{
     <div
       className={`group mb-2 grid grid-cols-[1fr_auto] items-center rounded-xl transition-all duration-200
         ${isSelected
-          ? "border border-primary/20 bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.1)]"
-          : "border border-transparent hover:border-border hover:bg-white/5"
+          ? "border border-white/15 bg-white/[0.08] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.1)]"
+          : "border border-transparent hover:border-white/10 hover:bg-white/[0.04]"
         }
         ${isDeleting ? "scale-95 opacity-50" : "opacity-100"}
       `}
@@ -197,14 +197,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
         ref={sidebarRef}
         aria-label="Chat history"
         aria-hidden={!isOpen && !isDesktop}
-        className={`fixed lg:relative z-40 flex h-full w-[min(18rem,85vw)] flex-col border-r border-border bg-card/95 backdrop-blur-xl transition-transform duration-300 ease-out
-                   ${isOpen ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-none'}
+        className={`fixed lg:relative z-40 flex h-full w-[min(18rem,85vw)] flex-col glass-strong !rounded-none !border-y-0 !border-l-0 !shadow-none transition-transform duration-300 ease-out
+                   ${isOpen ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:!border-none'}
         `}
       >
         {/* Header */}
         {/* 64px, the same as the chat header, so the two bottom borders form
             one line. The brand matches the rest of the site and leads home. */}
-        <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-white/10 px-4">
           <Link to="/" className="flex min-w-0 items-center gap-2 rounded-lg text-lg font-bold text-primary transition-opacity hover:opacity-90">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-primary/30 bg-primary/20 font-mono text-base text-primary">
               {"{}"}
@@ -226,7 +226,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = React.memo(({
           <button
             onClick={handleCreateSession}
             disabled={isCreatingSession}
-            className="group flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-border bg-white/5 px-4 py-3 text-sm font-medium text-foreground transition-all hover:bg-white/10 disabled:opacity-60"
+            className="glass-pill glass-hover group flex min-h-[44px] w-full items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-foreground disabled:opacity-60"
           >
             {isCreatingSession ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />

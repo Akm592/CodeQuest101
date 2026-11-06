@@ -18,8 +18,8 @@ export const AboutSection: React.FC = () => {
         <div className="max-w-4xl mx-auto">
 
           <div className="text-center mb-16">
-            <h2 className="mb-6 text-3xl font-bold text-foreground md:text-5xl">
-              Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Mission</span>
+            <h2 className="mb-6 text-3xl font-bold tracking-tight text-foreground md:text-5xl">
+              Our mission
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               CodeQuest101 exists to democratize computer science education. We believe that seeing is understanding,
@@ -28,18 +28,15 @@ export const AboutSection: React.FC = () => {
           </div>
 
           {/* Creator Card */}
-          <div className="relative group">
-            {/* Glow Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl opacity-25 blur group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-
-            <div className="relative bg-card border border-white/10 flex flex-col items-center gap-8 rounded-2xl p-6 sm:p-10 md:flex-row md:gap-12">
+          <div>
+            <div className="glass flex flex-col items-center gap-8 rounded-3xl p-6 sm:p-10 md:flex-row md:gap-12">
 
               <div className="relative shrink-0">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-br from-primary to-secondary">
+                <div className="h-32 w-32 rounded-full p-1 ring-1 ring-white/15 md:h-40 md:w-40">
                   <img
                     src={creator.image}
                     alt={creator.name}
-                    className="w-full h-full rounded-full object-cover border-4 border-card"
+                    className="h-full w-full rounded-full object-cover"
                   />
                 </div>
               </div>
@@ -65,7 +62,7 @@ export const AboutSection: React.FC = () => {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground hover:scale-110 transition-all duration-300"
+                      className="glass-pill glass-hover grid h-11 w-11 place-items-center text-muted-foreground hover:text-foreground"
                       aria-label={social.label}
                     >
                       {social.icon}

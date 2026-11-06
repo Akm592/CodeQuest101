@@ -39,8 +39,6 @@ export interface Category {
   description: string;
   icon: React.ReactElement;
   key: CategoryKey;
-  /** Tints of the one brand ramp, so the three cards read as a set. */
-  gradient: string;
 }
 
 export const categories: Category[] = [
@@ -49,21 +47,18 @@ export const categories: Category[] = [
     description: "Master efficient problem solving",
     icon: <Cpu className="h-6 w-6 text-primary" />,
     key: "algorithms",
-    gradient: "from-primary/15 to-primary/5",
   },
   {
     title: "Data Structures",
     description: "Build strong foundations",
     icon: <Database className="h-6 w-6 text-primary" />,
     key: "dataStructures",
-    gradient: "from-primary/10 to-secondary/10",
   },
   {
     title: "Machine Learning",
     description: "Explore AI concepts",
     icon: <Brain className="h-6 w-6 text-secondary-bright" />,
     key: "machineLearning",
-    gradient: "from-secondary/10 to-primary/5",
   },
 ];
 
