@@ -239,6 +239,19 @@ check("reaches the bottom of x² + y²", abs(bowl[0]) < 1e-5 and abs(bowl[1]) < 
 _, plain_path = gd.gradient_descent(gd.valley_grad, [-2.6, 1.2], lr=0.1)
 end, mom_path = gd.gradient_descent(gd.valley_grad, [-2.6, 1.2], lr=0.1, momentum=0.8)
 check("momentum reaches the valley floor in fewer steps", len(mom_path) < len(plain_path) and abs(end[0]) < 1e-4)
+first = gd.adam(gd.valley_grad, [-2.6, 1.2], lr=0.1, steps=1)
+check("Adam's first step is lr in every direction (bias correction)", abs(abs(first[0] + 2.6) - 0.1) < 1e-6 and abs(abs(first[1] - 1.2) - 0.1) < 1e-6)
+end = gd.adam(gd.valley_grad, [-2.6, 1.2], lr=0.1, steps=400)
+check("Adam reaches the valley floor", abs(end[0]) < 1e-2 and abs(end[1]) < 1e-2)
+xs = [rng.uniform(-1, 1) for _ in range(40)]
+ys = [2 * x + 1 + rng.gauss(0, 0.3) for x in xs]
+mx, my = sum(xs) / 40, sum(ys) / 40
+slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs)
+ok = True
+for size in (40, 8, 1):
+    w, b = gd.minibatch_sgd(xs, ys, lr=0.05 if size == 1 else 0.1, batch_size=size, epochs=300)
+    ok &= abs(w - slope) < 0.1 and abs(b - (my - slope * mx)) < 0.1
+check("batch, mini-batch and SGD all land near the least-squares line", ok)
 
 print("\nlinear regression")
 lr_mod = load("linear_regression")

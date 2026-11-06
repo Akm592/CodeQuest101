@@ -4,62 +4,16 @@
 import * as React from "react";
 
 import { nudgeTest, workedExample } from "../../lib/ml/neuronMath";
-import { cn } from "../../lib/utils";
 import { Surface } from "../ui/surface";
-import { SectionTitle } from "./ActivationExplorer";
+import { Eq, n4, SectionTitle, Step } from "./mathBlocks";
 import { C } from "./colors";
 
-const n4 = (v: number) => {
-  const r = Math.abs(v) < 0.00005 ? 0 : v;
-  return r.toFixed(4);
-};
 /** A starting value, written as given (0.6, not 0.6000). */
 const short = (v: number) => String(+v.toFixed(4));
 /** A starting value in a formula, with brackets when negative. */
 const nb = (v: number) => (v < 0 ? `(${short(v)})` : short(v));
 /** A computed value in a formula (4 decimals), with brackets when negative. */
 const nc = (v: number) => (v < 0 ? `(${n4(v)})` : n4(v));
-
-const Step: React.FC<{ n: number; title: string; plain: React.ReactNode; children: React.ReactNode; tone?: "forward" | "backward" | "update" }> = ({
-  n,
-  title,
-  plain,
-  children,
-  tone = "forward",
-}) => (
-  <Surface variant="card" radius="2xl" as="li" className="list-none space-y-3 p-4 sm:p-5">
-    <div className="flex items-start gap-3">
-      <span
-        className={cn(
-          "grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-xs font-bold text-primary-foreground",
-          tone === "forward" ? "bg-viz-current" : tone === "backward" ? "bg-viz-compare" : "bg-viz-found",
-        )}
-      >
-        {n}
-      </span>
-      <div className="min-w-0 space-y-1">
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        <div className="text-sm leading-relaxed text-muted-foreground">{plain}</div>
-      </div>
-    </div>
-    <div className="space-y-1.5 overflow-x-auto rounded-xl border border-white/[0.06] bg-black/25 p-3 font-mono text-[13px] leading-relaxed text-foreground/90">
-      {children}
-    </div>
-  </Surface>
-);
-
-/** One formula line: symbols, then the numbers plugged in, then the result. */
-const Eq: React.FC<{ lhs: React.ReactNode; rule?: React.ReactNode; nums?: string; result: number; accent?: string }> = ({ lhs, rule, nums, result, accent = C.teal }) => (
-  <p className="whitespace-nowrap">
-    <span className="text-foreground">{lhs}</span>
-    {rule && <span className="text-muted-foreground"> = {rule}</span>}
-    {nums && <span className="text-muted-foreground"> = {nums}</span>}
-    <span> = </span>
-    <span className="font-semibold" style={{ color: accent }}>
-      {n4(result)}
-    </span>
-  </p>
-);
 
 const NetDiagram: React.FC<{ ex: ReturnType<typeof workedExample> }> = ({ ex }) => {
   const xs = [40, 190, 330];

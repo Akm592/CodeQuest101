@@ -9,6 +9,7 @@ import { collapseExample } from "../../lib/ml/neuronMath";
 import { Slider } from "../ui/slider";
 import { Surface } from "../ui/surface";
 import { C } from "./colors";
+import { SectionTitle } from "./mathBlocks";
 import { Plot, Segmented } from "./shared";
 
 const Z = 5;
@@ -20,17 +21,7 @@ const curve = (f: (z: number) => number) =>
 
 const fmt = (v: number) => (Math.abs(v) < 0.00005 ? "0" : v.toFixed(4));
 
-const SectionTitle: React.FC<{ id: string; kicker: string; title: string; children?: React.ReactNode }> = ({ id, kicker, title, children }) => (
-  <div className="space-y-2">
-    <p className="text-xs font-semibold uppercase tracking-widest text-primary">{kicker}</p>
-    <h2 id={id} className="scroll-mt-20 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-      {title}
-    </h2>
-    {children && <div className="max-w-3xl text-sm leading-relaxed text-muted-foreground">{children}</div>}
-  </div>
-);
 
-export { SectionTitle };
 
 const ActivationExplorer: React.FC = () => {
   const [key, setKey] = React.useState<ActivationKey>("tanh");

@@ -5,6 +5,7 @@
 // inputs through the generators to prove every stage is reached.
 
 import type { AttentionStep } from "../ml/attention";
+import type { Gd1dStep } from "../ml/gd1d";
 import type { GdStep } from "../ml/gradientDescent";
 import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
@@ -24,9 +25,9 @@ export const gradientDescentGuide: AlgorithmGuide = {
   title: "Gradient Descent",
   whenToUseHeading: ML_HEADING,
   idea: [
-    "Training a model means finding the settings (weights) that make its error as small as possible. Picture the error as a landscape: every point is one choice of weights, and the height is how wrong the model is there. We want the lowest point.",
-    "We can't see the whole landscape, only the slope under our feet. That slope is the gradient: it points uphill, so we step the opposite way. Repeat, and we walk down into a valley.",
-    "The learning rate is the step size. Too small and training crawls; too big and each step jumps past the valley floor and lands higher up the other side, until it flies off completely. Momentum keeps a running velocity so steps build up along a gentle slope and cancel out when they zigzag.",
+    "A model learns by adjusting its settings, called weights, to make its mistakes smaller. Picture the mistakes as a hilly landscape: each spot is one choice of weights, and the height is how wrong the model is there. Learning means finding a low spot.",
+    "Imagine standing on that hill in thick fog. You can't see the bottom, but you can feel which way the ground slopes under your feet. So you take a step downhill, feel again, and repeat. That's gradient descent. The slope is called the gradient, and the size of each step is the learning rate.",
+    "The learning rate is the one setting that matters most. Too small and you crawl; too big and you jump past the bottom and land higher up the other side, again and again, until you fly off. Improvements like momentum and Adam change how big each step is and which way it points, but the idea stays the same.",
   ],
   whenToUse: [
     "Training almost every model: linear and logistic regression, neural networks, and large language models all learn by some form of gradient descent.",
@@ -53,18 +54,22 @@ export const gradientDescentGuide: AlgorithmGuide = {
   },
   pitfalls: [
     "A learning rate that works on one problem can blow up on another: the safe limit depends on how steep the steepest direction is (here, 2 ÷ curvature).",
-    "A falling loss doesn't mean you found the best answer. On “Two valleys” the default start settles in the shallower one: a local minimum.",
+    "A falling loss doesn't mean you found the best answer. On “Two valleys”, plain descent at a small learning rate settles in the shallower valley: a local minimum. The learning rate and momentum both change which valley you end in.",
     "Features on very different scales make a narrow valley. Standardising inputs (as the regression page does) rounds it out so plain descent works.",
   ],
   tryThis: [
-    "On “Round bowl”, raise the learning rate past 1.0 and watch it diverge.",
-    "On “Narrow valley”, compare Plain and Momentum at the same learning rate: count the steps.",
+    "In the one-weight view, try learning rates 0.5 (one step), 1 (bounces forever) and 1.05 (blows up).",
+    "On the map's “Narrow valley”, compare Plain and Momentum at the same learning rate: count the steps.",
     "On “Two valleys”, click the left half of the map to start there instead. It finds the deeper valley.",
+    "In the race, pick “Saddle point” and watch which methods pause in the middle.",
   ],
   python: gradientDescentPy,
 };
 
 export const gdGuideStepFor = (s: GdStep) => s.phase;
+
+/** The one-weight view uses the same stages; "bounce" is a kind of stop. */
+export const gd1dGuideStepFor = (s: Gd1dStep) => (s.phase === "bounce" ? "stop" : s.phase);
 
 export const linearRegressionGuide: AlgorithmGuide = {
   title: "Linear Regression",

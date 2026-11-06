@@ -5,7 +5,7 @@ import { blobs, type Point } from "./random";
 import type { DatasetKey } from "./mlp";
 import type { SurfaceKey } from "./gradientDescent";
 
-export const GD_DEFAULT_LR: Record<SurfaceKey, number> = { bowl: 0.1, valley: 0.1, twoMinima: 0.05 };
+export const GD_DEFAULT_LR: Record<SurfaceKey, number> = { bowl: 0.1, valley: 0.15, twoMinima: 0.05, saddle: 0.1 };
 
 export const LR_DEFAULT = { seed: 1, lr: 0.1 };
 

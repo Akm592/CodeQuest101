@@ -6,7 +6,7 @@
 
 import type { BaseStep } from "../algorithms/types";
 
-export type SurfaceKey = "bowl" | "valley" | "twoMinima";
+export type SurfaceKey = "bowl" | "valley" | "twoMinima" | "saddle";
 export type Optimizer = "plain" | "momentum";
 
 export interface LossSurface {
@@ -21,6 +21,8 @@ export interface LossSurface {
   start: [number, number];
   /** Largest learning rate that still converges with plain descent (2 / steepest curvature). */
   safeLr: number;
+  /** What plain descent does at different learning rates here (checked in gd.test.ts). */
+  lrNote: string;
   minima: { x: number; y: number; global: boolean }[];
 }
 
@@ -35,18 +37,20 @@ export const SURFACES: Record<SurfaceKey, LossSurface> = {
     yr: 2,
     start: [-2.4, 1.5],
     safeLr: 1,
+    lrNote: "Plain descent settles for any learning rate below 1. At exactly 1 it bounces forever, and above 1 it blows up.",
     minima: [{ x: 0, y: 0, global: true }],
   },
   valley: {
     key: "valley",
     label: "Narrow valley",
-    blurb: "Steep across, shallow along. Plain descent zigzags; momentum smooths it out.",
+    blurb: "Steep across, shallow along. Plain descent zigzags across and crawls along. Momentum builds up speed along the floor and gets to the bottom much sooner, though it swings from side to side on the way.",
     f: (x, y) => 0.1 * x * x + 5 * y * y,
     grad: (x, y) => [0.2 * x, 10 * y],
     xr: 3,
     yr: 2,
     start: [-2.6, 1.2],
     safeLr: 0.2,
+    lrNote: "The steep direction sets the limit: plain descent blows up above 0.2, and below it the shallow direction crawls. That's the problem momentum fixes.",
     minima: [{ x: 0, y: 0, global: true }],
   },
   twoMinima: {
@@ -58,10 +62,27 @@ export const SURFACES: Record<SurfaceKey, LossSurface> = {
     xr: 2,
     yr: 1.4,
     start: [1.7, 1.1],
-    safeLr: 0.2,
+    safeLr: 0.25,
+    lrNote: "From the default start, plain descent ends in the shallower valley at small learning rates, reaches the deeper one around 0.15 to 0.2, and blows up by 0.3.",
     minima: [
       { x: -1.036, y: 0, global: true },
       { x: 0.96, y: 0, global: false },
+    ],
+  },
+  saddle: {
+    key: "saddle",
+    label: "Saddle point",
+    blurb: "The middle is a saddle: downhill along x, but a hilltop along y. The slope there is almost 0, so plain descent dawdles before it finds a way down.",
+    f: (x, y) => 0.5 * x * x + 0.25 * (y * y - 1) ** 2,
+    grad: (x, y) => [x, y * (y * y - 1)],
+    xr: 3,
+    yr: 1.6,
+    start: [-2.6, 0.001],
+    safeLr: 1,
+    lrNote: "Plain descent settles below a learning rate of 1. Between 1 and 2 it keeps bouncing around a valley without settling, and above 2 it blows up. Near the saddle it moves very slowly, because the ground there is almost flat.",
+    minima: [
+      { x: 0, y: 1, global: true },
+      { x: 0, y: -1, global: true },
     ],
   },
 };

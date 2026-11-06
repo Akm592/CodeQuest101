@@ -32,6 +32,7 @@ import { trieGuide, trieGuideStepFor } from "./trieGuide";
 import type { AlgorithmGuide } from "./types";
 import { buildAttentionSteps, SENTENCES, tokenize } from "../ml/attention";
 import { GD_DEFAULT_LR, KMEANS_DEFAULT, kMeansPoints, LR_DEFAULT, MLP_DEFAULT, SAMPLING_DEFAULT } from "../ml/demos";
+import { buildGd1dSteps } from "../ml/gd1d";
 import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
 import { buildKMeansSteps } from "../ml/kMeans";
 import { buildLrSteps, samplePoints } from "../ml/linearRegression";
@@ -40,6 +41,7 @@ import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
 import {
   attentionGuide,
   attentionGuideStepFor,
+  gd1dGuideStepFor,
   gdGuideStepFor,
   gradientDescentGuide,
   kMeansGuide,
@@ -164,6 +166,8 @@ const cases: [string, GuideCase][] = [
         ),
         run(buildGdSteps(SURFACES.valley, { lr: 0.1, optimizer: "momentum", start: SURFACES.valley.start }), gdGuideStepFor),
         run(buildGdSteps(SURFACES.bowl, { lr: 1.1, optimizer: "plain", start: SURFACES.bowl.start }), gdGuideStepFor),
+        // The one-weight view that drives the highlighted stage on the page.
+        ...[0.1, 0.5, 0.8, 1, 1.05].map((lr) => run(buildGd1dSteps(0, lr), gd1dGuideStepFor)),
       ],
       finalStages: ["stop", "diverged"],
     },
