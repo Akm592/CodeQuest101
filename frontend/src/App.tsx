@@ -43,6 +43,7 @@ const LinearRegressionVisualizer = lazy(() => import("./components/ml/LinearRegr
 const KMeansVisualizer = lazy(() => import("./components/ml/KMeansVisualizer"));
 const AttentionVisualizer = lazy(() => import("./components/ml/AttentionVisualizer"));
 const SamplingVisualizer = lazy(() => import("./components/ml/SamplingVisualizer"));
+const DecisionTreeVisualizer = lazy(() => import("./components/ml/DecisionTreeVisualizer"));
 const GraphTraversalVisualizer = lazy(() => import("./components/GraphTraversalVisualizer"));
 const HeapDataStructure = lazy(() => import("./components/Datastructures/Heaps/heapDataStructure"));
 const DynamicProgrammingVisualizer = lazy(() => import("./components/DynamicProgrammingVisualizer"));
@@ -84,6 +85,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   kMeans: { kind: "page", title: "K-Means Clustering", Component: KMeansVisualizer },
   attention: { kind: "page", title: "Self-Attention", Component: AttentionVisualizer },
   sampling: { kind: "page", title: "Next-Token Sampling", Component: SamplingVisualizer },
+  decisionTree: { kind: "page", title: "Decision Tree", Component: DecisionTreeVisualizer },
   graph: { kind: "page", title: "Graph Algorithms", Component: GraphTraversalVisualizer },
   heap: { kind: "page", title: "Heap Data Structure", Component: HeapDataStructure },
 

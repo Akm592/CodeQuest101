@@ -344,6 +344,38 @@ xor_net = mlp.TinyMLP(hidden=4, seed=1)
 xor_net.train(mlp.xor)
 check("learns XOR", [xor_net.predict(x, y) for x, y, _ in mlp.xor] == [0, 0, 1, 1])
 
+print("\ndecision tree")
+dt = load("decision_tree")
+check("Gini of a 50/50 group is 0.5, of a pure group 0", abs(dt.gini(["a"] * 5 + ["b"] * 5) - 0.5) < 1e-12 and dt.gini(["a"] * 4) == 0)
+labels10 = list("AAABAABBBB")
+s = dt.best_split([[i + 1] for i in range(10)], labels10)
+check("the page's 10-point example splits at 6.5 with weighted Gini 1/6", s[2] == 6.5 and abs(s[0] - 1 / 6) < 1e-12)
+ok = True
+for _ in range(60):
+    n = rng.randint(4, 25)
+    rows = [[rng.randint(0, 9), rng.randint(0, 9)] for _ in range(n)]
+    labs = [rng.randint(0, 2) for _ in range(n)]
+    got = dt.best_split(rows, labs)
+    # brute force over every threshold at every value
+    best = None
+    for f in range(2):
+        for t in set(r[f] for r in rows):
+            L = [lab for r, lab in zip(rows, labs) if r[f] <= t]
+            R = [lab for r, lab in zip(rows, labs) if r[f] > t]
+            if L and R:
+                sc = len(L) / n * dt.gini(L) + len(R) / n * dt.gini(R)
+                best = sc if best is None else min(best, sc)
+    ok &= (got is None and best is None) or (got is not None and best is not None and abs(got[0] - best) < 1e-12)
+check("best_split finds the lowest weighted Gini (60 random sets)", ok)
+ok = True
+for _ in range(40):
+    n = rng.randint(5, 30)
+    rows = [[rng.uniform(0, 10), rng.uniform(0, 10)] for _ in range(n)]
+    labs = [rng.randint(0, 1) for _ in range(n)]
+    tree = dt.build_tree(rows, labs, max_depth=50)
+    ok &= all(dt.predict(tree, r) == lab for r, lab in zip(rows, labs))
+check("an unlimited tree fits every training point (distinct values, 40 sets)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

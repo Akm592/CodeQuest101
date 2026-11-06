@@ -31,6 +31,7 @@ import { nQueensGuide, nQueensGuideStepFor } from "./nQueensGuide";
 import { trieGuide, trieGuideStepFor } from "./trieGuide";
 import type { AlgorithmGuide } from "./types";
 import { buildAttentionSteps, SENTENCES, tokenize } from "../ml/attention";
+import { buildTreeSteps, makeTreeData, TREE_BOUNDS, TREE_DATASETS, type TreeDatasetKey } from "../ml/decisionTree";
 import { GD_DEFAULT_LR, KMEANS_DEFAULT, kMeansPoints, LR_DEFAULT, MLP_DEFAULT, SAMPLING_DEFAULT } from "../ml/demos";
 import { buildGd1dSteps } from "../ml/gd1d";
 import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
@@ -41,6 +42,8 @@ import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
 import {
   attentionGuide,
   attentionGuideStepFor,
+  decisionTreeGuide,
+  decisionTreeGuideStepFor,
   gd1dGuideStepFor,
   gdGuideStepFor,
   gradientDescentGuide,
@@ -219,6 +222,21 @@ const cases: [string, GuideCase][] = [
           mlpGuideStepFor,
         ),
       ],
+      finalStages: ["done"],
+    },
+  ],
+  [
+    "decision tree",
+    {
+      guide: decisionTreeGuide,
+      runs: (Object.keys(TREE_DATASETS) as TreeDatasetKey[]).flatMap((key) =>
+        [2, 4].map((maxDepth) =>
+          run(
+            buildTreeSteps(makeTreeData(key, 1), { maxDepth, criterion: "gini", classes: TREE_DATASETS[key].classes, bounds: TREE_BOUNDS }, TREE_DATASETS[key].names),
+            decisionTreeGuideStepFor,
+          ),
+        ),
+      ),
       finalStages: ["done"],
     },
   ],

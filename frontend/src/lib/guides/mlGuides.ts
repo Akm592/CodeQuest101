@@ -5,12 +5,14 @@
 // inputs through the generators to prove every stage is reached.
 
 import type { AttentionStep } from "../ml/attention";
+import type { TreeStep } from "../ml/decisionTree";
 import type { Gd1dStep } from "../ml/gd1d";
 import type { GdStep } from "../ml/gradientDescent";
 import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
 import type { MlpStep } from "../ml/mlp";
 import type { SamplingStep } from "../ml/sampling";
+import decisionTreePy from "./python/decision_tree.py?raw";
 import gradientDescentPy from "./python/gradient_descent.py?raw";
 import kMeansPy from "./python/k_means.py?raw";
 import linearRegressionPy from "./python/linear_regression.py?raw";
@@ -307,3 +309,49 @@ export const neuralNetworkGuide: AlgorithmGuide = {
 };
 
 export const mlpGuideStepFor = (s: MlpStep) => s.phase;
+
+export const decisionTreeGuide: AlgorithmGuide = {
+  title: "Decision Tree",
+  whenToUseHeading: ML_HEADING,
+  idea: [
+    "A decision tree is a game of 20 questions. Each question looks at one feature and asks yes or no, such as “Is the weight 150 g or less?”. Each answer sends you down a branch to the next question, until you reach a leaf that gives the answer.",
+    "To grow one, the computer tries every possible question at every possible cut-off and keeps the one that sorts the points best: each side should be as close as possible to a single class. It measures “mixed-up-ness” with Gini impurity or entropy. Then it does the same again inside each side.",
+    "Every question cuts straight across one feature, so on a plot the tree carves the space into rectangles. That makes trees easy to read and explain, but it also means they can keep cutting until every training point has its own box, which is memorising rather than learning.",
+  ],
+  whenToUse: [
+    "When you need to explain a decision: loan approvals, medical triage, any rule a person must be able to follow.",
+    "Mixed, messy tabular data: trees need little preparation (no scaling).",
+    "As the building block of random forests and boosted trees, which are among the strongest models for tabular data.",
+  ],
+  stages: [
+    { id: "start", title: "Start with every point in one group", detail: "The root holds all the training data. Measure how mixed it is.", pseudo: "node = all points" },
+    { id: "consider", title: "Try every question, keep the best", detail: "For each feature and each cut-off between neighbouring values, score the two sides by their size-weighted impurity. The lowest score wins.", pseudo: "best = min over (feature, t) of weighted impurity" },
+    { id: "split", title: "Split into yes and no", detail: "Points that answer yes go left, the rest go right. Each side becomes a new, smaller group.", pseudo: "left = x[f] ≤ t;  right = x[f] > t" },
+    { id: "leaf", title: "Or stop: make a leaf", detail: "Stop when the group is pure, the depth limit is hit, or no question helps. The leaf predicts its most common class.", pseudo: "leaf.predict = majority class" },
+    { id: "done", title: "Repeat inside every branch", detail: "The same steps run inside each side until every branch ends in a leaf. Then a new point just answers the questions from the top.", pseudo: "grow(left); grow(right)" },
+  ],
+  legend: [
+    { tone: "current", label: "Class: teal" },
+    { tone: "visited", label: "Class: violet" },
+    { tone: "compare", label: "The question being tried" },
+  ],
+  complexity: {
+    time: "about O(features × n log n) per level",
+    space: "O(nodes)",
+    why: "Each level sorts the points on every feature to try every cut-off. Asking a new point is fast: one question per level, so roughly log(n) questions for a balanced tree.",
+  },
+  pitfalls: [
+    "Overfitting: with no limit, a tree keeps splitting until it gets every training point right, noise included. Limit the depth, require a minimum number of points per leaf, or prune.",
+    "Small changes in the data can produce a completely different tree, because one different first question changes everything below it.",
+    "Each question looks at one feature, so diagonal borders become staircases, and XOR-like patterns are hard because no single first question helps.",
+  ],
+  tryThis: [
+    "On “Noisy”, raise the depth and watch training accuracy reach 100% while accuracy on new points drops.",
+    "On “Diagonal”, see the staircase a tree has to build.",
+    "On “Checkerboard”, look at how small the first question's gain is.",
+    "Click anywhere on the plot to send a new point down the tree.",
+  ],
+  python: decisionTreePy,
+};
+
+export const decisionTreeGuideStepFor = (s: TreeStep) => s.phase;
