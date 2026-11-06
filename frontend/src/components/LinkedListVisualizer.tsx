@@ -172,7 +172,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
             <SelectTrigger className="bg-white/5 border-white/10">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-gray-950 border-white/10">
+            <SelectContent>
               <SelectItem value="singly">Singly Linked</SelectItem>
               <SelectItem value="doubly">Doubly Linked</SelectItem>
               <SelectItem value="circular">Circular Linked</SelectItem>
@@ -202,13 +202,13 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       <div className="flex flex-col gap-3">
         <Label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Operations</Label>
         <div className="grid grid-cols-2 gap-2">
-          <Button onClick={handleReverseList} disabled={operationStatus === 'running' || nodes.length < 2} className="bg-secondary hover:bg-secondary/80 text-white font-bold col-span-2">
+          <Button onClick={handleReverseList} disabled={operationStatus === 'running' || nodes.length < 2} className="col-span-2 font-semibold">
             <RotateCw className="mr-2 h-4 w-4" /> Reverse List
           </Button>
-          <Button onClick={handleRemoveLastNode} variant="outline" disabled={operationStatus === 'running' || nodes.length === 0} className="border-white/10 hover:bg-white/5">
+          <Button onClick={handleRemoveLastNode} variant="outline" disabled={operationStatus === 'running' || nodes.length === 0}>
             <Minus className="mr-2 h-4 w-4" /> Pop Last
           </Button>
-          <Button onClick={handleDeleteNodeByIndex} variant="outline" disabled={operationStatus === 'running' || !inputValue || nodes.length === 0} className="border-white/10 hover:bg-destructive/10 hover:text-destructive">
+          <Button onClick={handleDeleteNodeByIndex} variant="outline" disabled={operationStatus === 'running' || !inputValue || nodes.length === 0} className="hover:text-destructive">
             <Trash2 className="mr-2 h-4 w-4" /> Delete Index
           </Button>
         </div>
@@ -246,7 +246,7 @@ const LinkedListVisualizer: React.FC<LinkedListVisualizerProps> = ({ onBack }) =
       pseudocode={currentInfo.pseudocode}
       complexity={currentInfo.complexity}
     >
-      <div className="w-full max-w-5xl h-80 bg-card/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-full max-w-5xl h-80 glass rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="flex items-center justify-center gap-12 flex-wrap">
            <AnimatePresence mode="popLayout">
               {nodes.map((node, index) => {

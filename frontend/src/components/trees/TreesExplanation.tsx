@@ -158,7 +158,7 @@ function insertIntoAVL(root, value):
       {/* Sub-heading: Light text */}
       <h3 className="text-xl font-semibold mb-2 text-foreground">Pseudocode:</h3>
       {/* Code Block: Darker background, appropriate text color */}
-      <pre className="bg-gray-900 p-4 rounded mb-4 text-sm text-viz-found overflow-x-auto">
+      <pre className="bg-black/30 border border-white/[0.06] p-4 rounded-xl mb-4 text-sm text-viz-found overflow-x-auto">
         <code>{treeInfo.pseudocode}</code>
       </pre>
       {/* Sub-heading: Light text */}

@@ -53,7 +53,7 @@ const VisualizationModal: React.FC<VisualizationModalProps> = ({ visualizationDa
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full text-muted-foreground hover:bg-gray-200/50 dark:hover:bg-muted/50
+              className="p-2 rounded-full text-muted-foreground hover:bg-white/10
                          transition-all duration-200 hover:scale-110 active:scale-95
                          focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               aria-label="Close visualization"

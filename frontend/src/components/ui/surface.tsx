@@ -17,18 +17,20 @@ import { cn } from "../../lib/utils";
 export const surfaceVariants = cva("", {
   variants: {
     variant: {
+      // The translucent variants are the glass material in index.css, so a
+      // Surface and a hand-placed .glass element can never drift apart.
       /** Page-level chrome: headers, sidebars, footers. */
-      panel: "bg-card/80 backdrop-blur-xl border border-white/10",
+      panel: "glass-strong shadow-none",
       /** Content containers: feature cards, forms, explanation blocks. */
-      card: "bg-white/[0.04] backdrop-blur-xl border border-white/10",
+      card: "glass",
       /** The scrim behind a modal. */
       scrim: "bg-black/65 backdrop-blur-sm",
       /** The modal itself. */
-      overlay: "bg-popover/95 backdrop-blur-xl border border-white/[0.16] shadow-2xl",
+      overlay: "glass-strong",
       /** Small inline badges and status pills. */
-      chip: "bg-white/5 backdrop-blur-md border border-white/10",
+      chip: "glass-pill",
       /** Recessed area a canvas or code block sits in. */
-      well: "bg-black/40 border border-white/5",
+      well: "bg-black/30 border border-white/[0.06] shadow-[inset_0_1px_2px_rgb(0_0_0/0.4)]",
     },
     radius: {
       none: "rounded-none",
@@ -39,7 +41,7 @@ export const surfaceVariants = cva("", {
       full: "rounded-full",
     },
     interactive: {
-      true: "transition-colors duration-200 hover:bg-white/[0.07] hover:border-primary/30",
+      true: "glass-hover",
       false: "",
     },
   },

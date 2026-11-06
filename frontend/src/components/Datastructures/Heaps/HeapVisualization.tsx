@@ -52,7 +52,7 @@ const HeapVisualization: React.FC = () => {
     };
 
     p.draw = () => {
-      p.background(17, 24, 39); // bg-gray-900
+      p.clear(); // transparent, so the glass well behind shows through
 
       // Draw Heap Title
       p.textSize(14);
@@ -411,23 +411,23 @@ const HeapVisualization: React.FC = () => {
           disabled={isBuilding}
           className="h-9 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary disabled:opacity-70 font-mono text-xs"
         />
-        <Button onClick={handleBuildHeap} disabled={isBuilding || !initialArrayInput.trim()} className="h-9 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/90 text-white disabled:opacity-60">
+        <Button onClick={handleBuildHeap} disabled={isBuilding || !initialArrayInput.trim()} className="h-9 text-sm">
           {isBuilding ? <Loader2 size={16} className="mr-1 animate-spin" /> : <Settings size={16} className="mr-1" />}
           {isBuilding ? "Building..." : "Build Heap"}
         </Button>
       </div>
       {inputError && <p className="text-xs text-destructive mt-1 self-center">{inputError}</p>}
       <div className="flex flex-wrap justify-center gap-2 mt-2">
-        <Button onClick={handleToggleHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-muted text-foreground hover:bg-muted/70 disabled:opacity-60">
+        <Button onClick={handleToggleHeap} disabled={isBuilding} variant="outline" className="h-9 px-3 text-xs">
           <ArrowDownUp size={14} className="mr-1" /> Toggle <span className='font-mono ml-1'>{isMinHeap ? '[MIN]' : '[MAX]'}</span>
         </Button>
-        <Button onClick={handleResetHeap} disabled={isBuilding} className="text-xs px-3 py-1 h-auto bg-red-700 hover:bg-red-600 text-white disabled:opacity-60">
+        <Button onClick={handleResetHeap} disabled={isBuilding} variant="outline" className="h-9 px-3 text-xs text-destructive-bright hover:text-destructive-bright">
           <RotateCcw size={14} className="mr-1" /> Reset
         </Button>
       </div>
       <div
         ref={sketchRef}
-        className="w-full max-w-3xl h-[400px] sm:h-[450px] border border-border rounded-lg bg-gray-900 mt-4 overflow-hidden"
+        className="w-full max-w-3xl h-[400px] sm:h-[450px] border border-white/[0.06] rounded-2xl bg-black/30 mt-4 overflow-hidden"
         aria-label="Heap visualization canvas"
       />
     </div>

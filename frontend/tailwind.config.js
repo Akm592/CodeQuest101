@@ -50,6 +50,7 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          bright: "hsl(var(--destructive-bright))",
         },
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",

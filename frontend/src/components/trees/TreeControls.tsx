@@ -55,25 +55,25 @@ const TreeControls: React.FC<TreeControlsProps> = ({
           type="number"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="flex-grow p-2 border border-border rounded-md focus:border-viz-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors bg-muted text-white placeholder-gray-400"
+          className="flex-grow p-2 border border-border rounded-md focus:border-primary/60 focus:ring-2 focus:ring-primary/25 focus:outline-none transition-colors bg-muted text-foreground placeholder:text-muted-foreground"
           placeholder="Enter a number"
         />
         {/* Buttons: Distinct action color (e.g., blue) */}
         <button
           onClick={() => handleSubmit("insert")}
-          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors"
+          className="min-h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Insert
         </button>
         <button
           onClick={() => handleSubmit("delete")}
-          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors"
+          className="glass-pill glass-hover min-h-10 !rounded-md px-4 text-sm font-medium text-destructive-bright"
         >
           Delete
         </button>
         <button
           onClick={() => handleSubmit("search")}
-          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors"
+          className="glass-pill glass-hover min-h-10 !rounded-md px-4 text-sm font-medium text-foreground"
         >
           Search
         </button>

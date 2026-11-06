@@ -9,13 +9,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.3)] hover:bg-primary/90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-transparent hover:bg-white/5 hover:border-primary/40 hover:text-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        // Secondary actions are glass (index.css), so every page's second
+        // button looks the same instead of each picking its own fill colour.
+        outline: "glass-pill glass-hover text-foreground",
+        secondary: "glass-pill glass-hover text-foreground",
         ghost: "hover:bg-white/5 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },

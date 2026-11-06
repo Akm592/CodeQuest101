@@ -607,7 +607,7 @@ const GraphTraversalVisualizer: React.FC = () => {
                     {/* Main Layout: Visualization and Explanation */}
                     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                         {/* Visualization Area */}
-                        <div className="w-full lg:w-[60%] xl:w-[65%] aspect-[4/3] lg:aspect-auto lg:min-h-[500px] border border-border rounded-lg bg-gray-950/50 p-1 overflow-hidden shadow-inner">
+                        <div className="w-full lg:w-[60%] xl:w-[65%] aspect-[4/3] lg:aspect-auto lg:min-h-[500px] border border-white/[0.06] rounded-2xl bg-black/30 p-1 overflow-hidden shadow-inner">
                             {adj.size > 0 ? ( // Check if adj list is populated (graph loaded)
                                 <GraphVisualization
                                     graph={graph}

@@ -32,7 +32,7 @@ export const VisualizerPage: React.FC<VisualizerPageProps> = ({
 }) => (
   // min-h-dvh rather than min-h-screen: on mobile browsers with a dynamic
   // toolbar, 100vh overflows and pushes controls below the fold.
-  <div className="flex min-h-dvh w-full flex-col bg-background text-foreground">
+  <div className="flex min-h-dvh w-full flex-col text-foreground">
     <VisualizerHeader title={title} onBack={onBack}>
       {headerExtra}
     </VisualizerHeader>

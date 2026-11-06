@@ -296,20 +296,22 @@ const TreeVisualizer: React.FC = () => {
           <Button
             onClick={isTraversing ? pauseTraversal : startTraversal} // Toggle play/pause
             disabled={!root || (currentStep === -1 && !isTraversing)} // Disable if no root or not started
-            className="w-full sm:w-auto bg-yellow-600 text-white hover:bg-yellow-500 disabled:opacity-50"
+            variant="outline"
+            className="w-full sm:w-auto"
           >
             {isTraversing ? 'Pause' : 'Resume'}
           </Button>
           <Button
             onClick={resetTraversal}
-            className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-500"
+            variant="outline"
+            className="w-full sm:w-auto text-destructive-bright hover:text-destructive-bright"
           >
             Reset
           </Button>
         </div>
 
         {/* SVG Visualization Area */}
-         <div className="mt-8 w-full h-[400px] sm:h-[500px] border border-border rounded-lg shadow-inner bg-gray-900 overflow-hidden"> {/* Fixed height, dark bg */}
+         <div className="mt-8 w-full h-[400px] sm:h-[500px] border border-border rounded-2xl shadow-inner bg-black/30 overflow-hidden"> {/* Fixed height, dark bg */}
           <svg
             width="100%"
             height="100%"

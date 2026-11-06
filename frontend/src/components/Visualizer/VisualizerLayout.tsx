@@ -34,7 +34,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
     // On a phone the page scrolls: the controls are tall there, and a fixed
     // full-screen layout left the canvas a sliver between header and footer.
     // From lg up it is a fixed screen with the canvas scrolling inside.
-    <div className="relative flex min-h-dvh w-full bg-background text-foreground lg:h-dvh lg:overflow-hidden">
+    <div className="relative flex min-h-dvh w-full text-foreground lg:h-dvh lg:overflow-hidden">
       {/* Sidebar for Info & Pseudocode */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
@@ -52,7 +52,7 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
               animate={{ x: 0 }}
               exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 lg:relative w-[280px] sm:w-80 h-dvh lg:h-full bg-card/80 backdrop-blur-xl border-r border-white/10 z-40 lg:z-20 flex flex-col"
+              className="fixed inset-y-0 left-0 lg:relative w-[280px] sm:w-80 h-dvh lg:h-full glass-strong !rounded-none !border-y-0 !border-l-0 !shadow-none z-40 lg:z-20 flex flex-col"
             >
               <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
@@ -71,9 +71,9 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
               <ScrollArea className="flex-grow">
                 <div className="p-4 sm:p-6">
                   <Tabs defaultValue="guide" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/5 mb-6">
-                      <TabsTrigger value="guide" className="data-[state=active]:bg-primary/20 text-xs">Guide</TabsTrigger>
-                      <TabsTrigger value="code" className="data-[state=active]:bg-secondary/20 text-xs">Code</TabsTrigger>
+                    <TabsList className="glass-pill mb-6 grid h-11 w-full grid-cols-2 p-1">
+                      <TabsTrigger value="guide" className="rounded-full text-xs data-[state=active]:bg-white/[0.12] data-[state=active]:text-foreground">Guide</TabsTrigger>
+                      <TabsTrigger value="code" className="rounded-full text-xs data-[state=active]:bg-white/[0.12] data-[state=active]:text-foreground">Code</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="guide" className="space-y-6">
@@ -139,14 +139,14 @@ const VisualizerLayout: React.FC<VisualizerLayoutProps> = ({
         />
 
         {/* Canvas Area */}
-        <div className="flex flex-grow items-center justify-center bg-black/20 p-4 sm:p-8 lg:overflow-auto">
+        <div className="flex flex-grow items-center justify-center p-4 sm:p-8 lg:overflow-auto">
            <div className="flex min-h-[300px] w-full items-center justify-center lg:h-full">
               {children}
            </div>
         </div>
 
         {/* Controls Bar */}
-        <footer className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur-xl sm:p-6">
+        <footer className="glass-strong shrink-0 !rounded-none !border-x-0 !border-b-0 p-4 !shadow-none sm:p-6">
            <div className="container mx-auto max-w-7xl">
               {controls}
            </div>

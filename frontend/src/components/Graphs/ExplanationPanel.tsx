@@ -329,7 +329,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
           <h4 className="font-semibold mb-2 text-muted-foreground flex items-center text-sm">
               <List className="mr-2 h-4 w-4"/> Pseudo-code ({algorithm.toUpperCase()})
           </h4>
-          <div className="flex-grow bg-gray-900 p-3 rounded border border-border/80 overflow-auto relative">
+          <div className="flex-grow bg-black/30 p-3 rounded-xl border border-white/[0.06] overflow-auto relative">
               <pre className="text-xs sm:text-sm leading-relaxed font-mono whitespace-pre-wrap">
                 {getPseudoCode(algorithm).map((line, index) => (
                   <div

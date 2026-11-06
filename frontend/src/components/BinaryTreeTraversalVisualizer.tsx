@@ -265,7 +265,8 @@ const BinaryTreeTraversalVisualizer = () => {
             <Button
               onClick={stepForward}
               disabled={isAnimating || currentStepIndex >= traversalSteps.length - 1}
-              className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90 text-white font-semibold px-4 py-2 disabled:opacity-60"
+              variant="outline"
+              className="flex items-center gap-2 px-4 py-2 font-semibold"
             >
               <StepForward size={18} />
               <span>Next Step</span>
