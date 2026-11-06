@@ -1,11 +1,21 @@
 import math
 import random
 
+# Each activation with its derivative (slope), both as functions of z.
+ACTIVATIONS = {
+    "tanh": (math.tanh, lambda z: 1 - math.tanh(z) ** 2),
+    "relu": (lambda z: max(0.0, z), lambda z: 1.0 if z > 0 else 0.0),
+    "leaky_relu": (lambda z: z if z >= 0 else 0.01 * z, lambda z: 1.0 if z >= 0 else 0.01),
+    "sigmoid": (lambda z: 1 / (1 + math.exp(-z)),
+                lambda z: (1 / (1 + math.exp(-z))) * (1 - 1 / (1 + math.exp(-z)))),
+}
+
 
 class TinyMLP:
-    """2 inputs -> `hidden` tanh neurons -> 1 sigmoid output."""
+    """2 inputs -> `hidden` neurons -> 1 sigmoid output."""
 
-    def __init__(self, hidden=4, seed=0):
+    def __init__(self, hidden=4, seed=0, activation="tanh"):
+        self.act, self.dact = ACTIVATIONS[activation]
         rng = random.Random(seed)
         self.W1 = [[rng.gauss(0, 1.2), rng.gauss(0, 1.2)] for _ in range(hidden)]
         self.b1 = [rng.gauss(0, 0.3) for _ in range(hidden)]
@@ -13,15 +23,16 @@ class TinyMLP:
         self.b2 = 0.0
 
     def forward(self, x, y):
-        h = [math.tanh(w[0] * x + w[1] * y + b) for w, b in zip(self.W1, self.b1)]
+        zs = [w[0] * x + w[1] * y + b for w, b in zip(self.W1, self.b1)]
+        h = [self.act(z) for z in zs]
         z = sum(hi * wi for hi, wi in zip(h, self.W2)) + self.b2
-        return h, 1 / (1 + math.exp(-z))
+        return zs, h, 1 / (1 + math.exp(-z))
 
     def loss(self, data):
         eps = 1e-9
         total = 0.0
         for x, y, label in data:
-            p = self.forward(x, y)[1]
+            p = self.forward(x, y)[2]
             total -= math.log(p + eps) if label else math.log(1 - p + eps)
         return total / len(data)
 
@@ -31,12 +42,12 @@ class TinyMLP:
         gW1 = [[0.0, 0.0] for _ in range(H)]
         gb1, gW2, gb2 = [0.0] * H, [0.0] * H, 0.0
         for x, y, label in data:
-            h, p = self.forward(x, y)
+            zs, h, p = self.forward(x, y)
             dz = p - label  # sigmoid + cross-entropy: the output error is just p - y
             gb2 += dz
             for j in range(H):
                 gW2[j] += dz * h[j]
-                dh = dz * self.W2[j] * (1 - h[j] ** 2)  # back through tanh
+                dh = dz * self.W2[j] * self.dact(zs[j])  # back through the activation
                 gW1[j][0] += dh * x
                 gW1[j][1] += dh * y
                 gb1[j] += dh
@@ -54,7 +65,7 @@ class TinyMLP:
             self.b2 -= lr * gb2
 
     def predict(self, x, y):
-        return 1 if self.forward(x, y)[1] >= 0.5 else 0
+        return 1 if self.forward(x, y)[2] >= 0.5 else 0
 
 
 # XOR: opposite corners share a label, so no single straight line separates them.

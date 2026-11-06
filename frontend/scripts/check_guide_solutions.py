@@ -297,29 +297,36 @@ check("sampling frequencies match the probabilities", all(abs(draws.count(i) / 2
 
 print("\ntiny neural network")
 mlp = load("tiny_mlp")
-net = mlp.TinyMLP(hidden=4, seed=3)
 data = [(rng.uniform(-1, 1), rng.uniform(-1, 1), rng.randint(0, 1)) for _ in range(12)]
-grads = net.gradients(data)
-flat_g = [*grads[0][0], *grads[0][1], *grads[0][2], *grads[0][3], *grads[1], *grads[2], grads[3]]
-params = [(net.W1, (j, i)) for j in range(4) for i in range(2)] + [(net.b1, j) for j in range(4)] + [(net.W2, j) for j in range(4)]
-ok = True
-h = 1e-6
-for (arr, idx), g in zip(params, flat_g):
-    def get():
-        return arr[idx[0]][idx[1]] if isinstance(idx, tuple) else arr[idx]
-    def put(v):
-        if isinstance(idx, tuple):
-            arr[idx[0]][idx[1]] = v
-        else:
-            arr[idx] = v
-    v0 = get()
-    put(v0 + h); up = net.loss(data)
-    put(v0 - h); down = net.loss(data)
-    put(v0)
-    ok &= abs((up - down) / (2 * h) - g) < 1e-6
-net.b2 += h; up = net.loss(data); net.b2 -= 2 * h; down = net.loss(data); net.b2 += h
-ok &= abs((up - down) / (2 * h) - grads[3]) < 1e-6
-check("backprop gradients match finite differences", ok)
+
+
+def grad_check(net):
+    grads = net.gradients(data)
+    flat_g = [*grads[0][0], *grads[0][1], *grads[0][2], *grads[0][3], *grads[1], *grads[2], grads[3]]
+    params = [(net.W1, (j, i)) for j in range(4) for i in range(2)] + [(net.b1, j) for j in range(4)] + [(net.W2, j) for j in range(4)]
+    ok = True
+    h = 1e-6
+    for (arr, idx), g in zip(params, flat_g):
+        def get():
+            return arr[idx[0]][idx[1]] if isinstance(idx, tuple) else arr[idx]
+        def put(v):
+            if isinstance(idx, tuple):
+                arr[idx[0]][idx[1]] = v
+            else:
+                arr[idx] = v
+        v0 = get()
+        put(v0 + h); up = net.loss(data)
+        put(v0 - h); down = net.loss(data)
+        put(v0)
+        ok &= abs((up - down) / (2 * h) - g) < 1e-6
+    net.b2 += h; up = net.loss(data); net.b2 -= 2 * h; down = net.loss(data); net.b2 += h
+    ok &= abs((up - down) / (2 * h) - grads[3]) < 1e-6
+    return ok
+
+
+for act in mlp.ACTIVATIONS:
+    check(f"backprop gradients match finite differences ({act})", grad_check(mlp.TinyMLP(hidden=4, seed=3, activation=act)))
+
 xor_net = mlp.TinyMLP(hidden=4, seed=1)
 xor_net.train(mlp.xor)
 check("learns XOR", [xor_net.predict(x, y) for x, y, _ in mlp.xor] == [0, 0, 1, 1])

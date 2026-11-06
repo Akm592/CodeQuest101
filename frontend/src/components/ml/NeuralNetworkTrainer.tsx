@@ -4,12 +4,15 @@ import * as React from "react";
 import { useAlgorithmPlayer } from "../../hooks/useAlgorithmPlayer";
 import { mlpGuideStepFor, neuralNetworkGuide } from "../../lib/guides/mlGuides";
 import { MLP_DEFAULT } from "../../lib/ml/demos";
-import { buildMlpSteps, DATASETS, forward, makeDataset, type DatasetKey, type MlpStep } from "../../lib/ml/mlp";
+import { ACTIVATIONS, type HiddenActivation } from "../../lib/ml/activations";
+import { accuracy, buildMlpSteps, DATASETS, forward, makeDataset, type DatasetKey, type MlpStep } from "../../lib/ml/mlp";
 import { Button } from "../ui/button";
 import { Surface } from "../ui/surface";
 import AlgorithmGuidePanel from "../Visualizer/AlgorithmGuide";
 import VisualizerControls from "../Visualizer/VisualizerControls";
+import ActivationExplorer from "./ActivationExplorer";
 import { neuralNetworkFigures } from "./figures/clusteringFigures";
+import NeuralNetworkMath from "./NeuralNetworkMath";
 import { C } from "./colors";
 import { ConceptFigures, LossChart, Plot, Segmented, Stat } from "./shared";
 
@@ -17,14 +20,14 @@ const GRID = 36;
 const EPOCHS: Record<DatasetKey, number> = { blobs: 300, xor: 600, circle: 600, spiral: 1500 };
 
 /** The network's prediction everywhere, as a grid of shaded cells. */
-const Boundary: React.FC<{ step: MlpStep; s: { x: (v: number) => number; y: (v: number) => number } }> = ({ step, s }) => {
+const Boundary: React.FC<{ step: MlpStep; act: HiddenActivation; s: { x: (v: number) => number; y: (v: number) => number } }> = ({ step, act, s }) => {
   const cells: React.ReactNode[] = [];
   const size = 2 / GRID;
   for (let i = 0; i < GRID; i++) {
     for (let j = 0; j < GRID; j++) {
       const x = -1 + (i + 0.5) * size;
       const y = -1 + (j + 0.5) * size;
-      const p = forward(step.weights, x, y).out;
+      const p = forward(step.weights, x, y, act).out;
       const conf = Math.abs(p - 0.5) * 2;
       cells.push(
         <rect
@@ -48,7 +51,7 @@ const Boundary: React.FC<{ step: MlpStep; s: { x: (v: number) => number; y: (v: 
 };
 
 /** Inputs → hidden → output, edges coloured by sign and sized by strength. */
-const NetworkDiagram: React.FC<{ step: MlpStep }> = ({ step }) => {
+const NetworkDiagram: React.FC<{ step: MlpStep; act: HiddenActivation }> = ({ step, act }) => {
   const H = step.weights.W2.length;
   const W = 300;
   const HT = 220;
@@ -91,7 +94,7 @@ const NetworkDiagram: React.FC<{ step: MlpStep }> = ({ step }) => {
           <g key={h}>
             <circle cx={xs[1]} cy={y} r={14} fill={a === undefined ? C.card : a >= 0 ? C.teal : C.red} fillOpacity={a === undefined ? 1 : 0.15 + Math.abs(a) * 0.6} stroke={C.fg} strokeWidth={1.2} />
             <text x={xs[1]} y={y + 4} textAnchor="middle" fontSize={10} fill={C.fg}>
-              {a === undefined ? "tanh" : a.toFixed(2)}
+              {a === undefined ? ACTIVATIONS[act].label.split(" ")[0] : a.toFixed(2)}
             </text>
           </g>
         );
@@ -112,18 +115,36 @@ const NeuralNetworkTrainer: React.FC = () => {
   const [hidden, setHidden] = React.useState(MLP_DEFAULT.hidden);
   const [lr, setLr] = React.useState(MLP_DEFAULT.lr);
   const [seed, setSeed] = React.useState(MLP_DEFAULT.seed);
+  const [act, setAct] = React.useState<HiddenActivation>("tanh");
 
   const data = React.useMemo(() => makeDataset(dataset, MLP_DEFAULT.seed), [dataset]);
+  // Fresh points from the same shape that training never sees: the honest
+  // test of whether the network learned the pattern or just these 120 points.
+  const unseen = React.useMemo(() => makeDataset(dataset, 999, 400), [dataset]);
   const epochs = EPOCHS[dataset];
-  const steps = React.useMemo(() => buildMlpSteps(data, hidden, lr, epochs, seed), [data, hidden, lr, epochs, seed]);
+  const steps = React.useMemo(() => buildMlpSteps(data, hidden, lr, epochs, seed, act), [data, hidden, lr, epochs, seed, act]);
   const player = useAlgorithmPlayer(steps, { initialDelayMs: 350 });
   const step = player.current ?? steps[0];
   const locked = player.status === "running";
+  const unseenAccuracy = accuracy(step.weights, unseen, act);
   const tracedIndex = step.phase === "forward" || step.phase === "loss" ? step.traced?.index : undefined;
 
   return (
     <div className="space-y-6">
       <ConceptFigures figures={neuralNetworkFigures} />
+
+      <nav aria-label="On this page" className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Jump to:</span>
+        {[
+          ["#activations-title", "Activation functions"],
+          ["#nn-math-title", "The maths, step by step"],
+          ["#nn-guide", "How it works"],
+        ].map(([href, label]) => (
+          <a key={href} href={href} className="glass-pill glass-hover px-3.5 py-1.5 text-foreground">
+            {label}
+          </a>
+        ))}
+      </nav>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Surface variant="card" radius="2xl" className="min-w-0 p-3 sm:p-4">
@@ -133,12 +154,12 @@ const NeuralNetworkTrainer: React.FC = () => {
             width={400}
             height={400}
             label="Training points over the network's predicted regions"
-            background={(s) => <Boundary step={step} s={s} />}
+            background={(s) => <Boundary step={step} act={act} s={s} />}
           >
             {(s) => (
               <>
                 {data.map((d, i) => {
-                  const wrong = (forward(step.weights, d.x, d.y).out >= 0.5 ? 1 : 0) !== d.label;
+                  const wrong = (forward(step.weights, d.x, d.y, act).out >= 0.5 ? 1 : 0) !== d.label;
                   return (
                     <circle
                       key={i}
@@ -155,13 +176,14 @@ const NeuralNetworkTrainer: React.FC = () => {
             )}
           </Plot>
           <p className="mt-2 text-xs text-muted-foreground">
-            Background shading is the network's guess at every spot. Red rings mark points it currently gets wrong.
+            Background shading is the network's guess at every spot. Red rings mark training points it currently gets wrong. “Training
+            accuracy” counts these 120 points; “on 400 new points” tests fresh points from the same shape that it never trained on.
           </p>
         </Surface>
 
         <div className="flex min-w-0 flex-col gap-4">
           <Surface variant="card" radius="2xl" className="p-3 sm:p-4">
-            <NetworkDiagram step={step} />
+            <NetworkDiagram step={step} act={act} />
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-viz-current" /> positive weight</span>
               <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-viz-swap" /> negative weight</span>
@@ -173,7 +195,8 @@ const NeuralNetworkTrainer: React.FC = () => {
             <dl className="grid grid-cols-2 gap-2 sm:grid-cols-1">
               <Stat label="Training step" value={step.epoch} />
               <Stat label="Loss" value={step.loss.toFixed(3)} />
-              <Stat label="Accuracy" value={`${(step.accuracy * 100).toFixed(0)}%`} tone={step.accuracy >= 0.95 ? C.green : undefined} />
+              <Stat label="Training accuracy" value={`${(step.accuracy * 100).toFixed(1)}%`} tone={step.accuracy >= 0.95 ? C.green : undefined} />
+              <Stat label="On 400 new points" value={`${(unseenAccuracy * 100).toFixed(1)}%`} tone={unseenAccuracy >= 0.95 ? C.green : undefined} />
             </dl>
           </Surface>
         </div>
@@ -189,6 +212,13 @@ const NeuralNetworkTrainer: React.FC = () => {
             options={(Object.keys(DATASETS) as DatasetKey[]).map((k) => ({ value: k, label: DATASETS[k].label }))}
           />
           <Segmented label="Hidden neurons" value={hidden} onChange={setHidden} disabled={locked} options={[1, 2, 4, 6, 8].map((v) => ({ value: v, label: String(v) }))} />
+          <Segmented
+            label="Activation"
+            value={act}
+            onChange={setAct}
+            disabled={locked}
+            options={(["tanh", "relu", "leakyRelu", "sigmoid"] as const).map((k) => ({ value: k, label: ACTIVATIONS[k].label }))}
+          />
           <Segmented
             label="Learning rate"
             value={lr}
@@ -221,6 +251,11 @@ const NeuralNetworkTrainer: React.FC = () => {
         </p>
       </Surface>
 
+      <ActivationExplorer />
+
+      <NeuralNetworkMath />
+
+      <div id="nn-guide" className="scroll-mt-20" />
       <AlgorithmGuidePanel guide={neuralNetworkGuide} activeStageId={player.current ? mlpGuideStepFor(player.current) : null} />
     </div>
   );

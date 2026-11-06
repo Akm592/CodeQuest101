@@ -1,11 +1,13 @@
-// A tiny neural network that really trains: 2 inputs → H tanh neurons → 1
-// sigmoid output, binary cross-entropy loss, full-batch gradient descent.
+// A tiny neural network that really trains: 2 inputs → H hidden neurons
+// (tanh by default; ReLU, Leaky ReLU or sigmoid on request) → 1 sigmoid output,
+// binary cross-entropy loss, full-batch gradient descent.
 //
 // The first four frames walk through one training step in detail (forward,
 // loss, backward, update). After that each frame is a snapshot of training,
 // more often early on when the picture changes fastest.
 
 import type { BaseStep } from "../algorithms/types";
+import { ACTIVATIONS, type HiddenActivation } from "./activations";
 import { gaussian, seededRng, type Point } from "./random";
 
 export interface Weights {
@@ -76,44 +78,50 @@ export function initWeights(hidden: number, seed: number): Weights {
 const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
 
 export interface Forward {
+  /** Each hidden neuron's weighted sum, before the activation. */
+  z: number[];
+  /** Each hidden neuron's output, after the activation. */
   hidden: number[];
   out: number;
 }
 
-export function forward(w: Weights, x: number, y: number): Forward {
-  const hidden = w.W1.map(([a, b], h) => Math.tanh(a * x + b * y + w.b1[h]));
-  const z = hidden.reduce((s, v, h) => s + v * w.W2[h], w.b2);
-  return { hidden, out: sigmoid(z) };
+export function forward(w: Weights, x: number, y: number, act: HiddenActivation = "tanh"): Forward {
+  const f = ACTIVATIONS[act].f;
+  const z = w.W1.map(([a, b], h) => a * x + b * y + w.b1[h]);
+  const hidden = z.map(f);
+  const zOut = hidden.reduce((s, v, h) => s + v * w.W2[h], w.b2);
+  return { z, hidden, out: sigmoid(zOut) };
 }
 
 const EPS = 1e-9;
 
-export function loss(w: Weights, data: Sample[]): number {
+export function loss(w: Weights, data: Sample[], act: HiddenActivation = "tanh"): number {
   return (
     -data.reduce((s, d) => {
-      const p = forward(w, d.x, d.y).out;
+      const p = forward(w, d.x, d.y, act).out;
       return s + (d.label ? Math.log(p + EPS) : Math.log(1 - p + EPS));
     }, 0) / data.length
   );
 }
 
-export function accuracy(w: Weights, data: Sample[]): number {
-  return data.filter((d) => (forward(w, d.x, d.y).out >= 0.5 ? 1 : 0) === d.label).length / data.length;
+export function accuracy(w: Weights, data: Sample[], act: HiddenActivation = "tanh"): number {
+  return data.filter((d) => (forward(w, d.x, d.y, act).out >= 0.5 ? 1 : 0) === d.label).length / data.length;
 }
 
 /** Mean gradient of the loss over the batch: backpropagation by hand. */
-export function gradients(w: Weights, data: Sample[]): Weights {
+export function gradients(w: Weights, data: Sample[], act: HiddenActivation = "tanh"): Weights {
   const H = w.W2.length;
+  const df = ACTIVATIONS[act].df;
   const g: Weights = { W1: w.W1.map(() => [0, 0]), b1: new Array(H).fill(0), W2: new Array(H).fill(0), b2: 0 };
   for (const d of data) {
-    const f = forward(w, d.x, d.y);
+    const f = forward(w, d.x, d.y, act);
     // For sigmoid + cross-entropy, dLoss/dz at the output is just p - y.
     const dz = f.out - d.label;
     g.b2 += dz;
     for (let h = 0; h < H; h++) {
       g.W2[h] += dz * f.hidden[h];
-      // Back through W2, then through tanh (derivative 1 - tanh²).
-      const dh = dz * w.W2[h] * (1 - f.hidden[h] ** 2);
+      // Back through W2, then through the activation (its slope at z).
+      const dh = dz * w.W2[h] * df(f.z[h]);
       g.W1[h][0] += dh * d.x;
       g.W1[h][1] += dh * d.y;
       g.b1[h] += dh;
@@ -160,30 +168,37 @@ export function snapshotEpochs(epochs: number): number[] {
 
 const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
 
-export function buildMlpSteps(data: Sample[], hidden: number, lr: number, epochs: number, seed: number): MlpStep[] {
+export function buildMlpSteps(
+  data: Sample[],
+  hidden: number,
+  lr: number,
+  epochs: number,
+  seed: number,
+  act: HiddenActivation = "tanh",
+): MlpStep[] {
   let w = initWeights(hidden, seed);
-  const losses = [loss(w, data)];
+  const losses = [loss(w, data, act)];
   const steps: MlpStep[] = [];
-  const base = () => ({ weights: w, loss: losses[losses.length - 1], accuracy: accuracy(w, data), losses: [...losses] });
+  const base = () => ({ weights: w, loss: losses[losses.length - 1], accuracy: accuracy(w, data, act), losses: [...losses] });
 
   const traceIndex = 0;
-  const f = forward(w, data[traceIndex].x, data[traceIndex].y);
+  const f = forward(w, data[traceIndex].x, data[traceIndex].y, act);
   const d0 = data[traceIndex];
   steps.push({
     ...base(),
     phase: "forward",
     epoch: 0,
     traced: { index: traceIndex, forward: f },
-    explanation: `Forward pass: the highlighted point (${d0.x.toFixed(2)}, ${d0.y.toFixed(2)}) flows through. Each neuron weighs its inputs, adds a bias and squashes the result. The output says ${pct(f.out)} chance of the teal class; the right answer is ${d0.label ? "teal" : "violet"}.`,
+    explanation: `Forward pass: the highlighted point (${d0.x.toFixed(2)}, ${d0.y.toFixed(2)}) flows through. Each hidden neuron weighs its inputs, adds a bias and applies ${ACTIVATIONS[act].label}. The output says ${pct(f.out)} chance of the teal class; the right answer is ${d0.label ? "teal" : "violet"}.`,
   });
   steps.push({
     ...base(),
     phase: "loss",
     epoch: 0,
     traced: { index: traceIndex, forward: f },
-    explanation: `Loss: compare every prediction with its label. Confident wrong answers cost the most. The average cross-entropy is ${losses[0].toFixed(3)}, and ${pct(accuracy(w, data))} of points are on the right side.`,
+    explanation: `Loss: compare every prediction with its label. Confident wrong answers cost the most. The average cross-entropy is ${losses[0].toFixed(3)}, and ${pct(accuracy(w, data, act))} of the training points are on the right side.`,
   });
-  const g = gradients(w, data);
+  const g = gradients(w, data, act);
   steps.push({
     ...base(),
     phase: "backward",
@@ -194,8 +209,8 @@ export function buildMlpSteps(data: Sample[], hidden: number, lr: number, epochs
 
   const epochsToShow = new Set(snapshotEpochs(epochs));
   for (let e = 1; e <= epochs; e++) {
-    w = applyUpdate(w, gradients(w, data), lr);
-    losses.push(loss(w, data));
+    w = applyUpdate(w, gradients(w, data, act), lr);
+    losses.push(loss(w, data, act));
     if (e === 1) {
       steps.push({
         ...base(),
@@ -212,7 +227,7 @@ export function buildMlpSteps(data: Sample[], hidden: number, lr: number, epochs
         ...s,
         phase: "done",
         epoch: e,
-        explanation: `Trained for ${e} steps. Loss ${s.loss.toFixed(3)}, ${pct(s.accuracy)} of points classified correctly. The shaded background is what the network now believes everywhere.`,
+        explanation: `Trained for ${e} steps. Loss ${s.loss.toFixed(3)}, and ${pct(s.accuracy)} of the training points classified correctly. The shaded background is what the network now believes everywhere.`,
         done: true,
       });
     } else {
@@ -220,7 +235,7 @@ export function buildMlpSteps(data: Sample[], hidden: number, lr: number, epochs
         ...s,
         phase: "train",
         epoch: e,
-        explanation: `Step ${e}: forward, loss, backward, update, repeated. Loss ${s.loss.toFixed(3)}, accuracy ${pct(s.accuracy)}.`,
+        explanation: `Step ${e}: forward, loss, backward, update, repeated. Loss ${s.loss.toFixed(3)}, training accuracy ${pct(s.accuracy)}.`,
       });
     }
   }

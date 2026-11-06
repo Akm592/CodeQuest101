@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { assertStepInvariants } from "../algorithms/testHelpers";
+import { ACTIVATION_ORDER, ACTIVATIONS, erf, sigmoid } from "./activations";
+import { collapseExample, nudgeTest, workedExample } from "./neuronMath";
 import { attendFrom, attentionMatrix, buildAttentionSteps, SENTENCES, tokenize } from "./attention";
 import { buildGdSteps, SURFACES } from "./gradientDescent";
 import { buildKMeansSteps, nearest } from "./kMeans";
@@ -232,9 +234,106 @@ describe("neural network", () => {
     expect(accuracy(last.weights, data)).toBe(last.accuracy);
   });
 
+  it.each([
+    ["blobs", 2, 300],
+    ["xor", 4, 600],
+    ["circle", 6, 600],
+  ] as const)("%s: the page's default also gets new, unseen points right", (key, hidden, epochs) => {
+    const last = buildMlpSteps(makeDataset(key, 1), hidden, 0.8, epochs, 1).at(-1)!;
+    expect(accuracy(last.weights, makeDataset(key, 999, 2000))).toBeGreaterThanOrEqual(0.97);
+  });
+
   it("starts with the four walkthrough frames", () => {
     const steps = buildMlpSteps(makeDataset("xor", 1), 4, 0.8, 200, 1);
     expect(steps.slice(0, 4).map((s) => s.phase)).toEqual(["forward", "loss", "backward", "update"]);
     assertStepInvariants(steps);
+  });
+});
+
+describe("activation functions", () => {
+  const h = 1e-5;
+  const zs = [-3, -1.2, -0.4, 0.3, 0.9, 2.5]; // away from ReLU's corner at 0
+
+  it.each(ACTIVATION_ORDER)("%s: the derivative matches a nudge test", (key) => {
+    const a = ACTIVATIONS[key];
+    for (const z of zs) expect(a.df(z)).toBeCloseTo((a.f(z + h) - a.f(z - h)) / (2 * h), 5);
+  });
+
+  it("matches the facts the page states", () => {
+    // tanh is a stretched sigmoid: tanh(z) = 2σ(2z) − 1
+    for (const z of zs) expect(Math.tanh(z)).toBeCloseTo(2 * sigmoid(2 * z) - 1, 12);
+    // sigmoid's slope peaks at 0.25 (at z = 0); tanh's at 1
+    expect(ACTIVATIONS.sigmoid.df(0)).toBeCloseTo(0.25, 12);
+    for (let z = -6; z <= 6; z += 0.01) expect(ACTIVATIONS.sigmoid.df(z)).toBeLessThanOrEqual(0.25 + 1e-12);
+    expect(ACTIVATIONS.tanh.df(0)).toBe(1);
+    // ranges
+    expect(sigmoid(-30)).toBeGreaterThan(0);
+    expect(sigmoid(30)).toBeLessThanOrEqual(1);
+    expect(ACTIVATIONS.leakyRelu.f(-2)).toBeCloseTo(-0.02, 12);
+    // GELU's minimum is about −0.17
+    let min = Infinity;
+    for (let z = -4; z <= 0; z += 0.001) min = Math.min(min, ACTIVATIONS.gelu.f(z));
+    expect(min).toBeCloseTo(-0.17, 2);
+    // erf approximation is good to well under 1e-6 (erf(1) = 0.8427007929…)
+    expect(erf(1)).toBeCloseTo(0.8427007929, 6);
+  });
+
+  it("saturates: sigmoid's slope at z = 6 is under 0.003", () => {
+    expect(ACTIVATIONS.sigmoid.df(6)).toBeLessThan(0.003);
+  });
+});
+
+describe("worked example (the maths section)", () => {
+  const ex = workedExample();
+
+  it("simplifies the output gradient to p − y", () => {
+    expect(ex.dzOut).toBeCloseTo(ex.p - ex.y, 12);
+  });
+
+  it("gets the same gradients as a nudge test", () => {
+    expect(ex.dW2[0]).toBeCloseTo(nudgeTest("W2_0").numeric, 7);
+    expect(ex.dW1[0][0]).toBeCloseTo(nudgeTest("W1_00").numeric, 7);
+  });
+
+  it("agrees with the trainer's backprop", () => {
+    const w = { W1: ex.W1.map((r) => [...r]) as [number, number][], b1: [...ex.b1], W2: [...ex.W2], b2: ex.b2 };
+    const g = gradients(w, [{ x: ex.x[0], y: ex.x[1], label: ex.y }]);
+    expect(g.W1[1][1]).toBeCloseTo(ex.dW1[1][1], 12);
+    expect(g.W2[1]).toBeCloseTo(ex.dW2[1], 12);
+    expect(g.b2).toBeCloseTo(ex.db2, 12);
+  });
+
+  it("lowers the loss after one update", () => {
+    expect(ex.newLoss).toBeLessThan(ex.loss);
+  });
+
+  it("shows two linear layers collapsing into one", () => {
+    const c = collapseExample();
+    expect(c.oneLayer).toBeCloseTo(c.twoLayers, 12);
+  });
+});
+
+describe("trainer with each hidden activation", () => {
+  it.each(["tanh", "relu", "leakyRelu", "sigmoid"] as const)("%s: backprop matches finite differences", (act) => {
+    const data = makeDataset("circle", 2, 30);
+    const w = initWeights(3, 5);
+    const g = gradients(w, data, act);
+    const h = 1e-6;
+    const bump = (d: number) => ({ ...w, W1: w.W1.map((r, i) => (i === 1 ? ([r[0] + d, r[1]] as [number, number]) : r)) });
+    expect(g.W1[1][0]).toBeCloseTo((loss(bump(h), data, act) - loss(bump(-h), data, act)) / (2 * h), 5);
+  });
+
+  it.each(["tanh", "relu", "leakyRelu", "sigmoid"] as const)("can't solve XOR with one hidden neuron (%s): the boundary stays a line", (act) => {
+    const data = makeDataset("xor", 1);
+    for (const seed of [1, 2, 3]) {
+      const last = buildMlpSteps(data, 1, 0.8, 600, seed, act).at(-1)!;
+      // XOR's four corner groups: a straight line can get at most three right.
+      expect(last.accuracy).toBeLessThanOrEqual(0.8);
+    }
+  });
+
+  it("solves XOR with ReLU too", () => {
+    const last = buildMlpSteps(makeDataset("xor", 1), 6, 0.8, 600, 1, "relu").at(-1)!;
+    expect(last.accuracy).toBeGreaterThanOrEqual(0.95);
   });
 });

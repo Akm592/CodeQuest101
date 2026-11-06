@@ -74,6 +74,8 @@ interface PlotProps {
   /** Drawn under the grid, e.g. a decision-boundary image. */
   background?: (s: Scale) => React.ReactNode;
   ticks?: number[];
+  /** Y-axis ticks, when they differ from the x-axis ones. */
+  yTicks?: number[];
   className?: string;
 }
 
@@ -87,6 +89,7 @@ export const Plot: React.FC<PlotProps> = ({
   children,
   background,
   ticks,
+  yTicks,
   className,
 }) => {
   const ref = React.useRef<SVGSVGElement>(null);
@@ -113,7 +116,10 @@ export const Plot: React.FC<PlotProps> = ({
     onPick(d);
   };
 
-  const tickValues = ticks ?? [];
+  const inX = (t: number) => t >= xDomain[0] && t <= xDomain[1];
+  const inY = (t: number) => t >= yDomain[0] && t <= yDomain[1];
+  const xt = (ticks ?? []).filter(inX);
+  const yt = (yTicks ?? ticks ?? []).filter(inY);
   return (
     <svg
       ref={ref}
@@ -124,13 +130,17 @@ export const Plot: React.FC<PlotProps> = ({
       onClick={click}
     >
       {background?.(s)}
-      {tickValues.map((t) => (
-        <g key={`t${t}`}>
+      {xt.map((t) => (
+        <g key={`x${t}`}>
           <line x1={s.x(t)} x2={s.x(t)} y1={s.y(yDomain[0])} y2={s.y(yDomain[1])} stroke={C.grid} strokeWidth={0.6} />
-          <line x1={s.x(xDomain[0])} x2={s.x(xDomain[1])} y1={s.y(t)} y2={s.y(t)} stroke={C.grid} strokeWidth={0.6} />
           <text x={s.x(t)} y={height - 10} textAnchor="middle" fontSize={10} fill={C.muted}>
             {t}
           </text>
+        </g>
+      ))}
+      {yt.map((t) => (
+        <g key={`y${t}`}>
+          <line x1={s.x(xDomain[0])} x2={s.x(xDomain[1])} y1={s.y(t)} y2={s.y(t)} stroke={C.grid} strokeWidth={0.6} />
           <text x={pad - 6} y={s.y(t) + 3} textAnchor="end" fontSize={10} fill={C.muted}>
             {t}
           </text>

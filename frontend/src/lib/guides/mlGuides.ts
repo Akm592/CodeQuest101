@@ -257,9 +257,9 @@ export const neuralNetworkGuide: AlgorithmGuide = {
   title: "Neural Network",
   whenToUseHeading: ML_HEADING,
   idea: [
-    "A neuron takes some numbers, multiplies each by a weight, adds them up with a bias, and squashes the total through an activation function (here tanh). On its own that can only draw a straight line between two classes.",
-    "Put a layer of neurons in the middle and their outputs become new features the final neuron combines. Each hidden neuron draws one line; the output bends and mixes them into curves, which is how the network solves XOR and the circle.",
-    "Training is a loop. Forward: push the data through and get predictions. Loss: score how wrong they are. Backward (backpropagation): use the chain rule to work out every weight's share of the blame. Update: nudge every weight against its blame. Thousands of repeats later, the shaded background shows what the network believes everywhere.",
+    "A neuron takes some numbers, multiplies each by a weight, adds them up with a bias, and passes the total through an activation function (tanh by default here). On its own, one neuron can only draw a straight line between two classes.",
+    "Put a layer of neurons in the middle and their outputs become new features that the output neuron combines. Each hidden neuron responds to one straight-line direction in the input; because the activation bends each response, the output can mix them into a curved boundary. That is how the network solves XOR and the circle.",
+    "Training is a loop. Forward: push the data through and get predictions. Loss: score how wrong they are. Backward (backpropagation): use the chain rule to work out every weight's share of the blame. Update: nudge every weight against its blame. A few hundred repeats later, the shaded background shows what the network believes everywhere. The maths section below works through one full step with real numbers.",
   ],
   whenToUse: [
     "Images, speech, text: anywhere the useful features are too complex to design by hand. Large language models are this, scaled up enormously.",
@@ -267,9 +267,9 @@ export const neuralNetworkGuide: AlgorithmGuide = {
     "Interview staples: “explain backprop”, “why do we need non-linear activations?”, “what is a vanishing gradient?”.",
   ],
   stages: [
-    { id: "forward", title: "Forward pass", detail: "Each hidden neuron computes tanh(w₁x + w₂y + b); the output neuron combines them and the sigmoid turns that into a probability.", pseudo: "h = tanh(W1·x + b1);  p = σ(W2·h + b2)" },
+    { id: "forward", title: "Forward pass", detail: "Each hidden neuron computes its weighted sum z = w₁x + w₂y + b and applies the activation; the output neuron combines them and the sigmoid turns that into a probability.", pseudo: "h = act(W1·x + b1);  p = σ(W2·h + b2)" },
     { id: "loss", title: "Measure the loss", detail: "Cross-entropy: −log of the probability given to the right answer. Confident mistakes cost the most.", pseudo: "L = −mean(y·log p + (1−y)·log(1−p))" },
-    { id: "backward", title: "Backward pass (backprop)", detail: "Start from the output error, p − y, and pass it back through each weight and activation with the chain rule.", pseudo: "dW2 = (p−y)·h;  dW1 = (p−y)·W2·(1−h²)·x" },
+    { id: "backward", title: "Backward pass (backprop)", detail: "Start from the output error, p − y, and pass it back through each weight and each activation's slope with the chain rule.", pseudo: "dW2 = (p−y)·h;  dW1 = (p−y)·W2·act′(z)·x" },
     { id: "update", title: "Update every weight", detail: "Subtract learning rate × gradient from each weight. That's one training step.", pseudo: "W -= lr * dW" },
     { id: "train", title: "Repeat", detail: "Forward, loss, backward, update, over and over. Watch the boundary bend and the loss fall.", pseudo: "for epoch in range(N): ..." },
     { id: "done", title: "Trained", detail: "The background shading is the network's prediction at every spot, including places it never saw a point.", pseudo: "predict(x) = p ≥ 0.5" },
@@ -283,16 +283,19 @@ export const neuralNetworkGuide: AlgorithmGuide = {
   complexity: {
     time: "O(epochs × n × weights)",
     space: "O(weights)",
-    why: "Every training step runs every point forward and backward through every weight. Backprop costs about twice a forward pass, which is what makes training big networks possible at all.",
+    why: "Every training step runs every point forward and backward through every weight. The backward pass costs roughly twice as much as the forward pass, so one training step is about three forward passes' worth of work.",
   },
   pitfalls: [
-    "Without a non-linear activation, stacking layers is still a straight line. Try XOR with 1 hidden neuron: it can't solve it.",
+    "Without a non-linear activation, stacking layers gains nothing: two linear layers merge into one, so the boundary stays a straight line.",
+    "One hidden neuron isn't enough for XOR with any activation offered here (tanh, ReLU, Leaky ReLU and sigmoid only ever go up): the output then depends on a single straight-line direction, so its boundary is still a line. Try it with 1 neuron, then 2.",
+    "Sigmoid in the hidden layer learns slowly: its slope is at most 0.25, so the blame shrinks on the way back. ReLU can “die”: a neuron stuck with negative input gets a slope of 0 and stops learning.",
     "Too few neurons can't draw the shape; too many, trained too long on too little data, memorise the noise (overfitting).",
     "A learning rate that's too high makes the loss bounce or explode; too low and nothing seems to happen.",
   ],
   tryThis: [
     "Pick XOR with 1 hidden neuron, then 2, then 4.",
-    "Try the spiral with 8 neurons: it's much harder, and needs every one of them.",
+    "Try the spiral with 8 neurons: it's much harder, and may still miss some points.",
+    "Switch the activation to Sigmoid on the circle and compare the loss curve with Tanh and ReLU.",
     "Drop the learning rate to 0.1 and compare the loss curve with the default.",
   ],
   python: tinyMlpPy,
