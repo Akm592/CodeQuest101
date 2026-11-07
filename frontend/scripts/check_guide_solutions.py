@@ -587,6 +587,50 @@ for _ in range(300):
     ok &= tp["trapping_rain_water"].trap(h) == want
 check("trapping rain water matches min(left max, right max) - height per bar (300 cases)", ok)
 
+print("\nNeetCode 150: Sliding Window")
+sw = {name: load(f"neetcode/{name}") for name in ["best_time_stock", "longest_substring", "character_replacement", "permutation_in_string", "minimum_window", "sliding_window_max"]}
+ok = True
+for _ in range(300):
+    p = [rng.randint(1, 9) for _ in range(rng.randint(1, 10))]
+    want = max([0] + [p[j] - p[i] for i in range(len(p)) for j in range(i + 1, len(p))])
+    ok &= sw["best_time_stock"].max_profit(p) == want
+check("best time to buy and sell matches trying every buy/sell pair (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abcd ") for _ in range(rng.randint(0, 12)))
+    want = max([0] + [j - i for i in range(len(s)) for j in range(i + 1, len(s) + 1) if len(set(s[i:j])) == j - i])
+    ok &= sw["longest_substring"].length_of_longest_substring(s) == want
+check("longest substring without repeats matches checking every substring (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("ABC") for _ in range(rng.randint(0, 12)))
+    k = rng.randint(0, 3)
+    want = max([0] + [j - i for i in range(len(s)) for j in range(i + 1, len(s) + 1) if (j - i) - max(s[i:j].count(c) for c in "ABC") <= k])
+    ok &= sw["character_replacement"].character_replacement(s, k) == want
+check("character replacement matches checking every substring (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s1 = "".join(rng.choice("abcd") for _ in range(rng.randint(1, 4)))
+    s2 = "".join(rng.choice("abcd") for _ in range(rng.randint(0, 10)))
+    want = any(sorted(s2[i : i + len(s1)]) == sorted(s1) for i in range(len(s2) - len(s1) + 1))
+    ok &= sw["permutation_in_string"].check_inclusion(s1, s2) == want
+check("permutation in string matches sorting every window (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abcx") for _ in range(rng.randint(0, 12)))
+    t = "".join(rng.choice("abc") for _ in range(rng.randint(1, 3)))
+    cands = [s[i:j] for i in range(len(s)) for j in range(i + 1, len(s) + 1) if all(s[i:j].count(c) >= t.count(c) for c in set(t))]
+    got = sw["minimum_window"].min_window(s, t)
+    want_len = min((len(w) for w in cands), default=0)
+    ok &= len(got) == want_len and (got in cands or (got == "" and not cands))
+check("minimum window is a shortest window that covers t (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-5, 9) for _ in range(rng.randint(1, 12))]
+    k = rng.randint(1, len(nums))
+    ok &= sw["sliding_window_max"].max_sliding_window(nums, k) == [max(nums[i : i + k]) for i in range(len(nums) - k + 1)]
+check("sliding window maximum matches max() of every window (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

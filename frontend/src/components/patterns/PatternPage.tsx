@@ -161,7 +161,7 @@ const PatternPage: React.FC<PatternPageProps> = ({ category, intro, problems }) 
                 workspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className={cn(
-                "flex min-h-14 items-center gap-3 rounded-2xl border px-4 py-2.5 text-left transition-colors",
+                "flex min-h-14 min-w-0 items-center gap-3 rounded-2xl border px-4 py-2.5 text-left transition-colors",
                 p.id === problem.id ? "border-primary/70 bg-primary/15" : "glass glass-hover border-white/10",
               )}
             >

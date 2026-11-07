@@ -3,10 +3,11 @@
 import { describe, expect, it } from "vitest";
 
 import { ARRAYS_HASHING } from "./arraysHashing";
+import { SLIDING_WINDOW } from "./slidingWindow";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {

@@ -39,7 +39,7 @@ const VISUALIZERS = [
   'binarySearch', 'sortingAlgorithms', 'linkedList', 'longestSubarray',
   'spiralMatrix', 'rotateImage', 'binaryTree', 'stack', 'hareTortoise',
   'tree', 'neuralNetwork', 'graph', 'heap',
-  'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie', 'arraysHashing', 'twoPointers',
+  'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie', 'arraysHashing', 'twoPointers', 'slidingWindow',
   'gradientDescent', 'linearRegression', 'kMeans', 'attention', 'sampling', 'decisionTree', 'naiveBayes', 'randomForest', 'gradientBoosting',
 ];
 
