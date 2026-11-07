@@ -28,6 +28,7 @@ import type { VisualizationKey } from "./components/homepage/catalog";
 // warned about on every build. Splitting them here is what keeps adding
 // visualizers from making the landing page slower.
 const BinarySearchVisualizer = lazy(() => import("./components/BinarySearchVisualizer"));
+const ArraysHashingPage = lazy(() => import("./components/patterns/ArraysHashingPage"));
 const SortingAlgorithmVisualizer = lazy(() => import("./components/SortingAlgorithmVisualizer"));
 const LinkedListVisualizer = lazy(() => import("./components/LinkedListVisualizer"));
 const LongestSubarraySumKVisualizer = lazy(() => import("./components/LongestSubarraySumKVisualizer"));
@@ -99,6 +100,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   topologicalSort: { kind: "page", title: "Topological Sort & Union-Find", Component: TopologicalSortVisualizer },
   nQueens: { kind: "page", title: "N-Queens Backtracking", Component: NQueensVisualizer },
   trie: { kind: "page", title: "Trie (Prefix Tree)", Component: TrieVisualizer },
+  arraysHashing: { kind: "page", title: "Arrays & Hashing", Component: ArraysHashingPage },
 };
 
 /** Deliberately plain: the UI checker samples ~1.4s after load, so a fallback

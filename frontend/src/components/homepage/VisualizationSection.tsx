@@ -58,7 +58,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4"
             >
               {categories.map((category) => (
                 <button

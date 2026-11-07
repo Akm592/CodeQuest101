@@ -14,6 +14,7 @@ import {
   Database,
   GitBranch,
   GitFork,
+  Hash,
   Grid,
   Layers,
   Layers3,
@@ -22,6 +23,7 @@ import {
   MailCheck,
   MessageSquareText,
   Network,
+  Puzzle,
   RotateCw,
   ScanEye,
   Search,
@@ -33,7 +35,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-export type CategoryKey = "algorithms" | "dataStructures" | "machineLearning";
+export type CategoryKey = "algorithms" | "dataStructures" | "interviewPatterns" | "machineLearning";
 
 export interface Visualization {
   title: string;
@@ -64,6 +66,12 @@ export const categories: Category[] = [
     key: "dataStructures",
   },
   {
+    title: "Interview Patterns",
+    description: "The NeetCode 150, pattern by pattern",
+    icon: <Puzzle className="h-6 w-6 text-primary" />,
+    key: "interviewPatterns",
+  },
+  {
     title: "Machine Learning & AI",
     description: "From gradient descent to attention",
     icon: <Brain className="h-6 w-6 text-secondary-bright" />,
@@ -92,6 +100,9 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
     { title: "Trie", description: "Prefix tree: insert, search, autocomplete", icon: <ListTree />, key: "trie", level: "Medium" },
   ],
+  interviewPatterns: [
+    { title: "Arrays & Hashing", description: "NeetCode 150: Two Sum, anagrams, top K and more", icon: <Hash />, key: "arraysHashing", level: "Easy" },
+  ],
   machineLearning: [
     { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
     { title: "Linear Regression", description: "Fit a line by shrinking the error", icon: <LineChart />, key: "linearRegression", level: "Easy" },
@@ -117,12 +128,14 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
+  | "arraysHashing"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,
   ...visualizations.dataStructures,
+  ...visualizations.interviewPatterns,
   ...visualizations.machineLearning,
 ];
 
@@ -133,6 +146,7 @@ export const allVisualizations: Visualization[] = [
 export const catalogStats: { label: string; value: string }[] = [
   { label: "Algorithms", value: String(visualizations.algorithms.length) },
   { label: "Data Structures", value: String(visualizations.dataStructures.length) },
+  { label: "Interview Patterns", value: String(visualizations.interviewPatterns.length) },
   { label: "ML & AI", value: String(visualizations.machineLearning.length) },
   { label: "Visualizations", value: String(allVisualizations.length) },
 ];

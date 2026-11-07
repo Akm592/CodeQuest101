@@ -75,7 +75,7 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.45 }}
-            className="glass mx-auto mt-16 grid max-w-3xl grid-cols-2 divide-white/10 rounded-3xl md:grid-cols-4 md:divide-x"
+            className="glass mx-auto mt-16 grid max-w-4xl grid-cols-2 divide-white/10 rounded-3xl sm:grid-cols-3 md:grid-cols-5 md:divide-x"
           >
             {catalogStats.map((stat) => (
               <div key={stat.label} className="flex flex-col-reverse items-center px-4 py-5">

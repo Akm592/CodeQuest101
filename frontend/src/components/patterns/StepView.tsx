@@ -1,0 +1,117 @@
+// Draws one PatternStep: array rows, a hash map, an optional grid, and the
+// variables. Every pattern page uses this, so problems only produce data.
+
+import * as React from "react";
+
+import type { VizTone } from "../../lib/guides/types";
+import type { PCell, PatternStep } from "../../lib/patterns/types";
+import { cn } from "../../lib/utils";
+import { Surface } from "../ui/surface";
+
+// Literal class names so Tailwind sees them.
+const CELL: Record<VizTone, string> = {
+  current: "border-viz-current bg-viz-current/25 text-foreground",
+  compare: "border-viz-compare/70 bg-viz-compare/15 text-foreground",
+  swap: "border-viz-swap bg-viz-swap/30 text-foreground",
+  visited: "border-viz-visited/70 bg-viz-visited/20 text-foreground",
+  found: "border-viz-found bg-viz-found/25 text-foreground",
+  pointer: "border-viz-pointer bg-viz-pointer/20 text-foreground",
+  idle: "border-white/10 bg-white/[0.03] text-muted-foreground",
+};
+const TEXT: Record<VizTone, string> = {
+  current: "text-viz-current",
+  compare: "text-viz-compare",
+  swap: "text-destructive-bright",
+  visited: "text-viz-visited",
+  found: "text-viz-found",
+  pointer: "text-viz-pointer",
+  idle: "text-muted-foreground",
+};
+
+const Box: React.FC<{ cell: PCell; small?: boolean }> = ({ cell, small }) => (
+  <div className="flex flex-col items-center gap-0.5">
+    <div
+      className={cn(
+        "grid place-items-center rounded-lg border font-mono tabular-nums transition-colors duration-200",
+        small ? "h-8 w-8 text-sm" : "h-10 min-w-10 px-1.5 text-sm",
+        cell.tone ? CELL[cell.tone] : "border-white/10 bg-white/[0.04] text-foreground",
+      )}
+    >
+      {cell.v}
+    </div>
+    {!small && <span className="h-3.5 font-mono text-[10px] leading-none text-muted-foreground">{cell.tag ?? ""}</span>}
+  </div>
+);
+
+const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
+  <div className="space-y-4">
+    {step.rows.map((r, i) => (
+      <div key={`${r.label}-${i}`} className="min-w-0">
+        <p className="mb-1.5 font-mono text-xs text-muted-foreground">{r.label}</p>
+        <div className="overflow-x-auto pb-1">
+          <div className="flex w-max gap-1">
+            {r.cells.length ? r.cells.map((c, j) => <Box key={j} cell={c} />) : <span className="text-sm text-muted-foreground">(empty)</span>}
+          </div>
+        </div>
+      </div>
+    ))}
+
+    {step.grid && (
+      <div className="overflow-x-auto">
+        <div className="grid w-max grid-cols-9 gap-0.5 rounded-xl border border-white/10 p-1">
+          {step.grid.cells.flatMap((line, r) =>
+            line.map((c, j) => (
+              <div key={`${r}-${j}`} className={cn(j % 3 === 2 && j < 8 && "mr-1", r % 3 === 2 && r < 8 && "mb-1")}>
+                <Box cell={c} small />
+              </div>
+            )),
+          )}
+        </div>
+      </div>
+    )}
+
+    {(step.map || step.vars.length > 0) && (
+      <div className="grid gap-3 sm:grid-cols-2">
+        {step.map && (
+          <Surface variant="card" radius="xl" className="min-w-0 p-3">
+            <p className="mb-2 font-mono text-xs text-muted-foreground">{step.map.title}</p>
+            {step.map.entries.length === 0 ? (
+              <p className="text-sm text-muted-foreground">(empty)</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {step.map.entries.map((e) => (
+                  <span
+                    key={e.k}
+                    className={cn(
+                      "inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs",
+                      e.tone ? CELL[e.tone] : "border-white/10 bg-white/[0.04] text-foreground",
+                    )}
+                  >
+                    <span className="font-semibold">{e.k}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="truncate">{e.v}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+          </Surface>
+        )}
+        {step.vars.length > 0 && (
+          <Surface variant="card" radius="xl" className="min-w-0 p-3">
+            <p className="mb-2 font-mono text-xs text-muted-foreground">variables</p>
+            <dl className="space-y-1 font-mono text-sm">
+              {step.vars.map((v) => (
+                <div key={v.name} className="flex flex-wrap gap-x-2">
+                  <dt className="text-muted-foreground">{v.name}</dt>
+                  <dd className={cn("font-semibold", v.tone ? TEXT[v.tone] : "text-foreground")}>{v.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Surface>
+        )}
+      </div>
+    )}
+  </div>
+);
+
+export default StepView;

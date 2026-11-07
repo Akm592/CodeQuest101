@@ -477,6 +477,78 @@ for _ in range(20):
         prev = e
 check("training error never goes up as trees are added (lr <= 1)", ok)
 
+print("\nNeetCode 150: Arrays & Hashing")
+nc = {name: load(f"neetcode/{name}") for name in ["contains_duplicate", "valid_anagram", "two_sum", "group_anagrams", "top_k_frequent", "product_except_self", "valid_sudoku", "encode_decode", "longest_consecutive"]}
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-5, 9) for _ in range(rng.randint(0, 9))]
+    ok &= nc["contains_duplicate"].contains_duplicate(nums) == (len(set(nums)) != len(nums))
+check("contains duplicate matches a set-size check (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abc") for _ in range(rng.randint(0, 6)))
+    t = "".join(rng.choice("abc") for _ in range(rng.randint(0, 6)))
+    ok &= nc["valid_anagram"].is_anagram(s, t) == (sorted(s) == sorted(t))
+check("valid anagram matches comparing sorted strings (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = rng.sample(range(-20, 20), rng.randint(2, 8))
+    i, j = sorted(rng.sample(range(len(nums)), 2))
+    target = nums[i] + nums[j]
+    a, b = nc["two_sum"].two_sum(nums, target)
+    ok &= a < b and nums[a] + nums[b] == target
+check("two sum returns two indices that add to the target (300 cases)", ok)
+ok = True
+for _ in range(200):
+    words = ["".join(rng.choice("abc") for _ in range(rng.randint(0, 3))) for _ in range(rng.randint(0, 7))]
+    got = sorted(sorted(g) for g in nc["group_anagrams"].group_anagrams(words))
+    want = {}
+    for w in words:
+        want.setdefault("".join(sorted(w)), []).append(w)
+    ok &= got == sorted(sorted(g) for g in want.values())
+check("group anagrams matches grouping by sorted word (200 cases)", ok)
+ok = True
+for _ in range(200):
+    vals = rng.sample(range(10), rng.randint(2, 5))
+    freqs = rng.sample(range(1, 7), len(vals))
+    nums = [v for v, f in zip(vals, freqs) for _ in range(f)]
+    rng.shuffle(nums)
+    k = rng.randint(1, len(vals))
+    want = {v for v, f in sorted(zip(vals, freqs), key=lambda x: -x[1])[:k]}
+    ok &= set(nc["top_k_frequent"].top_k_frequent(nums, k)) == want
+check("top k frequent returns the k most common values (200 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-3, 4) for _ in range(rng.randint(1, 7))]
+    want = [math.prod(nums[:i] + nums[i + 1 :]) for i in range(len(nums))]
+    ok &= nc["product_except_self"].product_except_self(nums) == want
+check("product except self matches multiplying the others (300 cases)", ok)
+ok = True
+for _ in range(200):
+    board = [[rng.choice(".........123456789") for _ in range(9)] for _ in range(9)]
+    def brute_valid(b):
+        groups = [[b[r][c] for c in range(9)] for r in range(9)] + [[b[r][c] for r in range(9)] for c in range(9)]
+        groups += [[b[r][c] for r in range(br, br + 3) for c in range(bc, bc + 3)] for br in (0, 3, 6) for bc in (0, 3, 6)]
+        return all(len([d for d in g if d != "."]) == len({d for d in g if d != "."}) for g in groups)
+    ok &= nc["valid_sudoku"].is_valid_sudoku(board) == brute_valid(board)
+check("valid sudoku matches checking all 27 groups (200 boards)", ok)
+ok = True
+for _ in range(300):
+    words = ["".join(rng.choice("a#1 2") for _ in range(rng.randint(0, 12))) for _ in range(rng.randint(0, 5))]
+    ok &= nc["encode_decode"].decode(nc["encode_decode"].encode(words)) == words
+check("decode(encode(words)) == words, with # and digits (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(0, 15) for _ in range(rng.randint(0, 10))]
+    s, best = set(nums), 0
+    for n in s:
+        l = 0
+        while n + l in s:
+            l += 1
+        best = max(best, l)
+    ok &= nc["longest_consecutive"].longest_consecutive(nums) == best
+check("longest consecutive matches counting up from every number (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:
