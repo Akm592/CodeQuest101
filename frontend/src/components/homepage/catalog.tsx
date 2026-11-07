@@ -16,6 +16,7 @@ import {
   GitFork,
   Grid,
   Layers,
+  Layers3,
   LineChart,
   ListTree,
   MailCheck,
@@ -98,6 +99,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Decision Tree", description: "20 questions: Gini, splits and overfitting", icon: <GitFork />, key: "decisionTree", level: "Medium" },
     { title: "Naive Bayes", description: "A spam filter that weighs every word", icon: <MailCheck />, key: "naiveBayes", level: "Easy" },
     { title: "Random Forest", description: "Many trees vote: bootstrap and out-of-bag", icon: <Trees />, key: "randomForest", level: "Medium" },
+    { title: "Gradient Boosting", description: "Each new tree fixes what's still wrong", icon: <Layers3 />, key: "gradientBoosting", level: "Medium" },
     { title: "Neural Network", description: "Watch it train: forward, backprop, update", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
     { title: "Self-Attention", description: "How a transformer links “it” to “cat”", icon: <ScanEye />, key: "attention", level: "Medium" },
     { title: "Next-Token Sampling", description: "Temperature, top-k and top-p, explained", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
@@ -116,7 +118,7 @@ export type VisualizationKey =
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

@@ -12,6 +12,7 @@ import contextlib
 import importlib.util
 import io
 import itertools
+import math
 import random
 import sys
 from functools import lru_cache
@@ -434,6 +435,36 @@ for trial in range(5):
     combined = sum(model.predict(x) == y for x, y in zip(te_x, te_y)) / len(te_y)
     wins += combined > single
 check("the forest beats a single fully grown tree on new noisy points (5 of 5 trials)", wins == 5)
+
+print("\ngradient boosting")
+gb = load("gradient_boosting")
+m = gb.GradientBoosting(n_trees=1, learning_rate=0.5).fit([1, 2, 3, 4, 5], [1, 3, 2, 5, 4])
+check("the page's 5-point example: 2.5 on the left, 3.75 on the right", [round(m.predict(x), 10) for x in [1, 3, 4, 5]] == [2.5, 2.5, 3.75, 3.75])
+ok = True
+for _ in range(40):
+    xs = [rng.uniform(0, 10) for _ in range(rng.randint(5, 30))]
+    ys = [rng.uniform(-3, 3) for _ in xs]
+    t, l, r = gb.fit_stump(xs, ys)
+    def err(t0):
+        L = [y for x, y in zip(xs, ys) if x <= t0]
+        R = [y for x, y in zip(xs, ys) if x > t0]
+        if not L or not R:
+            return float("inf")
+        lm, rm = sum(L) / len(L), sum(R) / len(R)
+        return sum((y - lm) ** 2 for y in L) + sum((y - rm) ** 2 for y in R)
+    ok &= abs(err(t) - min(err(x) for x in xs)) < 1e-9
+check("fit_stump finds the lowest squared error (40 random sets)", ok)
+ok = True
+for _ in range(20):
+    xs = [rng.uniform(0, 10) for _ in range(25)]
+    ys = [math.sin(x) + rng.gauss(0, 0.3) for x in xs]
+    prev = float("inf")
+    for n in range(0, 30, 3):
+        mdl = gb.GradientBoosting(n_trees=n, learning_rate=0.3).fit(xs, ys)
+        e = sum((y - mdl.predict(x)) ** 2 for x, y in zip(xs, ys))
+        ok &= e <= prev + 1e-9
+        prev = e
+check("training error never goes up as trees are added (lr <= 1)", ok)
 
 if failures:
     print(f"\n{len(failures)} check(s) failed:")

@@ -34,6 +34,7 @@ import { buildAttentionSteps, SENTENCES, tokenize } from "../ml/attention";
 import { buildTreeSteps, makeTreeData, TREE_BOUNDS, TREE_DATASETS, type TreeDatasetKey } from "../ml/decisionTree";
 import { GD_DEFAULT_LR, KMEANS_DEFAULT, kMeansPoints, LR_DEFAULT, MLP_DEFAULT, SAMPLING_DEFAULT } from "../ml/demos";
 import { buildGd1dSteps } from "../ml/gd1d";
+import { buildBoostSteps, fitBoost, waveData } from "../ml/gradientBoosting";
 import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
 import { buildKMeansSteps } from "../ml/kMeans";
 import { buildLrSteps, samplePoints } from "../ml/linearRegression";
@@ -47,6 +48,8 @@ import {
   decisionTreeGuide,
   decisionTreeGuideStepFor,
   gd1dGuideStepFor,
+  gradientBoostingGuide,
+  gradientBoostingGuideStepFor,
   gdGuideStepFor,
   gradientDescentGuide,
   kMeansGuide,
@@ -265,6 +268,17 @@ const cases: [string, GuideCase][] = [
         const forest = fitForest(data, { maxDepth: 50, criterion: "gini", classes: TREE_DATASETS[key].classes, bounds: TREE_BOUNDS, trees: 20, maxFeatures: 1, bootstrap: true, seed: 1 });
         return run(buildForestFrames(forest, data.length), randomForestGuideStepFor);
       }),
+      finalStages: ["done"],
+    },
+  ],
+  [
+    "gradient boosting",
+    {
+      guide: gradientBoostingGuide,
+      runs: [
+        [0.1, 2],
+        [1, 4],
+      ].map(([lr, depth]) => run(buildBoostSteps(waveData(1), fitBoost(waveData(1), lr, depth, 30)), gradientBoostingGuideStepFor)),
       finalStages: ["done"],
     },
   ],

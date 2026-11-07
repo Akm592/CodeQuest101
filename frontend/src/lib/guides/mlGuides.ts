@@ -8,6 +8,7 @@ import type { AttentionStep } from "../ml/attention";
 import type { TreeStep } from "../ml/decisionTree";
 import type { Gd1dStep } from "../ml/gd1d";
 import type { GdStep } from "../ml/gradientDescent";
+import type { BoostStep } from "../ml/gradientBoosting";
 import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
 import type { MlpStep } from "../ml/mlp";
@@ -15,6 +16,7 @@ import type { NbStep } from "../ml/naiveBayes";
 import type { ForestStep } from "../ml/randomForest";
 import type { SamplingStep } from "../ml/sampling";
 import decisionTreePy from "./python/decision_tree.py?raw";
+import gradientBoostingPy from "./python/gradient_boosting.py?raw";
 import gradientDescentPy from "./python/gradient_descent.py?raw";
 import kMeansPy from "./python/k_means.py?raw";
 import linearRegressionPy from "./python/linear_regression.py?raw";
@@ -448,3 +450,48 @@ export const randomForestGuide: AlgorithmGuide = {
 
 /** Stage for the forest frames: the first tree, adding trees, the finished forest. */
 export const randomForestGuideStepFor = (s: ForestStep) => (s.k === 1 ? "one" : s.done ? "done" : "add");
+
+export const gradientBoostingGuide: AlgorithmGuide = {
+  title: "Gradient Boosting",
+  whenToUseHeading: ML_HEADING,
+  idea: [
+    "A random forest grows many trees side by side and averages them. Boosting grows them one after another, and each new tree has one job: fix what the trees so far still get wrong.",
+    "It starts with a very simple guess, the average. Then it measures the leftover errors (the residuals: true value minus prediction), fits a small tree to those errors, and adds a little of that tree to the model. Repeat, and the model creeps towards the data, one small correction at a time.",
+    "“Gradient” comes from gradient descent: for squared error, the residual is exactly the downhill direction for each prediction, so each tree is a step downhill. The learning rate shrinks every step, which needs more trees but usually generalises better.",
+  ],
+  whenToUse: [
+    "Tabular data (spreadsheets, databases): scikit-learn calls it “an excellent model” for exactly this. XGBoost, LightGBM, CatBoost and scikit-learn's HistGradientBoosting are the popular tools.",
+    "Regression and classification alike; only the loss, and so the “residual” each tree fits, changes.",
+    "When you can spend a little time tuning the learning rate, tree depth and number of trees.",
+  ],
+  stages: [
+    { id: "start", title: "Start from the average", detail: "The first model predicts the mean of y everywhere.", pseudo: "F₀(x) = mean(y)" },
+    { id: "residuals", title: "Measure what's still wrong", detail: "For every point, the residual is the true value minus the current prediction.", pseudo: "rᵢ = yᵢ − F(xᵢ)" },
+    { id: "fit", title: "Fit a small tree to the residuals", detail: "Not to y: to the errors. The tree learns where the model is too low or too high.", pseudo: "h = small_tree(x, r)" },
+    { id: "add", title: "Add a little of it", detail: "Move the model towards the fix, scaled down by the learning rate.", pseudo: "F ← F + lr · h" },
+    { id: "done", title: "Stop at the right number of trees", detail: "Keep the number of trees where the error on new data was lowest; past that it starts fitting noise.", pseudo: "pick n_trees by validation error" },
+  ],
+  legend: [
+    { tone: "current", label: "The model so far" },
+    { tone: "swap", label: "Residuals (what's still wrong)" },
+    { tone: "compare", label: "The new tree" },
+  ],
+  complexity: {
+    time: "trees × (one small tree's cost)",
+    space: "trees × (one small tree's size)",
+    why: "Each tree is small, but they have to be grown one after another, because each depends on the errors left by all the ones before it.",
+  },
+  pitfalls: [
+    "Too many trees overfit: training error keeps falling towards 0 while error on new data turns back up. Use a validation set (scikit-learn turns on early stopping by default for large datasets).",
+    "A big learning rate with deep trees memorises the data within a few trees. Smaller steps with more trees usually do better.",
+    "Unlike a random forest, the trees can't be grown in parallel, and the result is hard to read.",
+  ],
+  tryThis: [
+    "Set the learning rate to 1 and depth to 4: watch it memorise the points within a few trees.",
+    "With 0.1 and depth 2, find where the error on new points is lowest, then watch it creep up as more trees are added.",
+    "Compare depth 1 (stumps) with depth 3 at the same learning rate.",
+  ],
+  python: gradientBoostingPy,
+};
+
+export const gradientBoostingGuideStepFor = (s: BoostStep) => s.phase;
