@@ -12,17 +12,21 @@ def softmax(xs):
     return [e / total for e in exps]
 
 
-def self_attention(X, Wq, Wk, Wv):
-    """Scaled dot-product self-attention.
+def self_attention(X, Wq, Wk, Wv, causal=False):
+    """Scaled dot-product self-attention: softmax(Q K^T / sqrt(d_k)) V.
 
+    From "Attention Is All You Need" (Vaswani et al., 2017), Equation (1).
     X: one row per word (its embedding). Returns (outputs, weights), where
-    weights[i][j] is how much word i attends to word j.
+    weights[i][j] is how much word i attends to word j. With causal=True,
+    word i can't see later words (their scores become -infinity).
     """
     Q, K, V = matmul(X, Wq), matmul(X, Wk), matmul(X, Wv)
     d = len(K[0])
     weights = []
-    for q in Q:
+    for i, q in enumerate(Q):
         scores = [sum(a * b for a, b in zip(q, k)) / math.sqrt(d) for k in K]
+        if causal:
+            scores = [s if j <= i else -math.inf for j, s in enumerate(scores)]
         weights.append(softmax(scores))
     outputs = matmul(weights, V)
     return outputs, weights

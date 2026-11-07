@@ -10,6 +10,24 @@ import VisualizerControls from "../Visualizer/VisualizerControls";
 import { attentionFigures } from "./figures/languageFigures";
 import { C } from "./colors";
 import { ConceptFigures, Segmented } from "./shared";
+import AttnExtras from "./attn/AttnExtras";
+import AttnMath from "./attn/AttnMath";
+import QkvExplain from "./attn/QkvExplain";
+import ScaleDemo from "./attn/ScaleDemo";
+import { SectionTitle } from "./mathBlocks";
+
+const JUMPS = [
+  ["#attn-watch-title", "Watch it"],
+  ["#attn-qkv-title", "Q, K, V"],
+  ["#attn-math-title", "The maths"],
+  ["#attn-scale-title", "Why √d_k"],
+  ["#attn-mask-title", "Masking"],
+  ["#attn-heads-title", "Multi-head"],
+  ["#attn-order-title", "Word order"],
+  ["#attn-cost-title", "Cost"],
+  ["#attn-cite-title", "The paper"],
+  ["#attn-guide", "Guide & code"],
+] as const;
 
 const ORDER: AttentionStep["phase"][] = ["embed", "query", "keys", "scores", "scale", "softmax", "blend"];
 const f2 = (v: number) => (Math.abs(v) < 0.005 ? "0" : v.toFixed(2));
@@ -53,9 +71,24 @@ const AttentionVisualizer: React.FC = () => {
   const chipW = 100 / tokens.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
+      <nav aria-label="On this page" className="flex flex-wrap gap-2 text-sm">
+        {JUMPS.map(([href, label]) => (
+          <a key={href} href={href} className="glass-pill glass-hover px-3.5 py-1.5 text-foreground">
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <ConceptFigures figures={attentionFigures} />
 
+      <section aria-labelledby="attn-watch-title" className="space-y-6">
+      <SectionTitle id="attn-watch-title" kicker="Step through it" title="Watch one word attend">
+        <p>
+          Pick a word and step through how it scores every other word, turns the scores into shares, and blends their values. This toy has five named
+          features and a hand-set W_Q; to keep it readable, W_K and W_V are the identity, so each key and value is just the word's features.
+        </p>
+      </SectionTitle>
       <Surface variant="card" radius="2xl" className="space-y-4 p-4 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Segmented
@@ -232,7 +265,16 @@ const AttentionVisualizer: React.FC = () => {
         </p>
       </Surface>
 
-      <AlgorithmGuidePanel guide={attentionGuide} activeStageId={step ? attentionGuideStepFor(step) : null} />
+      </section>
+
+      <QkvExplain />
+      <AttnMath />
+      <ScaleDemo />
+      <AttnExtras />
+
+      <div id="attn-guide" className="scroll-mt-20">
+        <AlgorithmGuidePanel guide={attentionGuide} activeStageId={step ? attentionGuideStepFor(step) : null} />
+      </div>
     </div>
   );
 };

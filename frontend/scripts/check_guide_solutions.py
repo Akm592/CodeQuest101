@@ -300,6 +300,12 @@ eye = [[1 if i == j else 0 for j in range(3)] for i in range(3)]
 out, w = sa.self_attention(rows, eye, eye, eye)
 manual = [sum(w[0][j] * rows[j][f] for j in range(4)) for f in range(3)]
 check("output is the weights times the values", all(abs(a - b) < 1e-12 for a, b in zip(out[0], manual)))
+_, wm = sa.self_attention(sa.X, sa.Wq, sa.I, sa.I, causal=True)
+check("causal mask: no word attends to a later word", all(wm[i][j] == 0 for i in range(len(wm)) for j in range(i + 1, len(wm))))
+check("causal mask: rows still sum to 1", all(abs(sum(r) - 1) < 1e-12 for r in wm))
+hx = [[1, 0, 0], [0, 1, 0], [1, 0, 1]]
+_, hw = sa.self_attention(hx, [[0, 2], [2, 0], [0, 0]], [[1, 0], [0, 1], [0, 0]], [[1, 0], [0, 1], [0, 1]])
+check("the page's cats/chase/mice example: cats gives 0.6728 to chase", abs(hw[0][1] - 0.6728) < 1e-4)
 
 print("\nnext-token sampling")
 smp = load("sampling")

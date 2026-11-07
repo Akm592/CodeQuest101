@@ -177,7 +177,7 @@ export const attentionGuide: AlgorithmGuide = {
   idea: [
     "In “The cat sat on the mat because it was tired”, you know “it” means the cat. A language model has to work that out too. Self-attention is how each word looks at the other words and pulls in the ones that matter for its meaning.",
     "Every word makes three vectors from its embedding. A query: what am I looking for? A key: what can I be found by? A value: what do I pass on if chosen? A word compares its query with every key; a good match gives a high score.",
-    "Softmax turns the scores into shares that add up to 100%, and the word's new meaning is the values blended by those shares. Transformers (GPT, Claude, BERT) stack many of these layers, each with several attention “heads” running side by side.",
+    "Softmax turns the scores into shares that add up to 100%, and the word's new meaning is the values blended by those shares. Transformers (GPT, Claude, BERT) stack many of these layers, each with several attention “heads” running side by side. The recipe comes from “Attention Is All You Need” (Vaswani et al., NIPS 2017): Attention(Q, K, V) = softmax(QKᵀ / √d_k) V.",
     "The numbers on this page are a toy: each word has five named features and the query matrix is set by hand, so you can follow the arithmetic. A real model learns hundreds of unnamed dimensions, but the computation is the same.",
   ],
   whenToUse: [
@@ -207,13 +207,16 @@ export const attentionGuide: AlgorithmGuide = {
   },
   pitfalls: [
     "Attention weights show where a word looked, not why the model made its final prediction. Treat attention maps as hints.",
-    "Forgetting the √d scaling makes softmax nearly one-hot early in training, and gradients vanish.",
+    "Forgetting the √d_k scaling: with long keys the scores spread out by about √d_k, softmax piles nearly all the weight on one word, and its gradient shrinks towards zero (measured on this page).",
+    "Decoders (GPT-style models) must mask future words by setting their scores to −∞ before softmax; forgetting it lets the model cheat by reading the answer.",
     "Self-attention on its own ignores word order. Real models add position information to the embeddings first.",
   ],
   tryThis: [
     "Click “it” in each sentence: in the first it picks “cat” over “mat”, in the second “book” over “Maya”.",
     "Click a verb like “sat”: it looks for whoever is doing it.",
     "Click “the”: in this toy, small words have no features, so they spread attention evenly.",
+    "In “Why divide by √d_k?”, pick d_k = 512 and compare the two bar charts.",
+    "In “Masking”, switch the mask on and off and watch the top-right triangle.",
   ],
   python: selfAttentionPy,
 };
