@@ -631,6 +631,89 @@ for _ in range(300):
     ok &= sw["sliding_window_max"].max_sliding_window(nums, k) == [max(nums[i : i + k]) for i in range(len(nums) - k + 1)]
 check("sliding window maximum matches max() of every window (300 cases)", ok)
 
+print("\nNeetCode 150: Stack")
+st = {name: load(f"neetcode/{name}") for name in ["valid_parentheses", "min_stack", "eval_rpn", "generate_parentheses", "daily_temperatures", "car_fleet", "largest_rectangle"]}
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("()[]{}") for _ in range(rng.randint(0, 10)))
+    t = s
+    while True:
+        u = t.replace("()", "").replace("[]", "").replace("{}", "")
+        if u == t:
+            break
+        t = u
+    ok &= st["valid_parentheses"].is_valid(s) == (t == "")
+check("valid parentheses matches deleting adjacent pairs until none are left (300 cases)", ok)
+ok = True
+for _ in range(200):
+    ms, ref = st["min_stack"].MinStack(), []
+    for _ in range(20):
+        if not ref or rng.random() < 0.5:
+            v = rng.randint(-9, 9)
+            ms.push(v)
+            ref.append(v)
+        elif rng.random() < 0.3:
+            ms.pop()
+            ref.pop()
+        else:
+            ok &= ms.top() == ref[-1] and ms.getMin() == min(ref)
+check("min stack's top and getMin match a plain list (200 runs)", ok)
+ok = True
+for _ in range(300):
+    def expr(d):
+        if d == 0 or rng.random() < 0.3:
+            v = rng.randint(-9, 9)
+            return [str(v)], v
+        (lt, lv), (rt, rv) = expr(d - 1), expr(d - 1)
+        op = rng.choice("+-*/")
+        if op == "/" and rv == 0:
+            op = "+"
+        # Reference maths with fractions, truncated towards zero at each division.
+        from fractions import Fraction
+        v = {"+": lv + rv, "-": lv - rv, "*": lv * rv}.get(op)
+        if op == "/":
+            q = Fraction(lv, rv)
+            v = int(q) if q >= 0 else -int(-q)
+        return lt + rt + [op], v
+    tokens, want = expr(4)
+    ok &= st["eval_rpn"].eval_rpn(tokens) == want
+check("RPN matches evaluating the expression tree, dividing towards zero (300 cases)", ok)
+ok = True
+for n in range(1, 8):
+    def valid(s):
+        d = 0
+        for c in s:
+            d += 1 if c == "(" else -1
+            if d < 0:
+                return False
+        return d == 0
+    want = sorted("".join(p) for p in itertools.product("()", repeat=2 * n) if valid(p))
+    ok &= sorted(st["generate_parentheses"].generate_parenthesis(n)) == want
+check("generate parentheses matches filtering all 2^(2n) strings, n = 1..7", ok)
+ok = True
+for _ in range(300):
+    t = [rng.randint(60, 75) for _ in range(rng.randint(0, 12))]
+    want = [next((j - i for j in range(i + 1, len(t)) if t[j] > t[i]), 0) for i in range(len(t))]
+    ok &= st["daily_temperatures"].daily_temperatures(t) == want
+check("daily temperatures matches scanning forward from each day (300 cases)", ok)
+ok = True
+for _ in range(300):
+    target = rng.randint(10, 30)
+    pos = rng.sample(range(target), rng.randint(1, 8))
+    spd = [rng.randint(1, 6) for _ in pos]
+    # Simulate in exact time steps: a car leads a fleet if it is slower to arrive than every car ahead.
+    from fractions import Fraction
+    times = {p: Fraction(target - p, s) for p, s in zip(pos, spd)}
+    want = sum(1 for p in pos if all(times[p] > times[q] for q in pos if q > p))
+    ok &= st["car_fleet"].car_fleet(target, pos, spd) == want
+check("car fleet matches counting cars slower than every car ahead (300 cases)", ok)
+ok = True
+for _ in range(300):
+    h = [rng.randint(0, 8) for _ in range(rng.randint(0, 12))]
+    want = max([0] + [min(h[i : j + 1]) * (j - i + 1) for i in range(len(h)) for j in range(i, len(h))])
+    ok &= st["largest_rectangle"].largest_rectangle_area(h) == want
+check("largest rectangle matches trying every range of bars (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

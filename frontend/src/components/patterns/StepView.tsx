@@ -41,7 +41,9 @@ const FILL: Record<VizTone, string> = {
 
 /** Bar heights with optional water on top and a container box, for wall/water problems. */
 const Bars: React.FC<{ bars: NonNullable<PatternStep["bars"]> }> = ({ bars }) => {
-  const { values, tones = {}, tags = {}, water, box } = bars;
+  const { tones = {}, tags = {}, water, box, rect, floor = 0 } = bars;
+  const labels = bars.values;
+  const values = labels.map((v) => v - floor);
   const n = values.length;
   const slot = 34;
   const top = Math.max(1, ...values.map((v, i) => v + (water?.[i] ?? 0)), box?.level ?? 0);
@@ -51,7 +53,7 @@ const Bars: React.FC<{ bars: NonNullable<PatternStep["bars"]> }> = ({ bars }) =>
   const y = (v: number) => H - v * unit;
   return (
     <div className="overflow-x-auto pb-1">
-      <svg viewBox={`0 0 ${W} ${H + 30}`} style={{ width: Math.max(W, 240), maxWidth: "100%" }} className="block h-auto min-w-[240px]" role="img" aria-label={`Bars with heights ${values.join(", ")}`}>
+      <svg viewBox={`0 0 ${W} ${H + 30}`} style={{ width: Math.max(W, 240), maxWidth: "100%" }} className="block h-auto min-w-[240px]" role="img" aria-label={`Bars with heights ${labels.join(", ")}`}>
         {box && (
           <rect
             x={4 + box.l * slot + slot / 2}
@@ -65,6 +67,18 @@ const Bars: React.FC<{ bars: NonNullable<PatternStep["bars"]> }> = ({ bars }) =>
             strokeDasharray="4 3"
           />
         )}
+        {rect && rect.h > 0 && (
+          <rect
+            x={4 + rect.l * slot + 1}
+            y={y(rect.h)}
+            width={(rect.r - rect.l + 1) * slot - 2}
+            height={rect.h * unit}
+            fill={FILL[rect.tone ?? "pointer"]}
+            fillOpacity={0.14}
+            stroke={FILL[rect.tone ?? "pointer"]}
+            strokeDasharray="4 3"
+          />
+        )}
         {values.map((v, i) => {
           const x = 4 + i * slot + 4;
           const w = slot - 8;
@@ -73,7 +87,7 @@ const Bars: React.FC<{ bars: NonNullable<PatternStep["bars"]> }> = ({ bars }) =>
             <g key={i}>
               {water && water[i] > 0 && <rect x={x} y={y(v + water[i])} width={w} height={water[i] * unit} fill={C.sky} fillOpacity={0.7} />}
               <rect x={x} y={y(v)} width={w} height={Math.max(0.5, v * unit)} rx={3} fill={tone ? FILL[tone] : C.idle} fillOpacity={tone ? 0.85 : 0.55} />
-              <text x={x + w / 2} y={H + 13} textAnchor="middle" fontSize={11} fill={C.fg}>{v}</text>
+              <text x={x + w / 2} y={H + 13} textAnchor="middle" fontSize={11} fill={C.fg}>{labels[i]}</text>
               <text x={x + w / 2} y={H + 26} textAnchor="middle" fontSize={10} fill={C.muted}>{tags[i] ?? ""}</text>
             </g>
           );

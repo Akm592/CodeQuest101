@@ -4,10 +4,11 @@ import { describe, expect, it } from "vitest";
 
 import { ARRAYS_HASHING } from "./arraysHashing";
 import { SLIDING_WINDOW } from "./slidingWindow";
+import { STACK } from "./stack";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {
@@ -60,6 +61,6 @@ describe.each(ALL)("%s", (_t, p) => {
   it("links and metadata are filled in", () => {
     expect(p.slug).toMatch(/^[a-z0-9-]+$/);
     expect(p.video).toMatch(/^[\w-]{11}$/);
-    expect(p.guide.python).toMatch(/^def /m);
+    expect(p.guide.python).toMatch(/^(def|class) /m);
   });
 });

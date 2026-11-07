@@ -40,6 +40,10 @@ export interface PatternStep extends BaseStep {
     water?: number[];
     /** A container drawn between two bars at a water level. */
     box?: { l: number; r: number; level: number };
+    /** A rectangle covering whole bars l..r up to height h. */
+    rect?: { l: number; r: number; h: number; tone?: VizTone };
+    /** Draw bars from this value instead of 0 (labels still show the real values). */
+    floor?: number;
   };
   vars: { name: string; value: string; tone?: VizTone }[];
   /** Basic operations so far (hash lookups/inserts, array reads/writes). */
