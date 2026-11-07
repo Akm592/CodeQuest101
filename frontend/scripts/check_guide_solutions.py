@@ -549,6 +549,44 @@ for _ in range(300):
     ok &= nc["longest_consecutive"].longest_consecutive(nums) == best
 check("longest consecutive matches counting up from every number (300 cases)", ok)
 
+print("\nNeetCode 150: Two Pointers")
+tp = {name: load(f"neetcode/{name}") for name in ["valid_palindrome", "two_sum_ii", "three_sum", "container_most_water", "trapping_rain_water"]}
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abAB ,.1") for _ in range(rng.randint(0, 10)))
+    if rng.random() < 0.5:
+        s = s + s[::-1]
+    clean = [c.lower() for c in s if c.isalnum()]
+    ok &= tp["valid_palindrome"].is_palindrome(s) == (clean == clean[::-1])
+check("valid palindrome matches comparing the cleaned string with its reverse (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = sorted(rng.sample(range(-15, 30), rng.randint(2, 9)))
+    i, j = sorted(rng.sample(range(len(nums)), 2))
+    target = nums[i] + nums[j]
+    a, b = tp["two_sum_ii"].two_sum_sorted(nums, target)
+    ok &= a < b and nums[a - 1] + nums[b - 1] == target
+check("two sum II returns 1-based positions that add to the target (300 cases)", ok)
+ok = True
+for _ in range(200):
+    nums = [rng.randint(-4, 4) for _ in range(rng.randint(0, 9))]
+    want = sorted({tuple(sorted(t)) for t in itertools.combinations(nums, 3) if sum(t) == 0})
+    got = sorted(tuple(t) for t in tp["three_sum"].three_sum(nums))
+    ok &= got == want
+check("3sum matches checking every triple, with no repeats (200 cases)", ok)
+ok = True
+for _ in range(300):
+    h = [rng.randint(0, 9) for _ in range(rng.randint(2, 12))]
+    want = max(min(h[i], h[j]) * (j - i) for i in range(len(h)) for j in range(i + 1, len(h)))
+    ok &= tp["container_most_water"].max_area(h) == want
+check("container with most water matches trying every pair (300 cases)", ok)
+ok = True
+for _ in range(300):
+    h = [rng.randint(0, 6) for _ in range(rng.randint(0, 14))]
+    want = sum(min(max(h[: i + 1]), max(h[i:])) - h[i] for i in range(len(h)))
+    ok &= tp["trapping_rain_water"].trap(h) == want
+check("trapping rain water matches min(left max, right max) - height per bar (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

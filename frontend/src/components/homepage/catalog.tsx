@@ -6,6 +6,7 @@
 // can never disagree again, and adding a visualizer updates the hero for free.
 
 import {
+  ArrowLeftRight,
   Boxes,
   Brain,
   Code2,
@@ -102,6 +103,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
   ],
   interviewPatterns: [
     { title: "Arrays & Hashing", description: "NeetCode 150: Two Sum, anagrams, top K and more", icon: <Hash />, key: "arraysHashing", level: "Easy" },
+    { title: "Two Pointers", description: "NeetCode 150: palindromes, 3Sum, trapping rain water", icon: <ArrowLeftRight />, key: "twoPointers", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -128,7 +130,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing"
+  | "arraysHashing" | "twoPointers"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 

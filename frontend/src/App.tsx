@@ -29,6 +29,7 @@ import type { VisualizationKey } from "./components/homepage/catalog";
 // visualizers from making the landing page slower.
 const BinarySearchVisualizer = lazy(() => import("./components/BinarySearchVisualizer"));
 const ArraysHashingPage = lazy(() => import("./components/patterns/ArraysHashingPage"));
+const TwoPointersPage = lazy(() => import("./components/patterns/TwoPointersPage"));
 const SortingAlgorithmVisualizer = lazy(() => import("./components/SortingAlgorithmVisualizer"));
 const LinkedListVisualizer = lazy(() => import("./components/LinkedListVisualizer"));
 const LongestSubarraySumKVisualizer = lazy(() => import("./components/LongestSubarraySumKVisualizer"));
@@ -101,6 +102,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   nQueens: { kind: "page", title: "N-Queens Backtracking", Component: NQueensVisualizer },
   trie: { kind: "page", title: "Trie (Prefix Tree)", Component: TrieVisualizer },
   arraysHashing: { kind: "page", title: "Arrays & Hashing", Component: ArraysHashingPage },
+  twoPointers: { kind: "page", title: "Two Pointers", Component: TwoPointersPage },
 };
 
 /** Deliberately plain: the UI checker samples ~1.4s after load, so a fallback

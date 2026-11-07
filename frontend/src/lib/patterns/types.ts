@@ -31,6 +31,16 @@ export interface PatternStep extends BaseStep {
   rows: PRow[];
   map?: { title: string; entries: PEntry[] };
   grid?: { title: string; cells: PCell[][] };
+  /** Bars (heights), for problems about walls and water. */
+  bars?: {
+    values: number[];
+    tones?: Record<number, VizTone | undefined>;
+    tags?: Record<number, string | undefined>;
+    /** Water drawn on top of each bar. */
+    water?: number[];
+    /** A container drawn between two bars at a water level. */
+    box?: { l: number; r: number; level: number };
+  };
   vars: { name: string; value: string; tone?: VizTone }[];
   /** Basic operations so far (hash lookups/inserts, array reads/writes). */
   ops: number;
