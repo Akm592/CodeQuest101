@@ -27,6 +27,23 @@ def fit_line(xs, ys, lr=0.1, epochs=2000, tol=1e-12):
     return slope, intercept
 
 
+def fit_line_exact(xs, ys):
+    """The exact least-squares line in one step (no iterations needed)."""
+    n = len(xs)
+    mx, my = sum(xs) / n, sum(ys) / n
+    slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs)
+    return slope, my - slope * mx
+
+
+def r_squared(xs, ys, slope, intercept):
+    """1 = perfect; 0 = no better than always predicting the mean; below 0 = worse."""
+    my = sum(ys) / len(ys)
+    ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys))
+    ss_tot = sum((y - my) ** 2 for y in ys)
+    return 1 - ss_res / ss_tot
+
+
 xs = [1, 2, 3, 4, 5, 6]
 ys = [1.9, 2.4, 3.1, 3.4, 4.2, 4.4]
 print(fit_line(xs, ys))  # about (0.52, 1.42)
+print(fit_line_exact(xs, ys))  # the same line, exactly

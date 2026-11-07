@@ -4,7 +4,7 @@ import * as React from "react";
 import { useAlgorithmPlayer } from "../../hooks/useAlgorithmPlayer";
 import { linearRegressionGuide, lrGuideStepFor } from "../../lib/guides/mlGuides";
 import { LR_DEFAULT } from "../../lib/ml/demos";
-import { buildLrSteps, leastSquares, samplePoints } from "../../lib/ml/linearRegression";
+import { buildLrSteps, leastSquares, r2, samplePoints } from "../../lib/ml/linearRegression";
 import type { Point } from "../../lib/ml/random";
 import { Button } from "../ui/button";
 import { Surface } from "../ui/surface";
@@ -12,6 +12,9 @@ import AlgorithmGuidePanel from "../Visualizer/AlgorithmGuide";
 import VisualizerControls from "../Visualizer/VisualizerControls";
 import { linearRegressionFigures } from "./figures/regressionFigures";
 import { C } from "./colors";
+import FitExtras from "./lr/FitExtras";
+import LrMath from "./lr/LrMath";
+import { SectionTitle } from "./mathBlocks";
 import { ConceptFigures, LossChart, Plot, Segmented, Stat } from "./shared";
 
 const LR_OPTIONS = [0.02, 0.1, 0.5, 1.05];
@@ -32,9 +35,37 @@ const LinearRegressionVisualizer: React.FC = () => {
   // Keep coordinates finite when a fit diverges; the plot clips the rest.
   const clampY = (v: number) => Math.max(-1000, Math.min(1000, v));
 
+  const canScore = points.length >= 2 && exact !== null;
+  const score = canScore ? r2(points, (x) => step.slope * x + step.intercept) : null;
+
   return (
-    <div className="space-y-6">
-      <ConceptFigures figures={linearRegressionFigures} />
+    <div className="space-y-10">
+      <div className="space-y-6">
+        <ConceptFigures figures={linearRegressionFigures} />
+        <nav aria-label="On this page" className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Jump to:</span>
+          {[
+            ["#lr-fit-title", "Fit a line"],
+            ["#lr-math-title", "The maths"],
+            ["#lr-r2-title", "How good? R²"],
+            ["#lr-outlier-title", "Outliers"],
+            ["#lr-poly-title", "Curves & overfitting"],
+            ["#lr-guide", "Summary"],
+          ].map(([href, label]) => (
+            <a key={href} href={href} className="glass-pill glass-hover px-3.5 py-1.5 text-foreground">
+              {label}
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <section aria-labelledby="lr-fit-title" className="space-y-4">
+      <SectionTitle id="lr-fit-title" kicker="Watch it learn" title="Fit a line with gradient descent">
+        <p>
+          The line starts flat and gradient descent nudges its slope and intercept, step by step, to shrink the error. The dashed line is the
+          exact best answer, worked out in one go by the formula in the maths section; watch descent arrive on it. Click the plot to add points.
+        </p>
+      </SectionTitle>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
         <Surface variant="card" radius="2xl" className="min-w-0 p-3 sm:p-4">
@@ -100,7 +131,7 @@ const LinearRegressionVisualizer: React.FC = () => {
             <Stat label="Step" value={step.iter} />
             <Stat label="Error (MSE)" value={step.mse < 1e5 ? step.mse.toFixed(3) : "huge"} />
             <Stat label="Best possible" value={exact ? `y = ${exact.slope.toFixed(2)}x + ${exact.intercept.toFixed(2)}` : "–"} />
-            <Stat label="Points" value={points.length} />
+            <Stat label="R² (1 is perfect)" value={score === null ? "–" : score < -99 ? "< −99" : score.toFixed(3)} tone={score !== null && score < 0 ? C.redText : undefined} />
           </dl>
           <LossChart values={step.mses} total={Math.max(steps.at(-1)!.mses.length, 2)} log label="Error after each step (log scale)" />
         </Surface>
@@ -152,7 +183,14 @@ const LinearRegressionVisualizer: React.FC = () => {
         </p>
       </Surface>
 
-      <AlgorithmGuidePanel guide={linearRegressionGuide} activeStageId={player.current ? lrGuideStepFor(player.current) : null} />
+      </section>
+
+      <LrMath />
+      <FitExtras />
+
+      <div id="lr-guide" className="scroll-mt-20">
+        <AlgorithmGuidePanel guide={linearRegressionGuide} activeStageId={player.current ? lrGuideStepFor(player.current) : null} />
+      </div>
     </div>
   );
 };

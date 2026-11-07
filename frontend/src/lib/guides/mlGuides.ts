@@ -108,17 +108,19 @@ export const linearRegressionGuide: AlgorithmGuide = {
   complexity: {
     time: "O(steps × n)",
     space: "O(n)",
-    why: "Each step looks at every point once to compute the error and its gradient. The exact formula is O(n) too, but it only exists for linear models; gradient descent works for anything.",
+    why: "Each step looks at every point once to compute the error and its gradient. The exact formula is O(n) for one feature too, but it only exists for models that are linear in their weights (which includes the polynomial curves on this page); gradient descent works for any model.",
   },
   pitfalls: [
-    "Squaring makes outliers loud: one far-off point can drag the whole line towards it. Try clicking a point far from the rest.",
-    "A line can only fit a line. If the points curve, the residuals show a pattern (all positive in the middle, negative at the ends).",
-    "Without scaling x first, the slope and intercept learn at very different speeds. This page standardises x behind the scenes, like real libraries do.",
+    "Squaring makes outliers loud: one far-off point can drag the whole line towards it (see the outlier section).",
+    "A line can only fit a line. If the points curve, the residuals show a pattern; add curved features (x², x³ …), but not too many, or it overfits.",
+    "When training with gradient descent, scale x first, or the slope and intercept learn at very different speeds. This page does that behind the scenes. (scikit-learn's LinearRegression solves for the exact answer directly, so it doesn't need to.)",
+    "A high R² on the training data isn't proof of a good model: a degree-15 curve gets a great training score and can still be wildly wrong on new points.",
   ],
   tryThis: [
     "Click the plot to add points and watch the fitted line move.",
     "Set the learning rate to 0.02 and count the steps, then try 0.5.",
     "Try 1.05: the error explodes, because each step overshoots by more than the last.",
+    "Add the outlier and compare the two lines, then try degree 15 on the curve section with a few different samples.",
   ],
   python: linearRegressionPy,
 };

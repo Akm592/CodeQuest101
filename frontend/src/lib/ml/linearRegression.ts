@@ -1,9 +1,10 @@
 // Linear regression fitted by gradient descent on mean squared error.
 //
-// x is standardised before fitting (z = (x - mean) / std), which is what real
-// code does too: without it the slope and intercept learn at wildly different
-// speeds and the page would need hundreds of iterations. The line is always
-// reported back in the original units.
+// x is standardised before fitting (z = (x - mean) / std), as is usual when
+// training with gradient descent: without it the slope and intercept learn at
+// wildly different speeds. (scikit-learn's LinearRegression doesn't need this:
+// it solves for the exact answer directly.) The line is always reported back
+// in the original units.
 
 import type { BaseStep } from "../algorithms/types";
 import { gaussian, seededRng, type Point } from "./random";
@@ -132,3 +133,21 @@ export function buildLrSteps(points: Point[], lr: number, maxIters = 120): LrSte
   push("done", maxIters, gradient(), `Stopped after ${maxIters} steps at y = ${f2(line.slope)}x + ${f2(line.intercept)}. A larger learning rate would settle sooner.`, true);
   return steps;
 }
+
+// ---------------------------------------------------------------------------
+// How good is a fit? (scikit-learn's definitions)
+
+/** R² = 1 − SS_res / SS_tot. 1 is perfect; predicting the mean scores 0; worse than that is negative. */
+export function r2(points: Point[], predict: (x: number) => number): number {
+  const my = points.reduce((a, p) => a + p.y, 0) / points.length;
+  const ssRes = points.reduce((a, p) => a + (p.y - predict(p.x)) ** 2, 0);
+  const ssTot = points.reduce((a, p) => a + (p.y - my) ** 2, 0);
+  return 1 - ssRes / ssTot;
+}
+
+export function mae(points: Point[], predict: (x: number) => number): number {
+  return points.reduce((a, p) => a + Math.abs(p.y - predict(p.x)), 0) / points.length;
+}
+
+/** The 5-point example worked by hand in the maths section. */
+export const HAND_POINTS: Point[] = [2, 4, 5, 4, 5].map((y, i) => ({ x: i + 1, y }));

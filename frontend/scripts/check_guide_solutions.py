@@ -268,6 +268,11 @@ for _ in range(100):
     got = lr_mod.fit_line(xs, ys)
     ok &= abs(got[0] - slope) < 1e-4 and abs(got[1] - (my - slope * mx)) < 1e-3
 check("matches the closed-form least-squares line (100 random sets)", ok)
+slope, intercept = lr_mod.fit_line_exact([1, 2, 3, 4, 5], [2, 4, 5, 4, 5])
+check("the page's 5-point example: slope 0.6, intercept 2.2", abs(slope - 0.6) < 1e-12 and abs(intercept - 2.2) < 1e-12)
+check("R² of that line is 0.6", abs(lr_mod.r_squared([1, 2, 3, 4, 5], [2, 4, 5, 4, 5], slope, intercept) - 0.6) < 1e-12)
+ys5 = [2, 4, 5, 4, 5]
+check("R² of always predicting the mean is 0", abs(lr_mod.r_squared([1, 2, 3, 4, 5], ys5, 0, 4) - 0) < 1e-12)
 
 print("\nk-means")
 km = load("k_means")
