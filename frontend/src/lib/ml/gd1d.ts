@@ -66,7 +66,7 @@ export function buildGd1dSteps(start: number, lr: number, maxIters = 30): Gd1dSt
   if (isBouncing) {
     snap("bounce", maxIters, `With a learning rate of exactly ${lr}, every step jumps to the mirror point on the other side, so it bounces between ${f3(history[0].w)} and ${f3(2 * TARGET - history[0].w)} forever.`, true);
   } else {
-    snap("stop", maxIters, `Stopped after ${maxIters} steps at w = ${f3(w)}. A bigger learning rate (still under 1) would get there sooner.`, true);
+    snap("stop", maxIters, `Stopped at the limit of ${maxIters} steps at w = ${f3(w)}. For this quadratic, a learning rate nearer 0.5 settles faster; a rate nearer 1 causes longer-lasting oscillations.`, true);
   }
   return steps;
 }

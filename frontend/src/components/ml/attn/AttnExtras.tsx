@@ -515,7 +515,7 @@ const Uses: React.FC = () => (
         },
         {
           t: "Decoder self-attention",
-          d: "Q, K and V come from the output written so far, with the mask, so each word sees only earlier words.",
+          d: "Q, K and V come from the output written so far, with the mask, so each word sees itself and earlier words.",
         },
         {
           t: "Encoder–decoder attention",

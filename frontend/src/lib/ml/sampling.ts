@@ -79,6 +79,8 @@ export interface Distribution {
   /** Softmax of the temperature-scaled logits, before any filtering. */
   probs: number[];
   keptByK: boolean[];
+  /** Probabilities renormalised after top-k, used to calculate top-p. */
+  afterK: number[];
   keptByP: boolean[];
   /** Renormalised over the words both filters kept. */
   final: number[];
@@ -99,21 +101,24 @@ export function distribution(logits: number[], s: SamplingSettings): Distributio
 
   const keptByK = probs.map(() => s.topK <= 0);
   if (s.topK > 0) order.slice(0, s.topK).forEach((i) => (keptByK[i] = true));
+  const kTotal = probs.reduce((sum, p, i) => sum + (keptByK[i] ? p : 0), 0);
+  const afterK = probs.map((p, i) => keptByK[i] ? p / kTotal : 0);
 
-  // Top-p: the smallest set of most-likely words whose total reaches p.
-  const keptByP = probs.map(() => s.topP >= 1);
+  // Top-p acts on the distribution left by top-k, as in a sequential decoder.
+  const keptByP = keptByK.map((kept) => kept && s.topP >= 1);
   if (s.topP < 1) {
     let cum = 0;
     for (const i of order) {
+      if (!keptByK[i]) continue;
       keptByP[i] = true;
-      cum += probs[i];
+      cum += afterK[i];
       if (cum >= s.topP) break;
     }
   }
 
-  const raw = probs.map((p, i) => (keptByK[i] && keptByP[i] ? p : 0));
+  const raw = afterK.map((p, i) => keptByP[i] ? p : 0);
   const total = raw.reduce((a, b) => a + b, 0);
-  return { scaled, probs, keptByK, keptByP, final: raw.map((p) => p / total) };
+  return { scaled, probs, keptByK, afterK, keptByP, final: raw.map((p) => p / total) };
 }
 
 /** Draw an index from a distribution using a uniform number in [0, 1). */
@@ -165,11 +170,11 @@ export function buildSamplingSteps(prompt: Prompt, s: SamplingSettings, seed: nu
           : "Temperature is 1, so the scores stay as they are.",
     ),
     mk("softmax", `Softmax turns the scores into probabilities that add up to 100%. “${prompt.candidates[top].token}” gets ${pct(dist.probs[top])}.`),
-    mk("topk", s.topK > 0 ? `Top-k = ${s.topK}: keep only the ${s.topK} likeliest words and drop the rest.` : `Top-k is off, so all ${keptK} words stay in.`),
+    mk("topk", s.topK > 0 ? `Top-k = ${s.topK}: keep the ${keptK} likeliest words, drop the rest and rescale the survivors to 100% before top-p.` : `Top-k is off, so all ${keptK} words stay in.`),
     mk(
       "topp",
       s.topP < 1
-        ? `Top-p = ${s.topP}: keep the likeliest words until their total reaches ${pct(s.topP)}. ${dist.keptByP.filter(Boolean).length} word(s) make the cut.`
+        ? `Top-p = ${s.topP}: among the top-k survivors, keep the likeliest words until their rescaled probabilities reach ${pct(s.topP)}. ${dist.keptByP.filter(Boolean).length} word(s) make the cut.`
         : "Top-p is off, so nothing more is dropped.",
     ),
     mk("renormalise", `Rescale what's left so it adds up to 100% again. ${keptBoth} word${keptBoth === 1 ? "" : "s"} can still be picked.`),

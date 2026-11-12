@@ -151,7 +151,7 @@ const RandomForestVisualizer: React.FC = () => {
                 </>
               )}
             </Plot>
-            <p className="mt-2 text-xs text-muted-foreground">Stronger colour means more of the trees agree.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Stronger colour means a higher average probability for the predicted class.</p>
           </Surface>
 
           <div className="flex min-w-0 flex-col gap-4">
@@ -219,9 +219,7 @@ const RandomForestVisualizer: React.FC = () => {
       <section aria-labelledby="rf-curve-title" className="space-y-4">
         <SectionTitle id="rf-curve-title" kicker="More trees, better?" title="How many trees?">
           <p>
-            Accuracy on new points for a forest of 1 to {TREES} trees. It climbs quickly, then levels off. Adding trees doesn't make a forest
-            overfit (Breiman: “Random forests does not overfit. You can run as many trees as you want.”); after the curve flattens, more trees
-            just cost time. The dashed line is a single full tree.
+            Accuracy on new points for a forest of 1 to {TREES} trees. It often improves and then levels off, but accuracy can fluctuate. More trees reduce variation from random tree building; they do not guarantee better accuracy or prevent overfitting. The dashed line is a single full tree.
           </p>
         </SectionTitle>
         <Surface variant="card" radius="2xl" className="p-4 sm:p-5">

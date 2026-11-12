@@ -82,7 +82,7 @@ const OptimizerRace: React.FC = () => {
               })}
             </svg>
           </div>
-          <Segmented label="Surface" value={surfaceKey} onChange={setSurfaceKey} disabled={player.status === "running"} options={RACE_SURFACES.map((s) => ({ value: s, label: SURFACES[s].label }))} />
+          <Segmented label="Surface" value={surfaceKey} onChange={(s) => { setSurfaceKey(s); player.reset(); }} disabled={player.status === "running"} options={RACE_SURFACES.map((s) => ({ value: s, label: SURFACES[s].label }))} />
         </Surface>
 
         <Surface variant="card" radius="2xl" className="flex min-w-0 flex-col gap-2 p-4">
@@ -106,7 +106,7 @@ const OptimizerRace: React.FC = () => {
                   <span className="block font-mono text-[11px] text-muted-foreground">lr {raceLr(surfaceKey, key)}</span>
                 </span>
                 <span className="text-right font-mono text-xs text-foreground">
-                  {runs[key].diverged ? "blew up" : r >= 0 && r <= k ? `bottom @${r}` : "not yet"}
+                  {runs[key].diverged && k >= runs[key].path.length ? "blew up" : r >= 0 && r <= k ? `bottom @${r}` : "not yet"}
                 </span>
               </button>
             );
@@ -166,7 +166,7 @@ const OptimizerRace: React.FC = () => {
             <p className="whitespace-nowrap">x ← x − lr · λ · x   (shrink first)</p>
             <p className="whitespace-nowrap">then the usual Adam step</p>
           </div>
-          <p className="text-xs text-muted-foreground">PyTorch's defaults: lr = 0.001, β₁ = 0.9, β₂ = 0.999, weight decay λ = 0.01. Not shown in the race, because weight decay only matters for real models with many weights.</p>
+          <p className="text-xs text-muted-foreground">PyTorch's defaults: lr = 0.001, β₁ = 0.9, β₂ = 0.999, weight decay λ = 0.01. Not shown in the race because it would add regularisation, changing the objective beyond the displayed loss surface.</p>
         </Surface>
       </div>
       <p className="text-xs text-muted-foreground">

@@ -69,7 +69,7 @@ export const OPT_INFO: Record<OptKey, OptInfo> = {
   rmsprop: {
     label: "RMSProp",
     short: "RMSProp",
-    idea: "AdaGrad's per-weight step sizes, but with a moving average of recent squared slopes instead of an ever-growing total, so it never grinds to a halt.",
+    idea: "AdaGrad's per-weight step sizes, but with a moving average of recent squared slopes instead of an ever-growing total, so old gradients do not keep shrinking its steps indefinitely. Convergence still depends on the problem and settings.",
     rule: ["E ← ρ · E + (1 − ρ) · g²   (moving average)", "x ← x − lr · g / (√E + ε)"],
     defaults: "ρ = 0.9 and a learning rate of 0.001 are the suggested defaults.",
   },

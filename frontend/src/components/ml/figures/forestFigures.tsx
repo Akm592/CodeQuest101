@@ -18,7 +18,7 @@ const MiniTree: FC<{ x: number; y: number; color: string }> = ({ x, y, color }) 
 export const forestFigures: ConceptFigure[] = [
   {
     title: "Ask a crowd, not one person",
-    caption: "One tree makes jumpy mistakes. Many different trees make different mistakes, and averaging their answers cancels much of them out.",
+    caption: "Averaging diverse trees can reduce variance. Here each prediction comes from a pure leaf, so averaging probabilities matches majority voting; mixed leaves can give a different result.",
     art: (
       <Art label="Five small trees each voting teal or violet, combined into one answer">
         <Arrowhead id="ff-a" color={C.muted} />
@@ -71,7 +71,7 @@ export const forestFigures: ConceptFigure[] = [
   },
   {
     title: "Each question looks at only some features",
-    caption: "At every split, a tree may only choose from a random few of the features. That stops every tree from asking the same first question, so the trees really are different.",
+    caption: "At every split, a tree considers a random subset of features. This encourages different trees and less correlated errors, though trees can still choose the same question.",
     art: (
       <Art label="Two trees: one only allowed to ask about x at the top, the other only about y, giving different first cuts">
         {[0, 1].map((k) => {

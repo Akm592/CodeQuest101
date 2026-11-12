@@ -12,7 +12,7 @@ def k_means(points, k, max_rounds=100, seed=0):
     centres = [rng.choice(points)]
     while len(centres) < k:
         weights = [min(dist2(p, c) for c in centres) for p in points]
-        centres.append(rng.choices(points, weights=weights)[0])
+        centres.append(rng.choices(points, weights=weights)[0] if sum(weights) else rng.choice(points))
 
     labels = None
     for _ in range(max_rounds):

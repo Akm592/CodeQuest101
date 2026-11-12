@@ -6,6 +6,7 @@ import { Art, Arrowhead, type ConceptFigure } from "../shared";
 const PTS: [number, number][] = [
   [20, 100], [45, 80], [70, 60], [95, 70], [120, 40], [145, 50], [170, 30], [195, 45], [220, 25],
 ];
+const BASE = PTS.reduce((sum, [, y]) => sum + y, 0) / PTS.length;
 
 export const boostFigures: ConceptFigure[] = [
   {
@@ -40,11 +41,11 @@ export const boostFigures: ConceptFigure[] = [
     caption: "Start with a flat guess. The gaps between the guess and the points (residuals, in red) are what's still wrong. The next tree is trained on those gaps.",
     art: (
       <Art label="Points around a rising curve, a flat guess line, and red residual bars from the line to each point">
-        <line x1={10} y1={62} x2={232} y2={62} stroke={C.teal} strokeWidth={2.5} />
+        <line x1={10} y1={BASE} x2={232} y2={BASE} stroke={C.teal} strokeWidth={2.5} />
         <text x={10} y={18} fontSize={10} fill={C.teal}>teal line: first guess, the average</text>
         {PTS.map(([x, y], i) => (
           <g key={i}>
-            <line x1={x} y1={62} x2={x} y2={y} stroke={C.red} strokeWidth={2} />
+            <line x1={x} y1={BASE} x2={x} y2={y} stroke={C.red} strokeWidth={2} />
             <circle cx={x} cy={y} r={4} fill={C.fg} />
           </g>
         ))}
@@ -53,8 +54,8 @@ export const boostFigures: ConceptFigure[] = [
     ),
   },
   {
-    title: "Small steps beat big jumps",
-    caption: "Each tree is added at only a fraction of its size (the learning rate). Small steps need more trees but follow the real pattern instead of the noise.",
+    title: "Shrink each tree's correction",
+    caption: "The learning rate scales each tree's contribution. Smaller rates usually need more trees and can improve generalisation; validation data is still needed to choose when to stop. These paths are schematic, not measured training trajectories.",
     art: (
       <Art label="Two paths towards a target: one jumping and overshooting, one approaching in small steps">
         <Arrowhead id="bo-b" color={C.green} />
@@ -63,7 +64,7 @@ export const boostFigures: ConceptFigure[] = [
         <circle cx={200} cy={75} r={3} fill={C.fg} />
         <text x={200} y={100} textAnchor="middle" fontSize={9} fill={C.muted}>the pattern</text>
         <path d="M20,46 L228,92 L176,52 L214,86" fill="none" stroke={C.red} strokeWidth={2} strokeDasharray="5 3" markerEnd="url(#bo-c)" />
-        <text x={20} y={34} fontSize={10} fill={C.red}>learning rate 1: big jumps, overshooting</text>
+        <text x={20} y={34} fontSize={10} fill={C.red}>learning rate 1: full corrections</text>
         {[20, 50, 80, 110, 135, 155, 170, 182, 190].map((x, i, a) => (i < a.length - 1 ? <line key={x} x1={x} y1={110 - i * 4} x2={a[i + 1]} y2={110 - (i + 1) * 4} stroke={C.green} strokeWidth={2} markerEnd={i === a.length - 2 ? "url(#bo-b)" : undefined} /> : null))}
         {[20, 50, 80, 110, 135, 155, 170, 182].map((x, i) => (
           <circle key={x} cx={x} cy={110 - i * 4} r={2.5} fill={C.green} />

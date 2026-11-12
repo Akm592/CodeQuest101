@@ -117,8 +117,8 @@ const GdMath: React.FC = () => {
             </tbody>
           </table>
           <p className="pt-1 text-muted-foreground">
-            So for this curve, any η between 0 and 1 works and anything above 1 fails. For any bowl-shaped curve like this one, the limit is
-            2 ÷ (how sharply it bends, its second derivative). This curve bends by 2, so the limit is 1; a steeper bowl has a smaller limit.
+            So for this curve, any η strictly between 0 and 1 converges from a non-optimal start, while η above 1 diverges. For a one-dimensional quadratic bowl,
+            the upper limit is 2 ÷ its constant second derivative. This curve bends by 2, so the limit is 1; a steeper quadratic has a smaller limit.
           </p>
         </Step>
 

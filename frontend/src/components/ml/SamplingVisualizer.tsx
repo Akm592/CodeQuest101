@@ -75,16 +75,20 @@ const SamplingVisualizer: React.FC = () => {
     } else if (showing === "temperature") {
       value = dist.scaled[i];
       text = dist.scaled[i].toFixed(1);
-    } else if (showing === "softmax" || showing === "topk" || showing === "topp") {
+    } else if (showing === "softmax") {
       value = dist.probs[i];
       text = pct(dist.probs[i]);
+    } else if (showing === "topk" || showing === "topp") {
+      value = kept ? dist.afterK[i] : 0;
+      text = pct(value);
     } else {
       value = dist.final[i];
       text = pct(dist.final[i]);
     }
     return { token: c.token, value, text, kept };
   });
-  const maxBar = Math.max(...bars.map((b) => Math.abs(b.value)), 1e-9);
+  const minBar = Math.min(0, ...bars.map((b) => b.value));
+  const barRange = Math.max(...bars.map((b) => b.value), 0) - minBar || 1;
   const picked = step?.phase === "sample" ? step.picked : undefined;
   const counts = prompt.candidates.map((_, i) => draws.filter((d) => d === i).length);
 
@@ -96,7 +100,7 @@ const SamplingVisualizer: React.FC = () => {
         <Segmented
           label="Prompt"
           value={promptIndex}
-          onChange={(i) => setPromptIndex(i)}
+          onChange={(i) => { setPromptIndex(i); setTopK((k) => Math.min(k, PROMPTS[i].candidates.length)); }}
           disabled={player.status === "running"}
           options={PROMPTS.map((p, i) => ({ value: i, label: p.text.split(" ").slice(0, 3).join(" ") + "…" }))}
         />
@@ -110,16 +114,17 @@ const SamplingVisualizer: React.FC = () => {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="min-w-0">
             <p className="mb-2 text-xs text-muted-foreground">
-              {showing === "logits" ? "Raw scores (logits)" : showing === "temperature" ? `Scores ÷ temperature ${temperature}` : showing === "renormalise" || showing === "sample" ? "Final probabilities" : "Probabilities after softmax"}
+              {showing === "logits" ? "Raw scores (logits)" : showing === "temperature" ? `Scores ÷ temperature ${temperature}` : showing === "topk" ? "After top-k (rescaled)" : showing === "topp" ? "After top-p (before rescaling)" : showing === "renormalise" || showing === "sample" ? "Final probabilities" : "Probabilities after softmax"}
             </p>
             <ul className="space-y-1.5">
               {bars.map((b, i) => (
                 <li key={b.token} className="grid grid-cols-[6.5rem_minmax(0,1fr)_3.5rem] items-center gap-2 text-sm">
                   <span className={cn("truncate font-medium", b.kept ? "text-foreground" : "text-muted-foreground line-through")}>{b.token}</span>
-                  <div className="h-5 overflow-hidden rounded-md bg-white/[0.05]">
+                  <div className="relative h-5 overflow-hidden rounded-md bg-white/[0.05]">
+                    {minBar < 0 && <span className="absolute inset-y-0 border-l border-white/40" style={{ left: `${(-minBar / barRange) * 100}%` }} />}
                     <div
-                      className={cn("h-full rounded-md transition-all duration-300", picked === i ? "bg-viz-found" : b.kept ? "bg-viz-current/80" : "bg-viz-idle/40")}
-                      style={{ width: `${Math.max(0, (b.value / maxBar) * 100)}%` }}
+                      className={cn("absolute h-full rounded-md transition-all duration-300", picked === i ? "bg-viz-found" : b.kept ? "bg-viz-current/80" : "bg-viz-idle/40")}
+                      style={{ left: `${((Math.min(0, b.value) - minBar) / barRange) * 100}%`, width: `${(Math.abs(b.value) / barRange) * 100}%` }}
                     />
                   </div>
                   <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">{b.text}</span>

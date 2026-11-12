@@ -26,7 +26,7 @@ export interface Sample extends Point {
 export type DatasetKey = "xor" | "circle" | "blobs" | "spiral";
 
 export const DATASETS: Record<DatasetKey, { label: string; blurb: string }> = {
-  blobs: { label: "Two groups", blurb: "Separable by one straight line. Even a single neuron could do it." },
+  blobs: { label: "Two groups", blurb: "Two roughly separated groups. A straight line often works well, though random noise can make them overlap." },
   xor: { label: "XOR", blurb: "Opposite corners match. No single straight line works, so it needs a hidden layer." },
   circle: { label: "Circle", blurb: "One class inside, one outside. The network has to learn a closed curve." },
   spiral: { label: "Spiral", blurb: "Two arms wound around each other. Hard: give it more neurons and more time." },
@@ -82,6 +82,8 @@ export interface Forward {
   z: number[];
   /** Each hidden neuron's output, after the activation. */
   hidden: number[];
+  /** Output score before sigmoid, retained for numerically stable cross-entropy. */
+  logit: number;
   out: number;
 }
 
@@ -90,18 +92,15 @@ export function forward(w: Weights, x: number, y: number, act: HiddenActivation 
   const z = w.W1.map(([a, b], h) => a * x + b * y + w.b1[h]);
   const hidden = z.map(f);
   const zOut = hidden.reduce((s, v, h) => s + v * w.W2[h], w.b2);
-  return { z, hidden, out: sigmoid(zOut) };
+  return { z, hidden, logit: zOut, out: sigmoid(zOut) };
 }
 
-const EPS = 1e-9;
-
 export function loss(w: Weights, data: Sample[], act: HiddenActivation = "tanh"): number {
-  return (
-    -data.reduce((s, d) => {
-      const p = forward(w, d.x, d.y, act).out;
-      return s + (d.label ? Math.log(p + EPS) : Math.log(1 - p + EPS));
-    }, 0) / data.length
-  );
+  return data.reduce((s, d) => {
+    const z = forward(w, d.x, d.y, act).logit;
+    const sampleLoss = Math.max(z, 0) - z * d.label + Math.log1p(Math.exp(-Math.abs(z)));
+    return s + sampleLoss;
+  }, 0) / data.length;
 }
 
 export function accuracy(w: Weights, data: Sample[], act: HiddenActivation = "tanh"): number {

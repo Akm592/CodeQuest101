@@ -273,6 +273,8 @@ check("the page's 5-point example: slope 0.6, intercept 2.2", abs(slope - 0.6) <
 check("R² of that line is 0.6", abs(lr_mod.r_squared([1, 2, 3, 4, 5], [2, 4, 5, 4, 5], slope, intercept) - 0.6) < 1e-12)
 ys5 = [2, 4, 5, 4, 5]
 check("R² of always predicting the mean is 0", abs(lr_mod.r_squared([1, 2, 3, 4, 5], ys5, 0, 4) - 0) < 1e-12)
+check("R² is undefined for constant targets", math.isnan(lr_mod.r_squared([1, 3], [4, 4], 0, 4)))
+check("oscillating regression does not falsely converge", lr_mod.fit_line([1, 3], [2, 4], lr=1, epochs=10) == (0, 0))
 
 print("\nk-means")
 km = load("k_means")
@@ -288,6 +290,8 @@ for _ in range(60):
         if members:
             ok &= abs(centres[c][0] - sum(p[0] for p in members) / len(members)) < 1e-9
 check("every point is on its nearest centre, every centre is its points' mean (60 cases)", ok)
+centres, labels = km.k_means([(2, 2)] * 4, 3, seed=0)
+check("k-means++ handles identical points", centres == [(2, 2)] * 3 and labels == [0] * 4)
 
 print("\nself-attention")
 sa = load("self_attention")
@@ -319,6 +323,7 @@ full = smp.next_token_probs(smp.logits)
 check("top-p keeps the smallest set reaching p", sum(full[:len(kept)]) >= 0.95 and sum(full[:len(kept) - 1]) < 0.95)
 draws = [smp.sample_next(smp.logits, rng=rng) for _ in range(20000)]
 check("sampling frequencies match the probabilities", all(abs(draws.count(i) / 20000 - v) < 0.02 for i, v in enumerate(full)))
+check("top-p uses the rescaled top-k distribution", smp.next_token_probs([6.1, 5.6, 5.3, 5.1], top_k=2, top_p=0.5) == [1, 0, 0, 0])
 
 print("\ntiny neural network")
 mlp = load("tiny_mlp")
@@ -351,6 +356,12 @@ def grad_check(net):
 
 for act in mlp.ACTIVATIONS:
     check(f"backprop gradients match finite differences ({act})", grad_check(mlp.TinyMLP(hidden=4, seed=3, activation=act)))
+
+stable_net = mlp.TinyMLP(hidden=1)
+stable_net.W2 = [0]
+for logit, label in ((1000, 0), (-1000, 1)):
+    stable_net.b2 = logit
+    check(f"cross-entropy stays finite and accurate at logit {logit}", stable_net.loss([(0, 0, label)]) == 1000)
 
 xor_net = mlp.TinyMLP(hidden=4, seed=1)
 xor_net.train(mlp.xor)

@@ -196,10 +196,10 @@ const cases: [string, GuideCase][] = [
     "k-means",
     {
       guide: kMeansGuide,
-      runs: (["plusplus", "random"] as const).map((init) =>
+      runs: [...(["plusplus", "random"] as const).map((init) =>
         run(buildKMeansSteps(kMeansPoints(KMEANS_DEFAULT.seed), KMEANS_DEFAULT.k, init, KMEANS_DEFAULT.startSeed), kMeansGuideStepFor),
-      ),
-      finalStages: ["converged"],
+      ), run(buildKMeansSteps(kMeansPoints(KMEANS_DEFAULT.seed), KMEANS_DEFAULT.k, "plusplus", KMEANS_DEFAULT.startSeed, 1), kMeansGuideStepFor)],
+      finalStages: ["converged", "stopped"],
     },
   ],
   [

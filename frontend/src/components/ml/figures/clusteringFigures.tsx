@@ -14,6 +14,10 @@ const GROUPS: [number, number][][] = [
 const COLORS = [C.teal, C.violet, C.amber];
 const mean = (g: [number, number][]) => [g.reduce((a, p) => a + p[0], 0) / g.length, g.reduce((a, p) => a + p[1], 0) / g.length] as const;
 const START: [number, number][] = [[92, 44], [140, 70], [70, 100]];
+const ASSIGNED = START.map((_, ci) => GROUPS.flat().filter(([x, y]) => {
+  const distances = START.map(([cx, cy]) => (cx - x) ** 2 + (cy - y) ** 2);
+  return distances.indexOf(Math.min(...distances)) === ci;
+}));
 
 const Cross: FC<{ x: number; y: number; color: string; dim?: boolean }> = ({ x, y, color, dim }) => (
   <g opacity={dim ? 0.45 : 1}>
@@ -39,13 +43,10 @@ export const kMeansFigures: ConceptFigure[] = [
   },
   {
     title: "Every point joins its nearest centre",
-    caption: "Colour each point by the closest centre. The first pass is rough: a few points land with the wrong group, and the next steps fix that.",
+    caption: "Colour each point by the closest centre. Initial assignments can change as centres move. There are no ground-truth class labels in this clustering objective.",
     art: (
       <Art label="Points coloured by their nearest centre">
-        {GROUPS.flat().map(([x, y], i) => {
-          const d = START.map(([cx, cy]) => (cx - x) ** 2 + (cy - y) ** 2);
-          return <circle key={i} cx={x} cy={y} r={4} fill={COLORS[d.indexOf(Math.min(...d))]} />;
-        })}
+        {ASSIGNED.map((g, ci) => g.map(([x, y], i) => <circle key={`${ci}-${i}`} cx={x} cy={y} r={4} fill={COLORS[ci]} />))}
         {START.map(([x, y], i) => (
           <Cross key={i} x={x} y={y} color={COLORS[i]} />
         ))}
@@ -60,10 +61,9 @@ export const kMeansFigures: ConceptFigure[] = [
         {COLORS.map((c, i) => (
           <Arrowhead key={i} id={`km-move-${i}`} color={c} />
         ))}
-        {GROUPS.map((g, gi) => g.map(([x, y], i) => <circle key={`${gi}-${i}`} cx={x} cy={y} r={4} fill={COLORS[gi]} opacity={0.85} />))}
+        {ASSIGNED.map((g, gi) => g.map(([x, y], i) => <circle key={`${gi}-${i}`} cx={x} cy={y} r={4} fill={COLORS[gi]} opacity={0.85} />))}
         {[0, 1, 2].map((i) => {
-          // Centre i ends in the group it captured most of: 0 → left, 1 → right, 2 → bottom.
-          const [tx, ty] = mean(GROUPS[i]);
+          const [tx, ty] = mean(ASSIGNED[i]);
           const [sx, sy] = START[i];
           return (
             <g key={i}>
@@ -81,7 +81,7 @@ export const kMeansFigures: ConceptFigure[] = [
 export const neuralNetworkFigures: ConceptFigure[] = [
   {
     title: "One neuron: weigh, add, squash",
-    caption: "Multiply each input by a weight, add them up with a bias, then pass the total through an S-shaped activation (tanh).",
+    caption: "Multiply each input by a weight, add them up with a bias, then pass the total through an activation. This sketch uses tanh; other activation choices have different shapes.",
     art: (
       <Art label="Two inputs with weights feeding a sum node, then a tanh curve, then the output">
         <Arrowhead id="nn-a" color={C.muted} />

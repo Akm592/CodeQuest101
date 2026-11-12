@@ -34,7 +34,7 @@ export const gradientDescentGuide: AlgorithmGuide = {
   whenToUseHeading: ML_HEADING,
   idea: [
     "A model learns by adjusting its settings, called weights, to make its mistakes smaller. Picture the mistakes as a hilly landscape: each spot is one choice of weights, and the height is how wrong the model is there. Learning means finding a low spot.",
-    "Imagine standing on that hill in thick fog. You can't see the bottom, but you can feel which way the ground slopes under your feet. So you take a step downhill, feel again, and repeat. That's gradient descent. The slope is called the gradient, and the size of each step is the learning rate.",
+    "Imagine standing on that hill in thick fog. You can't see the bottom, but you can feel which way the ground slopes under your feet. So you step against the gradient, feel again, and repeat. The learning rate multiplies the gradient to set the move; a large move can land uphill.",
     "The learning rate is the one setting that matters most. Too small and you crawl; too big and you jump past the bottom and land higher up the other side, again and again, until you fly off. Improvements like momentum and Adam change how big each step is and which way it points, but the idea stays the same.",
   ],
   whenToUse: [
@@ -46,7 +46,7 @@ export const gradientDescentGuide: AlgorithmGuide = {
     { id: "start", title: "Pick a starting point", detail: "Models start from random weights. Here you can click the map to choose where to drop the ball.", pseudo: "w = initial_guess" },
     { id: "slope", title: "Measure the slope", detail: "The gradient says how fast the loss grows in each direction. The arrow points the way we'll move: straight downhill, against the gradient.", pseudo: "g = grad(loss, w)" },
     { id: "move", title: "Step downhill", detail: "Move by learning rate × gradient. With momentum, add most of the previous move too, so the ball keeps rolling.", pseudo: "w = w - lr * g" },
-    { id: "stop", title: "Stop when it's flat (or out of steps)", detail: "Near a minimum the slope is close to zero, so steps shrink on their own. We stop when they're tiny or we hit the step limit.", pseudo: "if norm(g) < tol: break" },
+    { id: "stop", title: "Stop near a stationary point (or out of steps)", detail: "We stop when the gradient is small or we hit the step limit. A small gradient can occur at a minimum, maximum or saddle; reaching the limit does not prove convergence.", pseudo: "if norm(g) < tol or step limit reached: stop" },
     { id: "diverged", title: "Or: it blew up", detail: "Each step overshot so far that the loss grew instead of shrinking. The fix is a smaller learning rate.", pseudo: "loss → ∞  (lr too big)" },
   ],
   legend: [
@@ -94,10 +94,10 @@ export const linearRegressionGuide: AlgorithmGuide = {
   ],
   stages: [
     { id: "predict", title: "Guess a line", detail: "Start with w = 0 and b = 0, a flat line at zero. Every prediction is wrong, which is fine.", pseudo: "w, b = 0, 0" },
-    { id: "errors", title: "Measure the misses", detail: "Each red gap is a residual: prediction minus actual. Square them and average to get the MSE.", pseudo: "mse = mean((w*x + b - y)²)" },
-    { id: "gradient", title: "Find which way to nudge", detail: "The gradient tells us how the MSE changes as w or b changes. Positive means “decrease it”.", pseudo: "dw = 2·mean(err·x);  db = 2·mean(err)" },
+    { id: "errors", title: "Measure the misses", detail: "Training uses z = (x − mean(x)) / std(x), with prediction w·z + b. Square each prediction error and average. The displayed line is converted back to the original x units.", pseudo: "err = w*z + b - y;  mse = mean(err²)" },
+    { id: "gradient", title: "Find which way to nudge", detail: "These gradients are for the standardised weight w and bias b. A positive derivative means decreasing that parameter lowers the loss locally.", pseudo: "dw = 2·mean(err·z);  db = 2·mean(err)" },
     { id: "update", title: "Nudge and repeat", detail: "Move w and b a learning-rate-sized step against their gradients. The line tilts and lifts into place.", pseudo: "w -= lr*dw;  b -= lr*db" },
-    { id: "done", title: "Settled", detail: "The error stops changing, and the line lands on the exact least-squares answer (dashed).", pseudo: "if Δmse < tol: stop" },
+    { id: "done", title: "Stop and compare with the exact answer", detail: "A small error change together with a small gradient indicates an approximately settled fit. The demo also stops at its step limit, which need not mean convergence.", pseudo: "if (small Δmse and small gradient) or step limit reached: stop" },
     { id: "diverged", title: "Or: it blew up", detail: "Too large a learning rate makes every step overshoot further. Lower it and try again.", pseudo: "mse → ∞  (lr too big)" },
   ],
   legend: [
@@ -133,7 +133,7 @@ export const kMeansGuide: AlgorithmGuide = {
   idea: [
     "K-means splits unlabelled points into k groups, where k is a number you pick. Nobody tells it what the groups are: it finds points that sit close together.",
     "It alternates two simple moves. Assign: every point joins the centre nearest to it. Update: every centre moves to the average position of its points. Then assign again, because some points are now closer to a different centre.",
-    "Each move can only reduce the total squared distance from points to their centres, so it always stops. But where it stops depends on where the centres started, which is why k-means++ spreads the first centres out.",
+    "Assigning to the nearest centre and moving to each cluster's mean do not increase the total squared distance. Repeat until assignments stop changing, or stop at the round limit. The starting centres affect the result; k-means++ favours centres far from those already chosen.",
   ],
   whenToUse: [
     "Customer segments, grouping similar documents, compressing an image's colours to a palette of k.",
@@ -145,6 +145,7 @@ export const kMeansGuide: AlgorithmGuide = {
     { id: "assign", title: "Each point joins its nearest centre", detail: "Measure the distance to every centre and colour the point by the closest one.", pseudo: "label[p] = argmin dist(p, centre)" },
     { id: "update", title: "Move centres to the middle", detail: "Each centre jumps to the mean of the points assigned to it. The arrows show how far it moved.", pseudo: "centre[c] = mean(points in c)" },
     { id: "converged", title: "Stop when nothing changes", detail: "If no point switches cluster, the centres won't move again, so we're done.", pseudo: "if labels unchanged: stop" },
+    { id: "stopped", title: "Or stop at the round limit", detail: "Reaching the maximum number of rounds is a budget limit, not proof that the assignments have settled.", pseudo: "if round limit reached: stop" },
   ],
   legend: [
     { tone: "current", label: "Centre" },
@@ -209,7 +210,7 @@ export const attentionGuide: AlgorithmGuide = {
     "Attention weights show where a word looked, not why the model made its final prediction. Treat attention maps as hints.",
     "Forgetting the √d_k scaling: with long keys the scores spread out by about √d_k, softmax piles nearly all the weight on one word, and its gradient shrinks towards zero (measured on this page).",
     "Decoders (GPT-style models) must mask future words by setting their scores to −∞ before softmax; forgetting it lets the model cheat by reading the answer.",
-    "Self-attention on its own ignores word order. Real models add position information to the embeddings first.",
+    "Unmasked self-attention alone is permutation-equivariant: reordering the inputs reorders the outputs. Models supply position information, for example with positional embeddings or rotations of queries and keys; a causal mask also introduces order constraints.",
   ],
   tryThis: [
     "Click “it” in each sentence: in the first it picks “cat” over “mat”, in the second “book” over “Maya”.",
@@ -229,11 +230,11 @@ export const samplingGuide: AlgorithmGuide = {
   idea: [
     "A language model writes one token (roughly, one word or word-piece) at a time. For each step it gives every token in its vocabulary a score, called a logit. It doesn't “know” the next word: it has a ranking of how likely each one is.",
     "Softmax turns the scores into probabilities. Temperature reshapes them first: below 1 the favourite gets even more likely (focused, repetitive), above 1 the long tail gets a bigger share (varied, sometimes odd).",
-    "Top-k and top-p cut the unlikely tail before picking, so a high temperature can't pick nonsense. Top-k keeps a fixed number of words; top-p keeps however many it takes to cover p of the probability. Then the model rolls the dice over what's left.",
-    "The candidate words and their scores here are written by hand for each prompt; a real model scores tens of thousands of tokens. Everything after the scores works exactly as in real decoders.",
+    "Top-k and top-p remove low-probability choices, but cannot guarantee correct or sensible text. Here top-k is applied first, its survivors are rescaled to 100%, and top-p keeps the smallest highest-probability set reaching p of that distribution. Sampling uses the rescaled final survivors.",
+    "The candidate words and their scores here are written by hand for each prompt. Real models score a much larger vocabulary. This demo uses a common temperature → top-k → top-p pipeline; available settings and their ordering vary between decoders.",
   ],
   whenToUse: [
-    "The temperature, top_k and top_p settings in every LLM API and chat playground.",
+    "Sampling settings such as temperature, top_k and top_p in LLM APIs and chat playgrounds; support varies by model and provider.",
     "Low temperature (0–0.3) for code and facts; around 0.7–1 for writing; higher only for brainstorming.",
     "Interview questions: “why does the same prompt give different answers?”, “what does temperature 0 do?”, “top-k vs top-p?”.",
   ],
@@ -241,8 +242,8 @@ export const samplingGuide: AlgorithmGuide = {
     { id: "logits", title: "Score every candidate", detail: "The model's final layer outputs one raw score per token.", pseudo: "logits = model(prompt)" },
     { id: "temperature", title: "Apply temperature", detail: "Divide every score by T. Small T stretches the gaps, large T squeezes them.", pseudo: "logits = logits / T" },
     { id: "softmax", title: "Softmax to probabilities", detail: "Exponentiate and normalise, so every probability is positive and they add up to 1.", pseudo: "p = exp(logits) / Σ exp(logits)" },
-    { id: "topk", title: "Top-k: keep the k likeliest", detail: "Everything below the k-th word is dropped. Off by default.", pseudo: "keep = top k of p" },
-    { id: "topp", title: "Top-p: keep until the total reaches p", detail: "Take words from most to least likely until their probabilities add up to p. Also called nucleus sampling.", pseudo: "keep = smallest set with Σp ≥ P" },
+    { id: "topk", title: "Top-k: keep the k likeliest", detail: "Drop everything below the k-th word, then rescale the survivors to sum to 1 before top-p. Off by default.", pseudo: "p = renormalise(top k of p)" },
+    { id: "topp", title: "Top-p: keep until the total reaches p", detail: "Among the top-k survivors, take words from most to least likely until their rescaled probabilities reach p. Also called nucleus sampling.", pseudo: "keep = smallest surviving set with Σp ≥ P" },
     { id: "renormalise", title: "Rescale what's left", detail: "Divide the surviving probabilities by their total so they add up to 1 again.", pseudo: "p = p[keep] / Σ p[keep]" },
     { id: "sample", title: "Roll the dice", detail: "Pick one word at random, weighted by its probability. Then append it to the text and do it all again for the next word.", pseudo: "next = random.choice(p)" },
   ],
@@ -257,7 +258,7 @@ export const samplingGuide: AlgorithmGuide = {
     why: "V is the vocabulary size. Softmax is O(V); top-k and top-p need the probabilities in order, which is a sort (or a partial sort for top-k).",
   },
   pitfalls: [
-    "Temperature 0 isn't a real division by zero: APIs treat it as “always take the top word” (greedy decoding).",
+    "Temperature 0 cannot be used in logits/T. Some APIs use it to request greedy decoding; others require a positive temperature or a separate greedy setting. This demo uses positive temperatures.",
     "Greedy decoding tends to loop and repeat itself in longer text. A little randomness usually reads better.",
     "Top-p adapts: when the model is confident it keeps one or two words, when it's unsure it keeps many. Top-k always keeps k, even when only one makes sense.",
   ],
@@ -417,7 +418,7 @@ export const randomForestGuide: AlgorithmGuide = {
   whenToUseHeading: ML_HEADING,
   idea: [
     "One decision tree is jumpy: change the data a little and you get a very different tree. A random forest grows many trees and averages their answers. Their individual mistakes point in different directions, so averaging cancels much of them out, like asking a crowd instead of one person.",
-    "Averaging only helps if the trees disagree. Two tricks make them different. Each tree learns from a bootstrap sample: rows picked at random with replacement, so some rows appear twice and about a third are left out. And at every question, each tree may only look at a random few of the features.",
+    "Averaging reduces variance most when the trees' errors are weakly correlated. Two tricks encourage diversity: bootstrap samples draw rows with replacement, and each split considers a random subset of features. About a third of the rows are left out of each bootstrap sample.",
     "The left-out rows are a free test. Each tree never saw about a third of the data, so you can check the forest on those rows (the out-of-bag estimate) without keeping a separate test set.",
   ],
   whenToUse: [
@@ -441,13 +442,13 @@ export const randomForestGuide: AlgorithmGuide = {
     why: "Each tree is grown exactly like a decision tree, just on a resampled copy of the data, and the trees are independent, so they can be grown in parallel.",
   },
   pitfalls: [
-    "More trees never make it overfit, but they do make it slower: once the accuracy curve flattens, extra trees just cost time.",
+    "Adding trees usually stabilises the forest, but validation accuracy can fluctuate and the forest can still overfit. Extra trees increase runtime and memory; choose depth and other settings using validation data.",
     "The individual trees can still overfit noise; the forest averages that away only partly. Limiting depth or leaf size can still help on very noisy data.",
     "It's much harder to read than a single tree: you can't follow 50 trees by hand. Feature importances help, but scikit-learn warns the default ones favour features with many distinct values.",
   ],
   tryThis: [
     "On “Noisy”, compare one tree with the forest on new points, then watch the forest boundary smooth out as trees are added.",
-    "Look at the four sample trees: each one is different, and none is as good as the average.",
+    "Compare the four sample trees with the forest. Their boundaries differ, and the average often generalises better, though it need not beat every individual tree.",
     "Check that the out-of-bag estimate lands close to the accuracy on new points.",
   ],
   python: randomForestPy,

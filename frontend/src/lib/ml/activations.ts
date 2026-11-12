@@ -61,8 +61,8 @@ export const ACTIVATIONS: Record<ActivationKey, Activation> = {
     good: ["Output reads as a probability, which is why it's used for a yes/no output neuron."],
     bad: [
       "Saturates: for large positive or negative z the curve is flat, so the slope (and the learning signal) is almost 0.",
-      "Its slope is never more than 0.25, so the signal shrinks every time it passes back through a sigmoid layer.",
-      "Outputs are always positive (not centred on 0), which makes training of the next layer zigzag.",
+      "Its derivative is at most 0.25, which can contribute to vanishing gradients; the full gradient also depends on the weights and other layers.",
+      "Outputs are positive rather than centred on 0, which can make optimisation less efficient.",
     ],
     usedIn: "The output neuron of yes/no classifiers (this page's output uses it), and the gates inside LSTMs. Rarely used for hidden layers today.",
   },
@@ -75,7 +75,7 @@ export const ACTIVATIONS: Record<ActivationKey, Activation> = {
     derivative: "tanh′(z) = 1 − tanh²(z)",
     range: "−1 to 1",
     good: [
-      "Centred on 0, so it trains better than sigmoid in hidden layers.",
+      "Its outputs can be positive or negative, which can make optimisation easier than with sigmoid hidden layers, depending on the problem.",
       "It's a stretched sigmoid: tanh(z) = 2σ(2z) − 1, and its slope reaches 1 at z = 0.",
     ],
     bad: ["Still saturates: far from 0 the curve flattens and the slope approaches 0."],
@@ -94,7 +94,7 @@ export const ACTIVATIONS: Record<ActivationKey, Activation> = {
       "Very cheap to compute. It sped up training about 6× over tanh in the well-known AlexNet experiments.",
     ],
     bad: [
-      "“Dying ReLU”: a neuron whose input is always negative outputs 0 and gets a slope of 0, so it stops learning for good.",
+      "“Dying ReLU”: a neuron whose input is always negative outputs 0 and gets a slope of 0, so it receives no learning signal on those inputs. Changes elsewhere in the network or different inputs can sometimes reactivate it.",
       "No derivative at exactly 0. Libraries simply use 0 there.",
     ],
     usedIn: "The default choice for hidden layers in most deep networks, especially image models.",
@@ -108,7 +108,7 @@ export const ACTIVATIONS: Record<ActivationKey, Activation> = {
     derivative: "LeakyReLU′(z) = 1 if z ≥ 0, else 0.01",
     range: "−∞ to ∞",
     good: ["Keeps a small slope (0.01, PyTorch's default) for negative z, so neurons can't die."],
-    bad: ["The 0.01 is an extra choice to make. A variant called PReLU learns it instead."],
+    bad: ["The 0.01 is an extra choice to make. A variant called PReLU learns it instead.", "The derivative is undefined at 0; this demo uses 1 there as its training convention."],
     usedIn: "A drop-in replacement for ReLU when too many neurons die.",
   },
   gelu: {

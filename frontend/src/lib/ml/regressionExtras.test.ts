@@ -16,6 +16,11 @@ describe("the maths section's 5-point example", () => {
 describe("R²", () => {
   const pts = samplePoints(1);
   const mean = pts.reduce((a, p) => a + p.y, 0) / pts.length;
+  it("recognises that R² is undefined for constant target values", () => {
+    const flat = [{ x: 1, y: 4 }, { x: 3, y: 4 }];
+    expect(Number.isNaN(r2(flat, () => 4))).toBe(true);
+    expect(Number.isFinite(r2(flat, () => 0))).toBe(false);
+  });
   it("is 0 for always predicting the mean, 1 for a perfect fit, negative for a bad line", () => {
     expect(r2(pts, () => mean)).toBeCloseTo(0, 12);
     expect(r2(pts.map((p) => ({ x: p.x, y: 2 * p.x })), (x) => 2 * x)).toBe(1);

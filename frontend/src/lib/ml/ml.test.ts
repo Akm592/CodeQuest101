@@ -15,6 +15,24 @@ import { buildSamplingSteps, distribution, drawIndex, PROMPTS, sampleMany } from
 // limits), not against the generators' own arithmetic.
 
 describe("gradient descent", () => {
+  it("does not call a zero-gradient saddle a minimum", () => {
+    const s = SURFACES.saddle;
+    const last = buildGdSteps(s, { lr: 0.1, optimizer: "plain", start: [0, 0] }).at(-1)!;
+    expect(last.loss).toBe(0.25);
+    expect(s.f(0, 1)).toBe(0);
+    expect(last.explanation).toContain("stationary point");
+    expect(last.explanation).not.toContain("bottom of a valley");
+  });
+
+  it("reports the gradient at the displayed position in every frame", () => {
+    for (const optimizer of ["plain", "momentum"] as const) {
+      const s = SURFACES.bowl;
+      for (const frame of buildGdSteps(s, { lr: 0.1, optimizer, start: [-2.4, 1.5] })) {
+        expect(frame.grad).toEqual(s.grad(frame.x, frame.y));
+      }
+    }
+  });
+
   it("reaches the bottom of the bowl with a sensible learning rate", () => {
     const steps = buildGdSteps(SURFACES.bowl, { lr: 0.3, optimizer: "plain", start: SURFACES.bowl.start });
     const last = steps.at(-1)!;
@@ -62,6 +80,24 @@ describe("gradient descent", () => {
 });
 
 describe("linear regression", () => {
+  it("explains that gradients are for standardised parameters", () => {
+    const pts = [{ x: 1, y: 2 }, { x: 3, y: 4 }];
+    const frame = buildLrSteps(pts, 0.1).find((s) => s.phase === "gradient")!;
+    expect(frame.grad).toEqual({ w: -2, b: -6 });
+    const h = 1e-6;
+    const error = (w: number) => pts.reduce((sum, p) => sum + (w * (p.x - 2) - p.y) ** 2, 0) / pts.length;
+    expect(frame.grad.w).toBeCloseTo((error(h) - error(-h)) / (2 * h), 6);
+    expect(frame.explanation).toContain("standardised weight");
+  });
+
+  it("does not mistake an oscillating fit for convergence when the error is unchanged", () => {
+    const pts = [{ x: 1, y: 2 }, { x: 3, y: 4 }];
+    const frames = buildLrSteps(pts, 1, 10);
+    expect(frames.at(-1)!.iter).toBe(10);
+    expect(frames.at(-1)!.mse).toBeCloseTo(frames[0].mse, 12);
+    expect(frames.at(-1)!.explanation).toContain("limit");
+  });
+
   it.each([1, 2, 3, 4, 5])("converges to the least-squares line (seed %i)", (seed) => {
     const pts = samplePoints(seed);
     const steps = buildLrSteps(pts, 0.1);
@@ -86,6 +122,13 @@ describe("linear regression", () => {
 
 describe("k-means", () => {
   const pts = blobs(7, [{ x: 2, y: 2 }, { x: 8, y: 2.5 }, { x: 5, y: 8 }], 15, 0.7);
+
+  it("distinguishes reaching the round limit from convergence", () => {
+    const last = buildKMeansSteps(pts, 3, "plusplus", 3, 1).at(-1)!;
+    expect(last.phase).toBe("stopped");
+    expect(last.done).toBe(true);
+    expect(last.explanation).toContain("does not prove convergence");
+  });
 
   it.each(["random", "plusplus"] as const)("converges, with every point on its nearest centre (%s init)", (init) => {
     const steps = buildKMeansSteps(pts, 3, init, 3);
@@ -144,6 +187,17 @@ describe("self-attention", () => {
 describe("next-token sampling", () => {
   const logits = PROMPTS[1].candidates.map((c) => c.logit);
 
+  it("applies top-p to the rescaled top-k survivors", () => {
+    const d = distribution(logits, { temperature: 1, topK: 2, topP: 0.5 });
+    // The first two logits differ by 0.5: the first holds 1/(1+exp(-0.5)) > 50%.
+    expect(d.afterK[0]).toBeCloseTo(1 / (1 + Math.exp(-0.5)), 12);
+    expect(d.afterK.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
+    expect(d.keptByP.filter(Boolean)).toHaveLength(1);
+    expect(d.final).toEqual([1, ...logits.slice(1).map(() => 0)]);
+    const unfilteredP = distribution(logits, { temperature: 1, topK: 2, topP: 1 });
+    expect(unfilteredP.final).toEqual(unfilteredP.afterK);
+  });
+
   it("sums to 1 after every filter", () => {
     for (const s of [
       { temperature: 1, topK: 0, topP: 1 },
@@ -192,6 +246,17 @@ describe("next-token sampling", () => {
 
 describe("neural network", () => {
   const flatten = (w: Weights) => [...w.W1.flat(), ...w.b1, ...w.W2, w.b2];
+
+  it("keeps cross-entropy and its gradient correct for saturated predictions", () => {
+    const base = { W1: [[0, 0] as [number, number]], b1: [0], W2: [0], b2: 1000 };
+    const data = [{ x: 0, y: 0, label: 0 as const }];
+    expect(loss(base, data)).toBeCloseTo(1000, 10);
+    expect(loss({ ...base, b2: -1000 }, [{ x: 0, y: 0, label: 1 }])).toBeCloseTo(1000, 10);
+    expect(loss(base, [{ x: 0, y: 0, label: 1 }])).toBeGreaterThanOrEqual(0);
+    const h = 1e-3;
+    const numeric = (loss({ ...base, b2: 1000 + h }, data) - loss({ ...base, b2: 1000 - h }, data)) / (2 * h);
+    expect(gradients(base, data).b2).toBeCloseTo(numeric, 8);
+  });
 
   it("computes gradients that match finite differences", () => {
     const data = makeDataset("xor", 1, 40);

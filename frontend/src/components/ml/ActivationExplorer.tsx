@@ -29,11 +29,12 @@ const ActivationExplorer: React.FC = () => {
   const a = ACTIVATIONS[key];
   const fz = a.f(z);
   const dz = a.df(z);
+  const yMax = Math.max(1.5, Math.ceil(a.f(Z)));
   const c = collapseExample();
   const sigmoidChain = Array.from({ length: 10 }, (_, i) => 0.25 ** (i + 1));
 
   const path = (pts: readonly (readonly [number, number])[], s: { x: (v: number) => number; y: (v: number) => number }) =>
-    pts.map(([zz, v], i) => `${i ? "L" : "M"}${s.x(zz).toFixed(1)},${s.y(Math.max(-3, Math.min(6, v))).toFixed(1)}`).join(" ");
+    pts.map(([zz, v], i) => `${i ? "L" : "M"}${s.x(zz).toFixed(1)},${s.y(v).toFixed(1)}`).join(" ");
 
   return (
     <section aria-labelledby="activations-title" className="space-y-4">
@@ -49,15 +50,15 @@ const ActivationExplorer: React.FC = () => {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Surface variant="card" radius="2xl" className="min-w-0 space-y-4 p-4 sm:p-5">
           <Segmented label="Function" value={key} onChange={setKey} options={ACTIVATION_ORDER.map((k) => ({ value: k, label: ACTIVATIONS[k].label }))} />
-          <Plot xDomain={[-Z, Z]} yDomain={[-1.5, 3]} width={480} height={300} ticks={[-4, -2, 0, 2, 4]} yTicks={[-1, 0, 1, 2, 3]} label={`${a.label} and its slope`}>
+          <Plot xDomain={[-Z, Z]} yDomain={[-1.5, yMax]} width={480} height={300} ticks={[-4, -2, 0, 2, 4]} yTicks={Array.from({ length: Math.floor(yMax) + 2 }, (_, i) => i - 1)} label={`${a.label} and its slope`}>
             {(s) => (
               <>
                 <line x1={s.x(-Z)} x2={s.x(Z)} y1={s.y(0)} y2={s.y(0)} stroke={C.muted} strokeWidth={0.8} />
-                <line x1={s.x(0)} x2={s.x(0)} y1={s.y(-1.5)} y2={s.y(3)} stroke={C.muted} strokeWidth={0.8} />
+                <line x1={s.x(0)} x2={s.x(0)} y1={s.y(-1.5)} y2={s.y(yMax)} stroke={C.muted} strokeWidth={0.8} />
                 <path d={path(curve(a.df), s)} fill="none" stroke={C.amber} strokeWidth={2} strokeDasharray="6 4" />
                 <path d={path(curve(a.f), s)} fill="none" stroke={C.teal} strokeWidth={2.8} />
-                <line x1={s.x(z)} x2={s.x(z)} y1={s.y(-1.5)} y2={s.y(3)} stroke={C.fg} strokeOpacity={0.25} />
-                <circle cx={s.x(z)} cy={s.y(Math.min(3, fz))} r={6} fill={C.teal} stroke="hsl(var(--background))" strokeWidth={2} />
+                <line x1={s.x(z)} x2={s.x(z)} y1={s.y(-1.5)} y2={s.y(yMax)} stroke={C.fg} strokeOpacity={0.25} />
+                <circle cx={s.x(z)} cy={s.y(fz)} r={6} fill={C.teal} stroke="hsl(var(--background))" strokeWidth={2} />
                 <circle cx={s.x(z)} cy={s.y(dz)} r={5} fill={C.amber} stroke="hsl(var(--background))" strokeWidth={2} />
               </>
             )}

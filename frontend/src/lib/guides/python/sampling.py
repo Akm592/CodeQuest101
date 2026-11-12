@@ -17,11 +17,14 @@ def next_token_probs(logits, temperature=1.0, top_k=0, top_p=1.0):
     keep = set(order)
     if top_k > 0:
         keep &= set(order[:top_k])
+    k_total = sum(probs[i] for i in keep)
     if top_p < 1.0:
         nucleus, cum = set(), 0.0
         for i in order:
+            if i not in keep:
+                continue
             nucleus.add(i)
-            cum += probs[i]
+            cum += probs[i] / k_total
             if cum >= top_p:
                 break
         keep &= nucleus

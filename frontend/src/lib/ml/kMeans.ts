@@ -11,7 +11,7 @@ import { seededRng, type Point } from "./random";
 export type KMeansInit = "random" | "plusplus";
 
 export interface KMeansStep extends BaseStep {
-  phase: "init" | "assign" | "update" | "converged";
+  phase: "init" | "assign" | "update" | "converged" | "stopped";
   iter: number;
   centroids: Point[];
   /** Where each centre was before this update, for drawing its move. */
@@ -159,13 +159,13 @@ export function buildKMeansSteps(points: Point[], k: number, init: KMeansInit, s
 
   const inertia = inertiaOf(points, centroids, assignment);
   steps.push({
-    phase: "converged",
+    phase: "stopped",
     iter: maxIters,
     centroids: copy(centroids),
     assignment: [...assignment],
     inertia,
     inertias: [...inertias],
-    explanation: `Stopped after ${maxIters} rounds.`,
+    explanation: `Stopped at the limit of ${maxIters} rounds. Assignments may still change; reaching this limit does not prove convergence.`,
     done: true,
   });
   return steps;

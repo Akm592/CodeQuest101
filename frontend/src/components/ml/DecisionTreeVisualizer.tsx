@@ -304,8 +304,7 @@ const DecisionTreeVisualizer: React.FC = () => {
       <section aria-labelledby="dt-depth-title" className="space-y-4">
         <SectionTitle id="dt-depth-title" kicker="The big trap" title="Too deep? Training accuracy vs new points">
           <p>
-            A tree with no limit keeps asking questions until every training point is in its own pure box. That looks perfect on the training
-            data, but on noisy data it's memorising mistakes. The chart trains a tree at every depth from 1 to 12 on the current data and tests
+            A deep tree can memorise noisy training data. A pure leaf can contain several points of the same class; identical inputs with conflicting labels cannot be separated. The chart trains a tree at every depth from 1 to 12 on the current data and tests
             each one on 400 new points it never saw. Try it on “Noisy”.
           </p>
         </SectionTitle>

@@ -15,7 +15,7 @@ def gradient_descent(grad, start, lr=0.1, momentum=0.0, max_steps=1000, tol=1e-6
     for _ in range(max_steps):
         g = grad(point)
         if sum(v * v for v in g) ** 0.5 < tol:
-            break  # the slope is flat: we're at the bottom of a valley
+            break  # near a stationary point, which may also be a saddle
         for i in range(len(point)):
             velocity[i] = momentum * velocity[i] - lr * g[i]
             point[i] += velocity[i]

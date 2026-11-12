@@ -131,8 +131,11 @@ const LinearRegressionVisualizer: React.FC = () => {
             <Stat label="Step" value={step.iter} />
             <Stat label="Error (MSE)" value={step.mse < 1e5 ? step.mse.toFixed(3) : "huge"} />
             <Stat label="Best possible" value={exact ? `y = ${exact.slope.toFixed(2)}x + ${exact.intercept.toFixed(2)}` : "–"} />
-            <Stat label="R² (1 is perfect)" value={score === null ? "–" : score < -99 ? "< −99" : score.toFixed(3)} tone={score !== null && score < 0 ? C.redText : undefined} />
+            <Stat label="R² (1 is perfect)" value={score === null ? "–" : !Number.isFinite(score) ? "Undefined" : score < -99 ? "< −99" : score.toFixed(3)} tone={score !== null && Number.isFinite(score) && score < 0 ? C.redText : undefined} />
           </dl>
+          {score !== null && !Number.isFinite(score) && (
+            <p className="text-xs text-muted-foreground">R² is undefined when all y values are equal. Use MSE to judge the fit instead.</p>
+          )}
           <LossChart values={step.mses} total={Math.max(steps.at(-1)!.mses.length, 2)} log label="Error after each step (log scale)" />
         </Surface>
       </div>

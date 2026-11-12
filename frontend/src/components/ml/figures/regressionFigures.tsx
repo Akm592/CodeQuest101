@@ -152,8 +152,8 @@ export const linearRegressionFigures: ConceptFigure[] = [
           <circle key={i} cx={x} cy={y} r={3.5} fill={C.fg} />
         ))}
         <path d="M206,74 Q216,54 206,40" fill="none" stroke={C.amber} strokeWidth={1.8} markerEnd="url(#lr-nudge)" />
-        <text x={24} y={22} fontSize={11} fill={C.muted}>error 8.1</text>
-        <text x={24} y={36} fontSize={11} fill={C.teal}>→ 0.6</text>
+        <text x={24} y={22} fontSize={11} fill={C.muted}>larger MSE</text>
+        <text x={24} y={36} fontSize={11} fill={C.teal}>→ smaller MSE</text>
       </Art>
     ),
   },

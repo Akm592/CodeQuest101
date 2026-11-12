@@ -88,7 +88,7 @@ const NeuralNetworkMath: React.FC = () => {
         <p>
           Here is one complete training step for the smallest interesting network: 2 inputs, 2 hidden neurons (A and B) and 1 output. We
           use one example, x = ({x1}, {x2}), whose correct answer is y = {ex.y}, and a learning rate of η = {ex.lr}. Every number below
-          is calculated live by the same code this page trains with.
+          is calculated live. Tests compare this worked example with the training network’s backpropagation.
         </p>
       </SectionTitle>
 

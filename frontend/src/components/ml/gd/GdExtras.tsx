@@ -128,7 +128,8 @@ export const WhichToUse: React.FC = () => (
         </li>
         <li>
           <span className="font-medium text-foreground">Tune the learning rate first.</span> It's the setting that makes the biggest difference
-          on every page here: if the loss goes up or jumps around, it's too big; if it barely moves, it's too small.
+          here: a sustained rise or large oscillations can mean it is too high. Mini-batches also cause noisy loss, and slow progress can come
+          from a small rate, a flat region or poor scaling.
         </li>
       </ul>
     </Surface>

@@ -2,6 +2,7 @@
 
 import type { FC } from "react";
 
+import { distribution, PROMPTS } from "../../../lib/ml/sampling";
 import { C } from "../colors";
 import { Art, Arrowhead, type ConceptFigure } from "../shared";
 
@@ -52,7 +53,7 @@ export const attentionFigures: ConceptFigure[] = [
   },
   {
     title: "Score each word, then softmax",
-    caption: "Query · key gives a score per word. Softmax turns the scores into shares that add up to 100%. Thicker arcs here mean more attention.",
+    caption: "Divide each query · key score by √dₖ, then apply softmax to get shares that add up to 100%. Thicker arcs here mean more attention; only selected arcs are shown.",
     art: (
       <Art label="Arcs from the word it to the other words, thickest to cat">
         {WORDS.map((w) => (
@@ -82,7 +83,7 @@ export const attentionFigures: ConceptFigure[] = [
   },
   {
     title: "Blend the values into new meaning",
-    caption: "Mix every word's value by its share. The new “it” is mostly “cat”, so it now carries “animal”: the model knows what “it” refers to.",
+    caption: "Mix every word's value by its share. In this hand-built example, “cat” contributes the largest share to “it”. This illustrates the calculation, rather than demonstrating learned understanding.",
     art: (
       <Art label="A bar split into shares from cat, mat and others, flowing into a new vector for it with animal lit up">
         <Arrowhead id="att-blend" color={C.muted} />
@@ -150,6 +151,9 @@ const Bars: FC<{ x: number; y: number; h: number; values: number[]; labels?: str
   );
 };
 
+const CAPITAL_PROBS = distribution(PROMPTS[0].candidates.map((c) => c.logit), { temperature: 1, topK: 0, topP: 1 }).final;
+const temperatureProbs = (temperature: number) => distribution([2, 1.5, 1.2, 0.8, 0.5], { temperature, topK: 0, topP: 1 }).final;
+
 export const samplingFigures: ConceptFigure[] = [
   {
     title: "The model scores every next word",
@@ -159,7 +163,7 @@ export const samplingFigures: ConceptFigure[] = [
         <text x={12} y={22} fontSize={12} fill={C.fg}>The capital of France is</text>
         <rect x={168} y={10} width={58} height={18} rx={5} fill="none" stroke={C.teal} strokeDasharray="3 3" />
         <text x={197} y={23} textAnchor="middle" fontSize={11} fill={C.teal}>?</text>
-        <Bars x={12} y={42} h={78} values={[0.86, 0.05, 0.03, 0.025, 0.015, 0.01]} labels={["Paris", "a", "located", "the", "Lyon", "…"]} bw={28} gap={9} />
+        <Bars x={12} y={42} h={78} values={[...CAPITAL_PROBS.slice(0, 5), CAPITAL_PROBS.slice(5).reduce((a, b) => a + b, 0)]} labels={["Paris", "a", "located", "the", "Lyon", "…"]} bw={28} gap={9} />
       </Art>
     ),
   },
@@ -169,9 +173,9 @@ export const samplingFigures: ConceptFigure[] = [
     art: (
       <Art label="Two bar charts: a sharp one at low temperature and a flat one at high temperature">
         <text x={60} y={18} textAnchor="middle" fontSize={11} fill={C.sky}>T = 0.5 (focused)</text>
-        <Bars x={14} y={30} h={90} values={[0.95, 0.03, 0.01, 0.006, 0.004]} bw={14} gap={6} colors={Array(5).fill(C.sky)} />
+        <Bars x={14} y={30} h={90} values={temperatureProbs(0.5)} bw={14} gap={6} colors={Array(5).fill(C.sky)} />
         <text x={180} y={18} textAnchor="middle" fontSize={11} fill={C.amber}>T = 1.6 (adventurous)</text>
-        <Bars x={134} y={30} h={90} values={[0.34, 0.2, 0.17, 0.16, 0.13]} bw={14} gap={6} colors={Array(5).fill(C.amber)} />
+        <Bars x={134} y={30} h={90} values={temperatureProbs(1.6)} bw={14} gap={6} colors={Array(5).fill(C.amber)} />
         <line x1={120} y1={26} x2={120} y2={128} stroke={C.grid} />
         <text x={60} y={140} textAnchor="middle" fontSize={9} fill={C.muted}>most likely → least</text>
         <text x={180} y={140} textAnchor="middle" fontSize={9} fill={C.muted}>most likely → least</text>

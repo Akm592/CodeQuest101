@@ -72,7 +72,7 @@ export const SURFACES: Record<SurfaceKey, LossSurface> = {
   saddle: {
     key: "saddle",
     label: "Saddle point",
-    blurb: "The middle is a saddle: downhill along x, but a hilltop along y. The slope there is almost 0, so plain descent dawdles before it finds a way down.",
+    blurb: "The middle is a saddle: a valley along x, but a hilltop along y. Starting near it can slow descent. Starting exactly on y = 0 keeps descent on that line, so it can stop at the saddle instead of a minimum.",
     f: (x, y) => 0.5 * x * x + 0.25 * (y * y - 1) ** 2,
     grad: (x, y) => [x, y * (y * y - 1)],
     xr: 3,
@@ -93,6 +93,7 @@ export interface GdStep extends BaseStep {
   x: number;
   y: number;
   loss: number;
+  /** Gradient at this frame's displayed position, after any move. */
   grad: [number, number];
   /** Every position visited so far, including this one. */
   path: [number, number][];
@@ -120,7 +121,7 @@ export function buildGdSteps(surface: LossSurface, opts: GdOptions): GdStep[] {
   const losses = [surface.f(x, y)];
   const steps: GdStep[] = [];
   const snap = (phase: GdStep["phase"], iter: number, grad: [number, number], explanation: string, done = false) =>
-    steps.push({ phase, iter, x, y, loss: surface.f(x, y), grad, path: path.map((p) => [...p] as [number, number]), losses: [...losses], explanation, done });
+    steps.push({ phase, iter, x, y, loss: surface.f(x, y), grad: phase === "move" || phase === "diverged" ? surface.grad(x, y) : grad, path: path.map((p) => [...p] as [number, number]), losses: [...losses], explanation, done });
 
   snap("start", 0, surface.grad(x, y), `Start at (${fmt(x)}, ${fmt(y)}). The loss here is ${fmt(surface.f(x, y))}.`);
 
@@ -128,7 +129,7 @@ export function buildGdSteps(surface: LossSurface, opts: GdOptions): GdStep[] {
     const g = surface.grad(x, y);
     const norm = Math.hypot(g[0], g[1]);
     if (norm < 1e-3) {
-      snap("stop", i - 1, g, `The slope is almost flat (${norm.toExponential(1)}), so we're at the bottom of a valley. Stop.`, true);
+      snap("stop", i - 1, g, `The slope is almost flat (${norm.toExponential(1)}), so stop near this stationary point. A small gradient alone does not prove a minimum: a saddle can also have zero slope.`, true);
       return steps;
     }
     snap("slope", i, g, `Iteration ${i}: the slope here is (${fmt(g[0])}, ${fmt(g[1])}). Downhill is the opposite way.`);
@@ -155,11 +156,11 @@ export function buildGdSteps(surface: LossSurface, opts: GdOptions): GdStep[] {
       i,
       g,
       optimizer === "momentum"
-        ? `Move by the running velocity: ${Math.round(beta * 100)}% of the last move, plus this slope × ${lr}. Loss is now ${fmt(loss)}.`
+        ? `Keep ${Math.round(beta * 100)}% of the last move, then subtract ${lr} × the gradient measured before this move. Loss is now ${fmt(loss)}.`
         : `Move ${lr} × slope downhill, to (${fmt(x)}, ${fmt(y)}). Loss is now ${fmt(loss)}.`,
     );
   }
 
-  snap("stop", maxIters, surface.grad(x, y), `Stopped after ${maxIters} iterations without fully settling. A bigger learning rate (or momentum) would get there sooner.`, true);
+  snap("stop", maxIters, surface.grad(x, y), `Stopped at the limit of ${maxIters} iterations without fully settling. Adjust the learning rate or allow more steps; increasing the rate can also cause oscillation or divergence.`, true);
   return steps;
 }

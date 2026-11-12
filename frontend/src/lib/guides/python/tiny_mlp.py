@@ -1,13 +1,20 @@
 import math
 import random
 
+
+def sigmoid(z):
+    if z >= 0:
+        return 1 / (1 + math.exp(-z))
+    e = math.exp(z)
+    return e / (1 + e)
+
+
 # Each activation with its derivative (slope), both as functions of z.
 ACTIVATIONS = {
     "tanh": (math.tanh, lambda z: 1 - math.tanh(z) ** 2),
     "relu": (lambda z: max(0.0, z), lambda z: 1.0 if z > 0 else 0.0),
     "leaky_relu": (lambda z: z if z >= 0 else 0.01 * z, lambda z: 1.0 if z >= 0 else 0.01),
-    "sigmoid": (lambda z: 1 / (1 + math.exp(-z)),
-                lambda z: (1 / (1 + math.exp(-z))) * (1 - 1 / (1 + math.exp(-z)))),
+    "sigmoid": (sigmoid, lambda z: sigmoid(z) * (1 - sigmoid(z))),
 }
 
 
@@ -26,14 +33,14 @@ class TinyMLP:
         zs = [w[0] * x + w[1] * y + b for w, b in zip(self.W1, self.b1)]
         h = [self.act(z) for z in zs]
         z = sum(hi * wi for hi, wi in zip(h, self.W2)) + self.b2
-        return zs, h, 1 / (1 + math.exp(-z))
+        return zs, h, sigmoid(z)
 
     def loss(self, data):
-        eps = 1e-9
         total = 0.0
         for x, y, label in data:
-            p = self.forward(x, y)[2]
-            total -= math.log(p + eps) if label else math.log(1 - p + eps)
+            _, h, _ = self.forward(x, y)
+            z = sum(hi * wi for hi, wi in zip(h, self.W2)) + self.b2
+            total += max(z, 0) - z * label + math.log1p(math.exp(-abs(z)))
         return total / len(data)
 
     def gradients(self, data):

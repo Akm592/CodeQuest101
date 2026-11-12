@@ -168,9 +168,7 @@ const GradientBoostingVisualizer: React.FC = () => {
       <section aria-labelledby="gb-curve-title" className="space-y-4">
         <SectionTitle id="gb-curve-title" kicker="The big question" title="When to stop adding trees">
           <p>
-            Training error only ever goes down as trees are added. Error on new points goes down at first, reaches its lowest point, then
-            creeps back up as the trees start fitting the noise. That turning point is the number of trees to keep. With a learning rate of 1
-            and deep trees, it's reached almost immediately.
+            For this squared-error demo and its learning rates, training error cannot increase when a fitted residual tree is added. Error on new points can fall, fluctuate or rise as trees fit noise. Use the lowest validation error to choose how many trees to keep.
           </p>
         </SectionTitle>
         <Surface variant="card" radius="2xl" className="p-4 sm:p-5">
@@ -214,7 +212,7 @@ const GradientBoostingVisualizer: React.FC = () => {
             <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 border-t-2 border-dashed border-foreground/60" /> one deep tree</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            In practice you hold back some data and stop when its error stops improving (“early stopping”); scikit-learn's histogram-based
+            When choosing the number of trees, these new points serve as validation data. Keep a separate test set for the final evaluation. In practice, early stopping stops training when validation error no longer improves; scikit-learn's histogram-based
             boosting does this by default once there are more than 10,000 samples.
           </p>
         </Surface>
@@ -279,7 +277,7 @@ const GradientBoostingVisualizer: React.FC = () => {
               <tr><td className="text-foreground">How trees are built</td><td>Side by side, independently</td><td>One after another, each fixing the last</td></tr>
               <tr><td className="text-foreground">Each tree</td><td>Deep, on a random sample</td><td>Small and shallow, on the residuals</td></tr>
               <tr><td className="text-foreground">Combined by</td><td>Averaging</td><td>Adding, each scaled by the learning rate</td></tr>
-              <tr><td className="text-foreground">More trees</td><td>Doesn't overfit; just slower</td><td>Can overfit: stop at the best number</td></tr>
+              <tr><td className="text-foreground">More trees</td><td>Usually stabilises; accuracy can fluctuate</td><td>Can overfit: stop at the best number</td></tr>
               <tr><td className="text-foreground">Tuning</td><td>Works well out of the box</td><td>Needs learning rate, depth and tree count</td></tr>
               <tr><td className="text-foreground">Parallel training</td><td>Yes</td><td>No (trees depend on each other)</td></tr>
             </tbody>

@@ -108,7 +108,7 @@ export function buildLrSteps(points: Point[], lr: number, maxIters = 120): LrSte
   push("predict", 0, { w: 0, b: 0 }, "Start with a flat guess, y = 0·x + 0. It predicts 0 for every point.");
   push("errors", 0, { w: 0, b: 0 }, `Measure the misses: the vertical gap from each point to the line, squared and averaged. MSE = ${f2(mses[0])}.`);
   const g0 = gradient();
-  push("gradient", 0, g0, `Work out which way to nudge: increasing the slope changes the error at rate ${f2(g0.w)}, the intercept at ${f2(g0.b)}.`);
+  push("gradient", 0, g0, `We train on z = (x − mean) / standard deviation, using y = w·z + b. The MSE gradient of this standardised weight w is ${f2(g0.w)}, and of b is ${f2(g0.b)}. The plotted slope and intercept are converted back to the original x units.`);
 
   for (let i = 1; i <= maxIters; i++) {
     const g = gradient();
@@ -121,16 +121,17 @@ export function buildLrSteps(points: Point[], lr: number, maxIters = 120): LrSte
       return steps;
     }
     const line = toLine();
-    const settled = Math.abs(mses[mses.length - 2] - cur) < 1e-6;
+    const nextGrad = gradient();
+    const settled = Math.abs(mses[mses.length - 2] - cur) < 1e-6 && Math.hypot(nextGrad.w, nextGrad.b) < 1e-3;
     if (settled) {
-      push("done", i, g, `Settled after ${i} steps: y = ${f2(line.slope)}x + ${f2(line.intercept)}, MSE ${f2(cur)}. This matches the exact least-squares line.`, true);
+      push("done", i, nextGrad, `The error change and gradient are small after ${i} steps: y = ${f2(line.slope)}x + ${f2(line.intercept)}, MSE ${f2(cur)}. This approximates the least-squares solution; compare with the dashed line.`, true);
       return steps;
     }
     push("update", i, g, `Step ${i}: nudge both against their slope × ${lr}. Line is y = ${f2(line.slope)}x + ${f2(line.intercept)}, MSE ${f2(cur)}.`);
   }
 
   const line = toLine();
-  push("done", maxIters, gradient(), `Stopped after ${maxIters} steps at y = ${f2(line.slope)}x + ${f2(line.intercept)}. A larger learning rate would settle sooner.`, true);
+  push("done", maxIters, gradient(), `Stopped at the limit of ${maxIters} steps at y = ${f2(line.slope)}x + ${f2(line.intercept)}. Review the remaining error and adjust the learning rate or allow more steps.`, true);
   return steps;
 }
 

@@ -9,15 +9,12 @@ def fit_line(xs, ys, lr=0.1, epochs=2000, tol=1e-12):
     zs = [(x - mean) / std for x in xs]
 
     w, b = 0.0, 0.0
-    prev = float("inf")
     for _ in range(epochs):
         errors = [w * z + b - y for z, y in zip(zs, ys)]
-        mse = sum(e * e for e in errors) / n
-        if abs(prev - mse) < tol:
-            break
-        prev = mse
         grad_w = 2 / n * sum(e * z for e, z in zip(errors, zs))
         grad_b = 2 / n * sum(errors)
+        if (grad_w ** 2 + grad_b ** 2) ** 0.5 < tol:
+            break
         w -= lr * grad_w
         b -= lr * grad_b
 
@@ -36,10 +33,12 @@ def fit_line_exact(xs, ys):
 
 
 def r_squared(xs, ys, slope, intercept):
-    """1 = perfect; 0 = no better than always predicting the mean; below 0 = worse."""
+    """1 = perfect; 0 = mean baseline; negative = worse; constant targets are undefined."""
     my = sum(ys) / len(ys)
     ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys))
     ss_tot = sum((y - my) ** 2 for y in ys)
+    if ss_tot == 0:
+        return float("nan") if ss_res == 0 else float("-inf")
     return 1 - ss_res / ss_tot
 
 

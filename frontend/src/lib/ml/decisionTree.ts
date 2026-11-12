@@ -4,7 +4,7 @@
 //
 // Impurity, with p_k the share of class k in a node (scikit-learn's formulas):
 //   Gini     = Σ p_k (1 − p_k)        (= 1 − Σ p_k²)
-//   entropy  = −Σ p_k log₂ p_k        (scikit-learn uses ln; the base doesn't change which split wins)
+//   entropy  = −Σ p_k log₂ p_k
 // A split's score is the size-weighted impurity of its children; the gain is
 // the parent's impurity minus that. Growth stops when a node is pure, the
 // depth limit is reached, the node is too small, or no split helps.
