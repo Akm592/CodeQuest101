@@ -25,6 +25,25 @@ export interface PEntry {
   tone?: VizTone;
 }
 
+/** A node in a linked-structure picture, placed on a grid of rows and columns. */
+export interface LNode {
+  id: string;
+  v: string;
+  row: number;
+  col: number;
+  tone?: VizTone;
+  /** Pointer names shown under the node, e.g. "prev curr". */
+  tag?: string;
+}
+
+/** An arrow from one node to another (a `next` or `random` pointer). */
+export interface LEdge {
+  from: string;
+  to: string;
+  tone?: VizTone;
+  dashed?: boolean;
+}
+
 export interface PatternStep extends BaseStep {
   /** The guide stage this step belongs to. */
   stage: string;
@@ -46,6 +65,8 @@ export interface PatternStep extends BaseStep {
     /** Draw bars from this value instead of 0 (labels still show the real values). */
     floor?: number;
   };
+  /** Nodes and arrows, for linked lists. */
+  links?: { title?: string; nodes: LNode[]; edges: LEdge[]; rowLabels?: Record<number, string> };
   vars: { name: string; value: string; tone?: VizTone }[];
   /** Basic operations so far (hash lookups/inserts, array reads/writes). */
   ops: number;

@@ -8,6 +8,7 @@ import type { PCell, PatternStep } from "../../lib/patterns/types";
 import { cn } from "../../lib/utils";
 import { C } from "../ml/colors";
 import { Surface } from "../ui/surface";
+import LinkView from "./LinkView";
 
 // Literal class names so Tailwind sees them.
 const CELL: Record<VizTone, string> = {
@@ -152,6 +153,8 @@ const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
     {step.bars && <Bars bars={step.bars} />}
 
     {step.grid && <Grid grid={step.grid} />}
+
+    {step.links && <LinkView links={step.links} />}
 
     {(step.map || step.vars.length > 0) && (
       <div className="grid gap-3 sm:grid-cols-2">

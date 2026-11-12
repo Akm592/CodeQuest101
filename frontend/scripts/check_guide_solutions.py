@@ -771,6 +771,122 @@ for _ in range(300):
     ok &= bs["median_two_arrays"].find_median_sorted_arrays(a, b) == want
 check("median of two sorted arrays matches merging and taking the middle (300 cases)", ok)
 
+print("\nNeetCode 150: Linked List")
+ll = {name: load(f"neetcode/{name}") for name in ["reverse_list", "merge_two_lists", "reorder_list", "remove_nth_from_end", "copy_random_list", "add_two_numbers", "linked_list_cycle", "find_duplicate", "lru_cache", "merge_k_lists", "reverse_k_group"]}
+def lst(m, xs):
+    return m.build(xs)
+ok = True
+for _ in range(300):
+    xs = [rng.randint(0, 9) for _ in range(rng.randint(0, 8))]
+    m = ll["reverse_list"]
+    ok &= m.to_list(m.reverse_list(m.build(xs))) == xs[::-1]
+check("reverse list matches xs[::-1] (300 cases)", ok)
+ok = True
+for _ in range(300):
+    a = sorted(rng.randint(0, 9) for _ in range(rng.randint(0, 6)))
+    b = sorted(rng.randint(0, 9) for _ in range(rng.randint(0, 6)))
+    m = ll["merge_two_lists"]
+    ok &= m.to_list(m.merge_two_lists(m.build(a), m.build(b))) == sorted(a + b)
+check("merge two sorted lists matches sorted(a + b) (300 cases)", ok)
+ok = True
+for n in range(1, 12):
+    xs = list(range(n))
+    m = ll["reorder_list"]
+    h = m.build(xs)
+    m.reorder_list(h)
+    want, l, r = [], 0, n - 1
+    while l <= r:
+        want.append(xs[l])
+        if l != r:
+            want.append(xs[r])
+        l, r = l + 1, r - 1
+    ok &= m.to_list(h) == want
+check("reorder list alternates front and back, n = 1..11", ok)
+ok = True
+for _ in range(300):
+    xs = list(range(rng.randint(1, 8)))
+    k = rng.randint(1, len(xs))
+    m = ll["remove_nth_from_end"]
+    ok &= m.to_list(m.remove_nth_from_end(m.build(xs), k)) == xs[: len(xs) - k] + xs[len(xs) - k + 1 :]
+check("remove nth from end matches slicing the list (300 cases)", ok)
+ok = True
+for _ in range(200):
+    n = rng.randint(0, 7)
+    vals = [rng.randint(0, 9) for _ in range(n)]
+    rand = [rng.choice([None] + list(range(n))) for _ in range(n)]
+    m = ll["copy_random_list"]
+    h = m.build(vals, rand)
+    c = m.copy_random_list(h)
+    originals, node = set(), h
+    while node:
+        originals.add(id(node))
+        node = node.next
+    copies, node = set(), c
+    while node:
+        copies.add(id(node))
+        node = node.next
+    ok &= m.serialise(c) == [[v, r] for v, r in zip(vals, rand)] and not (originals & copies)
+check("copy random list has the same shape and shares no nodes (200 cases)", ok)
+ok = True
+for _ in range(300):
+    x, y = rng.randint(0, 10**12), rng.randint(0, 10**12)
+    m = ll["add_two_numbers"]
+    digits = lambda v: [int(d) for d in str(v)[::-1]]
+    ok &= m.to_list(m.add_two_numbers(m.build(digits(x)), m.build(digits(y)))) == digits(x + y)
+check("add two numbers matches Python's big integers (300 cases)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(1, 8)
+    pos = rng.choice([-1] + list(range(n)))
+    ok &= ll["linked_list_cycle"].has_cycle(ll["linked_list_cycle"].build(list(range(n)), pos)) == (pos >= 0)
+check("linked list cycle detects every planted loop (300 cases)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(1, 12)
+    dup = rng.randint(1, n)
+    nums = list(range(1, n + 1)) + [dup] * rng.randint(1, 3)
+    nums = [v if v != 0 else dup for v in nums]
+    # keep n + 1 values in 1..n: replace some distinct values with the duplicate
+    nums = nums[: n + 1]
+    rng.shuffle(nums)
+    want = next(v for v in nums if nums.count(v) > 1)
+    ok &= ll["find_duplicate"].find_duplicate(nums) == want
+check("find the duplicate matches counting (300 cases)", ok)
+ok = True
+for _ in range(200):
+    cap = rng.randint(1, 4)
+    c, ref = ll["lru_cache"].LRUCache(cap), []
+    for _ in range(30):
+        key = rng.randint(1, 6)
+        if rng.random() < 0.5:
+            v = rng.randint(0, 99)
+            c.put(key, v)
+            ref = [(k, x) for k, x in ref if k != key] + [(key, v)]
+            ref = ref[-cap:]
+        else:
+            hit = [x for k, x in ref if k == key]
+            if hit:
+                ref = [(k, x) for k, x in ref if k != key] + [(key, hit[0])]
+            ok &= c.get(key) == (hit[0] if hit else -1)
+check("LRU cache matches a list kept in order of use (200 runs)", ok)
+ok = True
+for _ in range(200):
+    lists = [sorted(rng.randint(0, 20) for _ in range(rng.randint(0, 5))) for _ in range(rng.randint(0, 6))]
+    m = ll["merge_k_lists"]
+    ok &= m.to_list(m.merge_k_lists([m.build(l) for l in lists])) == sorted(sum(lists, []))
+check("merge k sorted lists matches sorting everything (200 cases)", ok)
+ok = True
+for _ in range(300):
+    xs = list(range(rng.randint(0, 10)))
+    k = rng.randint(1, 4)
+    want = []
+    for i in range(0, len(xs), k):
+        g = xs[i : i + k]
+        want += g[::-1] if len(g) == k else g
+    m = ll["reverse_k_group"]
+    ok &= m.to_list(m.reverse_k_group(m.build(xs), k)) == want
+check("reverse nodes in k-group matches reversing each full block (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

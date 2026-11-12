@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 34 of 150 problems, 5 of 18 categories.
-- **Left:** 116 problems in 13 categories.
-- **Next up:** Linked List (11 problems). It needs a new linked-list view first.
+- **Done:** 45 of 150 problems, 6 of 18 categories.
+- **Left:** 105 problems in 12 categories.
+- **Next up:** Trees (15 problems). It needs a new tree view first.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -17,7 +17,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 3 | Sliding Window | 6 | ✅ Done | `/visualize/slidingWindow` | `01db307` |
 | 4 | Stack | 7 | ✅ Done | `/visualize/stackPattern` | `ddd7c56` |
 | 5 | Binary Search | 7 | ✅ Done | `/visualize/binarySearchPattern` | "Interview Patterns: Binary Search" |
-| 6 | Linked List | 11 | ⬜ To do | | |
+| 6 | Linked List | 11 | ✅ Done | `/visualize/linkedListPattern` | "Interview Patterns: Linked List" |
 | 7 | Trees | 15 | ⬜ To do | | |
 | 8 | Tries | 3 | ⬜ To do | | |
 | 9 | Heap / Priority Queue | 7 | ⬜ To do | | |
@@ -53,28 +53,13 @@ Valid Parentheses, Min Stack, Evaluate Reverse Polish Notation, Generate Parenth
 
 Binary Search, Search a 2D Matrix, Koko Eating Bananas, Find Minimum In Rotated Sorted Array, Search In Rotated Sorted Array, Time Based Key Value Store, Median of Two Sorted Arrays.
 
+### Linked List (11) · `/visualize/linkedListPattern`
+
+Reverse Linked List, Merge Two Sorted Lists, Reorder List, Remove Nth Node From End of List, Copy List With Random Pointer, Add Two Numbers, Linked List Cycle, Find The Duplicate Number, LRU Cache, Merge K Sorted Lists, Reverse Nodes In K Group.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 6. Linked List (11)
-
-- **Visual idea:** Needs a new linked-list view in StepView: boxes with arrows, named pointers (prev, curr, next, slow, fast) as tags. Reorder / reverse in k-groups need arrows that change direction step by step. LRU Cache: a hash map plus the list.
-- **Link to:** `linkedList`, `hareTortoise` (Linked List Cycle and Find the Duplicate use Floyd's)
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Reverse Linked List | Easy | Yes | [`reverse-linked-list`](https://leetcode.com/problems/reverse-linked-list/) | [`G0_I-ZF0S38`](https://www.youtube.com/watch?v=G0_I-ZF0S38) |
-| Merge Two Sorted Lists | Easy | Yes | [`merge-two-sorted-lists`](https://leetcode.com/problems/merge-two-sorted-lists/) | [`XIdigk956u0`](https://www.youtube.com/watch?v=XIdigk956u0) |
-| Reorder List | Medium | Yes | [`reorder-list`](https://leetcode.com/problems/reorder-list/) | [`S5bfdUTrKLM`](https://www.youtube.com/watch?v=S5bfdUTrKLM) |
-| Remove Nth Node From End of List | Medium | Yes | [`remove-nth-node-from-end-of-list`](https://leetcode.com/problems/remove-nth-node-from-end-of-list/) | [`XVuQxVej6y8`](https://www.youtube.com/watch?v=XVuQxVej6y8) |
-| Copy List With Random Pointer | Medium |  | [`copy-list-with-random-pointer`](https://leetcode.com/problems/copy-list-with-random-pointer/) | [`5Y2EiZST97Y`](https://www.youtube.com/watch?v=5Y2EiZST97Y) |
-| Add Two Numbers | Medium |  | [`add-two-numbers`](https://leetcode.com/problems/add-two-numbers/) | [`wgFPrzTjm7s`](https://www.youtube.com/watch?v=wgFPrzTjm7s) |
-| Linked List Cycle | Easy | Yes | [`linked-list-cycle`](https://leetcode.com/problems/linked-list-cycle/) | [`gBTe7lFR3vc`](https://www.youtube.com/watch?v=gBTe7lFR3vc) |
-| Find The Duplicate Number | Medium |  | [`find-the-duplicate-number`](https://leetcode.com/problems/find-the-duplicate-number/) | [`wjYnzkAhcNk`](https://www.youtube.com/watch?v=wjYnzkAhcNk) |
-| LRU Cache | Medium |  | [`lru-cache`](https://leetcode.com/problems/lru-cache/) | [`7ABFKPK2hD4`](https://www.youtube.com/watch?v=7ABFKPK2hD4) |
-| Merge K Sorted Lists | Hard | Yes | [`merge-k-sorted-lists`](https://leetcode.com/problems/merge-k-sorted-lists/) | [`q5a5OiGbT6Q`](https://www.youtube.com/watch?v=q5a5OiGbT6Q) |
-| Reverse Nodes In K Group | Hard |  | [`reverse-nodes-in-k-group`](https://leetcode.com/problems/reverse-nodes-in-k-group/) | [`1UOPsfP85V4`](https://www.youtube.com/watch?v=1UOPsfP85V4) |
 
 ### 7. Trees (15)
 
@@ -282,7 +267,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 
 | View | Needed by | Notes |
 |---|---|---|
-| Linked list (boxes and arrows, named pointers) | Linked List | Arrows must be able to flip direction for reversals. |
+| Linked list (boxes and arrows, named pointers) | Linked List | ✅ Done: `step.links` (`LinkView.tsx`), nodes on a row/column grid. Could also serve small graphs. |
 | Binary tree (nodes by depth, a value per node) | Trees, Heap | Show each node's return value for recursive problems. |
 | Trie | Tries | Could share the tree view. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
@@ -335,7 +320,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first five categories
+## Lessons from the first six categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -345,3 +330,5 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Highlight what the data means**, not just an index. In Largest Rectangle, highlight the bar a stack entry's height came from.
 - **Make “ruled out” obvious.** Faded (idle) cells must look clearly different from cells still in play; binary search depends on seeing the range halve.
 - **Examples should show the idea.** An example that finds the target on the first guess teaches nothing.
+- **Test the picture, not just the answer.** For linked lists, following the drawn arrows on the last step must spell out the answer, and no node may have two next arrows.
+- **Labels need a halo** when arrows can pass under them.

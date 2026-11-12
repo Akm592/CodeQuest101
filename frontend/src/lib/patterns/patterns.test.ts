@@ -4,12 +4,13 @@ import { describe, expect, it } from "vitest";
 
 import { ARRAYS_HASHING } from "./arraysHashing";
 import { BINARY_SEARCH } from "./binarySearch";
+import { LINKED_LIST } from "./linkedList";
 import { SLIDING_WINDOW } from "./slidingWindow";
 import { STACK } from "./stack";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {
