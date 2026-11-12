@@ -1,6 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -9,7 +8,6 @@ import {
 import { AuthProvider } from "./contexts/AuthContext";
 import { warmBackend } from "./lib/api";
 import HomePage from "./components/HomePage";
-import ChatInterface from "./components/chatbot/chatBot";
 import { LoginPage } from "./components/Auth/Login";
 import { AuthCallback } from "./components/Auth/AuthCallback";
 
@@ -18,8 +16,10 @@ import { ForgotPassword } from "./components/Auth/ForgotPassword";
 import NotFoundPage from "./components/404";
 import About from "./components/About";
 import ScrollToHash from "./components/ScrollToHash";
+import Seo from "./components/Seo";
+import VisualizationDirectory from "./components/VisualizationDirectory";
 import VisualizerPage from "./components/Visualizer/VisualizerPage";
-import type { VisualizationKey } from "./components/homepage/catalog";
+import { allVisualizations, type VisualizationKey } from "./components/homepage/catalog";
 
 // Visualizers, lazily loaded.
 //
@@ -27,6 +27,7 @@ import type { VisualizationKey } from "./components/homepage/catalog";
 // paint, while the app previously shipped as a single 3.1 MB chunk that Vite
 // warned about on every build. Splitting them here is what keeps adding
 // visualizers from making the landing page slower.
+const ChatInterface = lazy(() => import("./components/chatbot/chatBot"));
 const BinarySearchVisualizer = lazy(() => import("./components/BinarySearchVisualizer"));
 const ArraysHashingPage = lazy(() => import("./components/patterns/ArraysHashingPage"));
 const TwoPointersPage = lazy(() => import("./components/patterns/TwoPointersPage"));
@@ -143,7 +144,7 @@ const VisualizeWrapper = () => {
               ) : (
                 // Suspense sits inside the page, not around it, so the header
                 // and its Back button are in the DOM while the chunk loads.
-                <VisualizerPage title={spec.title} onBack={handleBack}>
+                <VisualizerPage title={spec.title} description={allVisualizations.find((viz) => viz.key === key)?.description} onBack={handleBack}>
                   <Suspense fallback={<ChunkFallback />}>
                     <spec.Component />
                   </Suspense>
@@ -154,7 +155,7 @@ const VisualizeWrapper = () => {
         ),
       )}
 
-      <Route index element={<Navigate to="/" replace />} />
+      <Route index element={<Navigate to="/visualizations" replace />} />
       {/* Without this, /visualize/typo rendered a blank page under no header. */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -171,7 +172,8 @@ function App() {
     <>
       <div>
         <AuthProvider>
-          <Router>
+          <>
+            <Seo />
             <ScrollToHash />
             <Routes>
               {/* Public routes */}
@@ -181,20 +183,25 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/about" element={<About />} />
+              <Route path="/visualizations" element={<VisualizationDirectory />} />
 
               {/* Visualization Routes */}
               <Route path="/visualize/*" element={<VisualizeWrapper />} />
 
-              {/* Protected route */}
+              {/* AI tutor */}
               <Route
                 path="/chat"
-                element={<ChatInterface />}
+                element={
+                  <Suspense fallback={<p className="p-8 text-center text-sm text-muted-foreground">Loading AI tutor…</p>}>
+                    <ChatInterface />
+                  </Suspense>
+                }
               />
 
               {/* Fallback route */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </Router>
+          </>
         </AuthProvider>
       </div>
     </>

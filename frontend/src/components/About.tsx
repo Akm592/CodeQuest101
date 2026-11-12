@@ -1,18 +1,9 @@
-import { useState, useEffect } from 'react';
 import { Code, MessageSquare, Github, ExternalLink, Coffee, Sparkles, BookOpen, Linkedin, Link } from 'lucide-react';
 // Import the DARK THEMED Header and Footer
 import Header from './Header'; // Assumes Header.tsx is the updated dark version
 import Footer from './Footer'; // Assumes Footer.tsx is the updated dark version
 
 const AboutPage = () => {
-  const [animateHeader, setAnimateHeader] = useState(false);
-
-  useEffect(() => {
-    // Trigger animation on mount
-    const timer = setTimeout(() => setAnimateHeader(true), 100);
-    return () => clearTimeout(timer); // Cleanup timer on unmount
-  }, []);
-
   return (
     // Use dark base background for the page
     <div className="min-h-screen bg-gray-950 text-muted-foreground overflow-x-hidden relative w-screen flex flex-col">
@@ -31,7 +22,7 @@ const AboutPage = () => {
         <div className="container mx-auto px-4 pt-16 pb-24 relative z-10"> {/* Add padding top below header */}
 
           {/* Page Header Section */}
-          <div className={`text-center mb-16 transition-all duration-1000 ease-out transform ${animateHeader ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <div className="mb-16 text-center">
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <Code size={48} className="text-primary" /> {/* Accent color */}

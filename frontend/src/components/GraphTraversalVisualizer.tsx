@@ -51,7 +51,6 @@ const calculateNodePositions = (nodes: NodeId[], svgWidth: number, svgHeight: nu
 
 // --- Main Component ---
 const GraphTraversalVisualizer: React.FC = () => {
-    const [isClient, setIsClient] = useState(false);
     const [graph, setGraph] = useState<Graph>(initialGraph);
     const [algorithmType, setAlgorithmType] = useState<AlgorithmType>("bfs");
     const [currentStepIndex, setCurrentStepIndex] = useState(-1); // Start at -1 (no step)
@@ -94,7 +93,6 @@ const GraphTraversalVisualizer: React.FC = () => {
 
     // Set initial state on client mount
     useEffect(() => {
-        setIsClient(true);
         // Set default start/end nodes based on the initial graph
         if (initialGraph.nodes.length > 0) {
             const defaultStart = initialGraph.nodes[0];
@@ -566,11 +564,6 @@ const GraphTraversalVisualizer: React.FC = () => {
 
 
     // --- Render ---
-    if (!isClient) {
-        // Render placeholder or null during server-side rendering/hydration mismatch prevention
-        return <div className="flex w-full items-center justify-center py-20 text-muted-foreground">Loading visualizer…</div>;
-    }
-
     return (
         <div className="flex w-full flex-col items-center">
             <Card className="w-full max-w-7xl shadow-xl overflow-hidden my-4">

@@ -24,7 +24,7 @@ function optimizeAlgorithm(code) {
         {/* Text Content */}
         <div className="lg:w-1/2 z-10">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
@@ -70,7 +70,7 @@ function optimizeAlgorithm(code) {
         {/* Improved IDE Mockup */}
         <div className="relative z-10 w-full lg:w-1/2" style={{ perspective: "1000px" }}>
           <motion.div
-            initial={{ opacity: 0, y: 40, rotateX: 10 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: "easeOut" }}

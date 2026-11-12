@@ -64,6 +64,23 @@ The anon key is meant to be public, since it ships in the built bundle.
 Row Level Security is what protects user data, so apply
 `backend/supabase/migrations` to your Supabase project before signing in.
 
+## Search visibility
+
+`npm run build` prerenders the public routes to HTML and generates `sitemap.xml`
+and `robots.txt` in `frontend/dist`. It needs the frontend environment variables
+above, including for the build-time render. The interactive React app mounts
+over this HTML in the browser; the heap canvas loads only in the browser.
+
+The catalog supplies visualizer metadata and the `/visualizations` directory.
+`frontend/src/lib/seo.ts` lists other public routes and the production origin.
+When adding a route, update that list so direct visits work on Vercel. Account,
+chat and unknown pages use `noindex` and are excluded from the sitemap.
+
+Vercel serves the generated files with clean URLs rather than rewriting every
+request to the homepage. After deploying, submit `sitemap.xml` in Google Search
+Console and inspect the priority visualizer URLs to check indexing and Google's
+selected canonical. Sitemap submission is a separate step from deployment.
+
 ## Checks
 
 These are what CI runs. Each workflow runs only when its folder changes.

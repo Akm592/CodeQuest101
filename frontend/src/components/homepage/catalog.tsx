@@ -45,6 +45,7 @@ export type CategoryKey = "algorithms" | "dataStructures" | "interviewPatterns" 
 
 export interface Visualization {
   title: string;
+  seoTitle?: string;
   description: string;
   icon: React.ReactElement;
   key: string;
@@ -87,45 +88,45 @@ export const categories: Category[] = [
 
 export const visualizations: Record<CategoryKey, Visualization[]> = {
   algorithms: [
-    { title: "Longest Subarray Sum K", description: "Sliding window technique visualization", icon: <Code2 />, key: "longestSubarray", level: "Medium" },
-    { title: "Spiral Matrix", description: "2D Array traversal animation", icon: <Grid />, key: "spiralMatrix", level: "Medium" },
-    { title: "Rotate Image", description: "Matrix manipulation in-place", icon: <RotateCw />, key: "rotateImage", level: "Medium" },
-    { title: "Sorting Algorithms", description: "Compare efficiency of sorts", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
-    { title: "Binary Search", description: "Divide and conquer strategy", icon: <Search />, key: "binarySearch", level: "Easy" },
-    { title: "Floyd's Algorithm", description: "Cycle detection in linked lists", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
-    { title: "Dynamic Programming", description: "Fill the table, then trace the answer back", icon: <Table2 />, key: "dynamicProgramming", level: "Hard" },
-    { title: "Topological Sort", description: "Kahn's ordering and union-find", icon: <Workflow />, key: "topologicalSort", level: "Hard" },
-    { title: "N-Queens", description: "Backtracking: place, conflict, undo", icon: <Crown />, key: "nQueens", level: "Hard" },
+    { title: "Longest Subarray Sum K", seoTitle: "Longest Subarray Sum K Visualizer", description: "Visualize the longest subarray with sum K using a sliding window. Follow the left and right pointers and see when the window expands or shrinks.", icon: <Code2 />, key: "longestSubarray", level: "Medium" },
+    { title: "Spiral Matrix", seoTitle: "Spiral Matrix Traversal Visualizer", description: "Watch spiral matrix traversal step by step. Follow the shrinking boundaries and see how each row and column contributes to the output.", icon: <Grid />, key: "spiralMatrix", level: "Medium" },
+    { title: "Rotate Image", seoTitle: "Rotate Matrix 90 Degrees Visualizer", description: "Visualize rotating a matrix 90 degrees in place. Follow the transpose and row reversal steps with an interactive matrix animation.", icon: <RotateCw />, key: "rotateImage", level: "Medium" },
+    { title: "Sorting Algorithms", seoTitle: "Sorting Algorithm Visualizer", description: "Visualize bubble sort, selection sort, quicksort and merge sort. Step through comparisons, swaps and array updates to understand each algorithm.", icon: <SortDesc />, key: "sortingAlgorithms", level: "Easy" },
+    { title: "Binary Search", seoTitle: "Binary Search Visualizer: Step-by-Step Animation", description: "Explore binary search with an interactive sorted array. Follow low, mid and high pointers, try a target and understand logarithmic search.", icon: <Search />, key: "binarySearch", level: "Easy" },
+    { title: "Floyd's Algorithm", seoTitle: "Floyd Cycle Detection Visualizer", description: "Watch Floyd's tortoise and hare algorithm detect a linked list cycle. Step through slow and fast pointers, find the cycle entry or the middle node.", icon: <GitBranch />, key: "hareTortoise", level: "Medium" },
+    { title: "Dynamic Programming", seoTitle: "Dynamic Programming Visualizer", description: "Explore dynamic programming with interactive table updates and answer reconstruction. Follow each state transition and see how subproblems build a solution.", icon: <Table2 />, key: "dynamicProgramming", level: "Hard" },
+    { title: "Topological Sort", seoTitle: "Topological Sort Visualizer: Kahn's Algorithm", description: "Step through Kahn's topological sort, track in-degrees and detect cycles. Explore union-find with interactive graph examples on CodeQuest101.", icon: <Workflow />, key: "topologicalSort", level: "Hard" },
+    { title: "N-Queens", seoTitle: "N-Queens Backtracking Visualizer", description: "Visualize the N-Queens problem with step-by-step backtracking. Watch queen placements, conflicts and undo steps while exploring the search tree.", icon: <Crown />, key: "nQueens", level: "Hard" },
   ],
   dataStructures: [
-    { title: "Binary Tree Traversal", description: "DFS & BFS animations", icon: <Network />, key: "binaryTree", level: "Easy" },
-    { title: "Linked List", description: "Pointer manipulation visualizer", icon: <GitBranch />, key: "linkedList", level: "Easy" },
-    { title: "Stack and Queue", description: "LIFO & FIFO operations", icon: <Layers />, key: "stack", level: "Easy" },
-    { title: "Tree Structures", description: "Hierarchical data modeling", icon: <Network />, key: "tree", level: "Medium" },
-    { title: "Graph Theory", description: "Nodes and edges exploration", icon: <Network />, key: "graph", level: "Hard" },
-    { title: "Heaps", description: "Priority queue visualization", icon: <Layers />, key: "heap", level: "Medium" },
-    { title: "Trie", description: "Prefix tree: insert, search, autocomplete", icon: <ListTree />, key: "trie", level: "Medium" },
+    { title: "Binary Tree Traversal", seoTitle: "Binary Tree Traversal Visualizer", description: "Explore binary tree traversals with interactive animations. Follow depth-first and breadth-first visits and compare traversal orders.", icon: <Network />, key: "binaryTree", level: "Easy" },
+    { title: "Linked List", seoTitle: "Linked List Visualizer", description: "Explore linked list operations with an interactive pointer visualization. See how nodes connect and how links change during each operation.", icon: <GitBranch />, key: "linkedList", level: "Easy" },
+    { title: "Stack and Queue", seoTitle: "Stack and Queue Visualizer", description: "Visualize stack and queue operations. Compare LIFO and FIFO behavior, track inserted and removed elements and explore each data structure interactively.", icon: <Layers />, key: "stack", level: "Easy" },
+    { title: "Tree Structures", seoTitle: "Binary Search Tree Visualizer", description: "Explore tree insertion, deletion, search and traversal. Watch how binary search tree operations change nodes and follow the explanation for each step.", icon: <Network />, key: "tree", level: "Medium" },
+    { title: "Graph Theory", seoTitle: "Graph Algorithm Visualizer: BFS and DFS", description: "Build a graph and explore breadth-first and depth-first traversal. Follow visited nodes and edges to understand how BFS and DFS explore a graph.", icon: <Network />, key: "graph", level: "Hard" },
+    { title: "Heaps", seoTitle: "Heap and Priority Queue Visualizer", description: "Explore heap operations with an interactive priority queue visualization. See how parent-child ordering changes during insertion and removal.", icon: <Layers />, key: "heap", level: "Medium" },
+    { title: "Trie", seoTitle: "Trie Visualizer: Prefix Tree and Autocomplete", description: "Insert words, search prefixes and explore autocomplete with an interactive trie visualizer. Follow each character through the prefix tree.", icon: <ListTree />, key: "trie", level: "Medium" },
   ],
   interviewPatterns: [
-    { title: "Arrays & Hashing", description: "NeetCode 150: Two Sum, anagrams, top K and more", icon: <Hash />, key: "arraysHashing", level: "Easy" },
-    { title: "Two Pointers", description: "NeetCode 150: palindromes, 3Sum, trapping rain water", icon: <ArrowLeftRight />, key: "twoPointers", level: "Medium" },
-    { title: "Sliding Window", description: "NeetCode 150: stock profit, substrings, window max", icon: <PanelsLeftRight />, key: "slidingWindow", level: "Medium" },
-    { title: "Stack", description: "NeetCode 150: brackets, RPN, monotonic stacks", icon: <Layers2 />, key: "stackPattern", level: "Medium" },
-    { title: "Binary Search", description: "NeetCode 150: rotated arrays, Koko, median of two arrays", icon: <SearchCode />, key: "binarySearchPattern", level: "Medium" },
-    { title: "Linked List", description: "NeetCode 150: reversing, Floyd's cycle, LRU cache", icon: <Link2 />, key: "linkedListPattern", level: "Medium" },
-    { title: "Trees", description: "NeetCode 150: DFS, BFS, BSTs, path sums", icon: <TreePine />, key: "treesPattern", level: "Medium" },
+    { title: "Arrays & Hashing", seoTitle: "Arrays and Hashing Interview Pattern Visualizer", description: "Learn arrays and hashing through animated coding interview problems, including Two Sum and anagrams. Compare approaches and explore Python solutions.", icon: <Hash />, key: "arraysHashing", level: "Easy" },
+    { title: "Two Pointers", seoTitle: "Two Pointers Visualizer: Step-by-Step Examples", description: "Learn the two pointers technique with interactive palindrome, 3Sum and trapping rain water examples. Follow pointer decisions and compare with brute force.", icon: <ArrowLeftRight />, key: "twoPointers", level: "Medium" },
+    { title: "Sliding Window", seoTitle: "Sliding Window Visualizer: Step-by-Step Examples", description: "Explore fixed and variable sliding windows with interactive substring and subarray examples. Follow pointer moves, compare brute force and study Python solutions.", icon: <PanelsLeftRight />, key: "slidingWindow", level: "Medium" },
+    { title: "Stack", seoTitle: "Stack Interview Pattern Visualizer", description: "Learn stack interview patterns with animated bracket matching, reverse Polish notation and monotonic stack examples. Explore explanations and Python solutions.", icon: <Layers2 />, key: "stackPattern", level: "Medium" },
+    { title: "Binary Search", seoTitle: "Binary Search Interview Pattern Visualizer", description: "Explore binary search interview problems with animated rotated arrays, Koko eating bananas and median examples. Follow the search boundaries step by step.", icon: <SearchCode />, key: "binarySearchPattern", level: "Medium" },
+    { title: "Linked List", seoTitle: "Linked List Interview Pattern Visualizer", description: "Learn linked list interview patterns with pointer animations for reversal, cycle detection and LRU cache problems. Explore explanations and Python solutions.", icon: <Link2 />, key: "linkedListPattern", level: "Medium" },
+    { title: "Trees", seoTitle: "Tree Interview Pattern Visualizer", description: "Explore tree interview patterns with interactive DFS, BFS, binary search tree and path sum problems. Follow each step and study Python solutions.", icon: <TreePine />, key: "treesPattern", level: "Medium" },
   ],
   machineLearning: [
-    { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
-    { title: "Linear Regression", description: "Fit a line by shrinking the error", icon: <LineChart />, key: "linearRegression", level: "Easy" },
-    { title: "K-Means Clustering", description: "Find groups with no labels", icon: <Boxes />, key: "kMeans", level: "Easy" },
-    { title: "Decision Tree", description: "20 questions: Gini, splits and overfitting", icon: <GitFork />, key: "decisionTree", level: "Medium" },
-    { title: "Naive Bayes", description: "A spam filter that weighs every word", icon: <MailCheck />, key: "naiveBayes", level: "Easy" },
-    { title: "Random Forest", description: "Many trees vote: bootstrap and out-of-bag", icon: <Trees />, key: "randomForest", level: "Medium" },
-    { title: "Gradient Boosting", description: "Each new tree fixes what's still wrong", icon: <Layers3 />, key: "gradientBoosting", level: "Medium" },
-    { title: "Neural Network", description: "Watch it train: forward, backprop, update", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
-    { title: "Self-Attention", description: "How a transformer links “it” to “cat”", icon: <ScanEye />, key: "attention", level: "Medium" },
-    { title: "Next-Token Sampling", description: "Temperature, top-k and top-p, explained", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
+    { title: "Gradient Descent", seoTitle: "Gradient Descent Visualizer: Learning Rate and Optimizers", description: "Explore gradient descent with interactive learning rates, loss contours and optimizer comparisons. See how SGD, momentum and Adam move toward a minimum.", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
+    { title: "Linear Regression", seoTitle: "Linear Regression Visualizer", description: "Fit a line interactively and explore linear regression. See how predictions, residuals and loss change as the model learns from data.", icon: <LineChart />, key: "linearRegression", level: "Easy" },
+    { title: "K-Means Clustering", seoTitle: "K-Means Clustering Visualizer", description: "Explore K-means clustering with interactive points and centroids. Follow cluster assignments and centroid updates to see how unlabeled data forms groups.", icon: <Boxes />, key: "kMeans", level: "Easy" },
+    { title: "Decision Tree", seoTitle: "Decision Tree Visualizer", description: "Explore decision tree splits, Gini impurity and overfitting interactively. See how feature thresholds divide data and build a classifier.", icon: <GitFork />, key: "decisionTree", level: "Medium" },
+    { title: "Naive Bayes", seoTitle: "Naive Bayes Visualizer", description: "Explore a Naive Bayes spam classifier interactively. See how word likelihoods and prior probabilities combine to classify a message.", icon: <MailCheck />, key: "naiveBayes", level: "Easy" },
+    { title: "Random Forest", seoTitle: "Random Forest Visualizer", description: "Explore random forests through interactive decision trees, bootstrap samples and out-of-bag evaluation. See how individual trees vote on a prediction.", icon: <Trees />, key: "randomForest", level: "Medium" },
+    { title: "Gradient Boosting", seoTitle: "Gradient Boosting Visualizer", description: "Visualize gradient boosting step by step. See how each new decision tree fits residual errors and improves the combined prediction.", icon: <Layers3 />, key: "gradientBoosting", level: "Medium" },
+    { title: "Neural Network", seoTitle: "Neural Network Training Visualizer", description: "Train a neural network interactively. Explore forward propagation, backpropagation and weight updates to see how a model learns from data.", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
+    { title: "Self-Attention", seoTitle: "Self-Attention Visualizer: Query, Key and Value", description: "Explore transformer self-attention with interactive query, key and value matrices. Follow attention scores and see how tokens combine information.", icon: <ScanEye />, key: "attention", level: "Medium" },
+    { title: "Next-Token Sampling", seoTitle: "LLM Sampling Visualizer: Temperature, Top-K and Top-P", description: "Explore LLM token sampling with interactive temperature, top-k and top-p controls. Follow logits, softmax probabilities, filtering and the final token draw.", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
   ],
 };
 

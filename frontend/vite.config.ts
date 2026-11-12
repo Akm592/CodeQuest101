@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react-swc'
 
 export default defineConfig({
   plugins: [react()],
+  ssr: {
+    noExternal: ['react-router-dom', 'react-router', 'react-helmet-async'],
+  },
   // The algorithm step generators are pure functions, so there is nothing to
   // render and no need for jsdom. Tests import { describe, it, expect } from
   // "vitest" explicitly rather than enabling globals, because tsconfig.app.json

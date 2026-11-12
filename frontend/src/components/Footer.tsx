@@ -62,6 +62,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/visualizations" className="transition-colors hover:text-primary">
+                  All visualizers
+                </Link>
+              </li>
+              <li>
                 <Link to="/chat" className="transition-colors hover:text-primary">
                   AI Tutor
                 </Link>

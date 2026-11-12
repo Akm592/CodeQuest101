@@ -1,15 +1,14 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Input } from '../ui/input';
 import { ArrowLeft, ArrowRight, Filter, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { allVisualizations, categories, visualizations } from './catalog';
 
-interface VisualizationSectionProps {
-  onSelectVisualization: (key: string) => void;
-}
+const MotionLink = motion.create(Link);
 
-export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSelectVisualization }) => {
+export const VisualizationSection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,6 +34,9 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
             Choose a domain to explore our extensive library of interactive visualizations.
           </p>
+          <Link to="/visualizations" className="mb-6 inline-flex min-h-11 items-center gap-2 text-primary underline underline-offset-4">
+            Browse all algorithm, data structure and ML visualizers <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
 
           <div className="max-w-md mx-auto relative group">
             <div className="relative">
@@ -54,7 +56,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
           {!selectedCategory && !isSearching ? (
             <motion.div
               key="categories"
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
@@ -87,7 +89,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
           ) : (
             <motion.div
               key="visualizations"
-              initial={{ opacity: 0, x: 20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
@@ -116,13 +118,13 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
               {filteredVisualizations.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredVisualizations.map((viz, idx) => (
-                    <motion.div
+                    <MotionLink
                       key={viz.key}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={false}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      onClick={() => onSelectVisualization(viz.key)}
-                      className="glass glass-hover group flex cursor-pointer flex-col justify-between rounded-2xl p-6 hover:-translate-y-0.5"
+                      to={`/visualize/${viz.key}`}
+                      className="glass glass-hover group flex cursor-pointer flex-col justify-between rounded-2xl p-6 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-4">
@@ -145,7 +147,7 @@ export const VisualizationSection: React.FC<VisualizationSectionProps> = ({ onSe
                           {viz.description}
                         </p>
                       </div>
-                    </motion.div>
+                    </MotionLink>
                   ))}
                 </div>
               ) : (

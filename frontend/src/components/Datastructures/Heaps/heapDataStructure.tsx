@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import HeapVisualization from "./HeapVisualization"; // Assuming this component exists and will be updated
+import { lazy, Suspense, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"; // Using Card for structure
 import { Eye, EyeOff } from 'lucide-react'; // Icons for toggle button
+
+const HeapVisualization = lazy(() => import("./HeapVisualization"));
 
 const HeapDataStructure = () => {
   const [showExplanations, setShowExplanations] = useState(true);
@@ -345,7 +346,12 @@ function heapifyDownForSort(heap, index, heapSize, isMinHeap) {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-6">
-            <HeapVisualization />
+            {/* p5 needs a browser; the explanation below is rendered at build time. */}
+            {!import.meta.env.SSR && (
+              <Suspense fallback={<p>Loading heap canvas…</p>}>
+                <HeapVisualization />
+              </Suspense>
+            )}
           </CardContent>
         </Card>
 
