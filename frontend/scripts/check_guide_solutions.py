@@ -714,6 +714,63 @@ for _ in range(300):
     ok &= st["largest_rectangle"].largest_rectangle_area(h) == want
 check("largest rectangle matches trying every range of bars (300 cases)", ok)
 
+print("\nNeetCode 150: Binary Search")
+bs = {name: load(f"neetcode/{name}") for name in ["binary_search", "search_2d_matrix", "koko_bananas", "find_min_rotated", "search_rotated", "time_map", "median_two_arrays"]}
+ok = True
+for _ in range(300):
+    nums = sorted(rng.sample(range(-20, 40), rng.randint(0, 12)))
+    target = rng.randint(-22, 42)
+    ok &= bs["binary_search"].search(nums, target) == (nums.index(target) if target in nums else -1)
+check("binary search matches list.index (300 cases)", ok)
+ok = True
+for _ in range(300):
+    rows, cols = rng.randint(1, 5), rng.randint(1, 5)
+    flat = sorted(rng.sample(range(0, 60), rows * cols))
+    matrix = [flat[r * cols : (r + 1) * cols] for r in range(rows)]
+    target = rng.randint(-1, 61)
+    ok &= bs["search_2d_matrix"].search_matrix(matrix, target) == (target in flat)
+check("search a 2D matrix matches checking every cell (300 cases)", ok)
+ok = True
+for _ in range(300):
+    piles = [rng.randint(1, 30) for _ in range(rng.randint(1, 7))]
+    h = rng.randint(len(piles), len(piles) * 4)
+    want = next(k for k in range(1, max(piles) + 1) if sum(-(-p // k) for p in piles) <= h)
+    ok &= bs["koko_bananas"].min_eating_speed(piles, h) == want
+check("koko eating bananas matches trying every speed from 1 up (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = sorted(rng.sample(range(-20, 40), rng.randint(1, 12)))
+    k = rng.randrange(len(s))
+    nums = s[k:] + s[:k]
+    target = rng.randint(-22, 42)
+    ok &= bs["find_min_rotated"].find_min(nums) == min(nums)
+    ok &= bs["search_rotated"].search(nums, target) == (nums.index(target) if target in nums else -1)
+check("rotated array: find min matches min(), search matches list.index (300 cases)", ok)
+ok = True
+for _ in range(200):
+    tm, ref, t = bs["time_map"].TimeMap(), [], 0
+    for _ in range(25):
+        key = rng.choice("abc")
+        if rng.random() < 0.5:
+            t += rng.randint(1, 3)
+            val = rng.choice(["x", "y", "z"]) + str(t)
+            tm.set(key, val, t)
+            ref.append((key, t, val))
+        else:
+            q = rng.randint(0, t + 2)
+            hits = [v for k, tt, v in ref if k == key and tt <= q]
+            ok &= tm.get(key, q) == (hits[-1] if hits else "")
+check("time map's get matches scanning every version (200 runs)", ok)
+ok = True
+for _ in range(300):
+    a = sorted(rng.randint(-10, 30) for _ in range(rng.randint(0, 8)))
+    b = sorted(rng.randint(-10, 30) for _ in range(rng.randint(0 if a else 1, 8)))
+    allv = sorted(a + b)
+    n = len(allv)
+    want = allv[n // 2] if n % 2 else (allv[n // 2 - 1] + allv[n // 2]) / 2
+    ok &= bs["median_two_arrays"].find_median_sorted_arrays(a, b) == want
+check("median of two sorted arrays matches merging and taking the middle (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

@@ -61,17 +61,17 @@ function run(board: Board): PatternStep[] {
       ops += 3;
       const where = rows[r].has(d) ? `row ${r}` : cols[c].has(d) ? `column ${c}` : boxes[b].has(d) ? `box ${b}` : null;
       if (where) {
-        steps.push({ stage: "invalid", explanation: `${d} is already in ${where}'s set. That's a repeat, so the board is invalid.`, rows: [], grid: { title: "board", cells: grid(r, c, findClash(r, c, d)) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops, done: true, answer: "false" });
+        steps.push({ stage: "invalid", explanation: `${d} is already in ${where}'s set. That's a repeat, so the board is invalid.`, rows: [], grid: { title: "board", blocks: 3, cells: grid(r, c, findClash(r, c, d)) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops, done: true, answer: "false" });
         return steps;
       }
-      steps.push({ stage: "check", explanation: `Cell (${r}, ${c}) holds ${d}. Not in row ${r}, column ${c} or box ${b} yet: fine.`, rows: [], grid: { title: "board", cells: grid(r, c) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops });
+      steps.push({ stage: "check", explanation: `Cell (${r}, ${c}) holds ${d}. Not in row ${r}, column ${c} or box ${b} yet: fine.`, rows: [], grid: { title: "board", blocks: 3, cells: grid(r, c) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops });
       rows[r].add(d);
       cols[c].add(d);
       boxes[b].add(d);
       ops += 3;
-      steps.push({ stage: "add", explanation: `Record ${d} in all three sets.`, rows: [], grid: { title: "board", cells: grid(r, c) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops });
+      steps.push({ stage: "add", explanation: `Record ${d} in all three sets.`, rows: [], grid: { title: "board", blocks: 3, cells: grid(r, c) }, map: map(r, c), vars: [{ name: "cell", value: `(${r}, ${c}) = ${d}` }, { name: "box", value: `(${r}//3)·3 + ${c}//3 = ${b}` }], ops });
     }
-  steps.push({ stage: "valid", explanation: "Every filled cell checked: no row, column or box repeats a digit. Valid (it may still be unsolvable, but that's not asked).", rows: [], grid: { title: "board", cells: board.map((line) => line.map((d) => ({ v: d === "." ? "" : d, tone: d === "." ? undefined : ("found" as const) }))) }, vars: [], ops, done: true, answer: "true" });
+  steps.push({ stage: "valid", explanation: "Every filled cell checked: no row, column or box repeats a digit. Valid (it may still be unsolvable, but that's not asked).", rows: [], grid: { title: "board", blocks: 3, cells: board.map((line) => line.map((d) => ({ v: d === "." ? "" : d, tone: d === "." ? undefined : ("found" as const) }))) }, vars: [], ops, done: true, answer: "true" });
   return steps;
 }
 

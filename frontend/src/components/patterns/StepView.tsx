@@ -17,7 +17,7 @@ const CELL: Record<VizTone, string> = {
   visited: "border-viz-visited/70 bg-viz-visited/20 text-foreground",
   found: "border-viz-found bg-viz-found/25 text-foreground",
   pointer: "border-viz-pointer bg-viz-pointer/20 text-foreground",
-  idle: "border-white/10 bg-white/[0.03] text-muted-foreground",
+  idle: "border-white/5 bg-transparent text-muted-foreground opacity-40",
 };
 const TEXT: Record<VizTone, string> = {
   current: "text-viz-current",
@@ -113,6 +113,29 @@ const Box: React.FC<{ cell: PCell; small?: boolean }> = ({ cell, small }) => (
   </div>
 );
 
+/** A grid of cells, e.g. a Sudoku board or a sorted matrix. */
+const Grid: React.FC<{ grid: NonNullable<PatternStep["grid"]> }> = ({ grid }) => {
+  const rows = grid.cells.length;
+  const cols = grid.cells[0]?.length ?? 0;
+  const b = grid.blocks;
+  return (
+    <div className="min-w-0">
+      {grid.title && <p className="mb-1.5 font-mono text-xs text-muted-foreground">{grid.title}</p>}
+      <div className="overflow-x-auto">
+        <div className="grid w-max gap-0.5 rounded-xl border border-white/10 p-1" style={{ gridTemplateColumns: `repeat(${cols}, auto)` }}>
+          {grid.cells.flatMap((line, r) =>
+            line.map((c, j) => (
+              <div key={`${r}-${j}`} className={cn(b && j % b === b - 1 && j < cols - 1 && "mr-1", b && r % b === b - 1 && r < rows - 1 && "mb-1")}>
+                <Box cell={c} small />
+              </div>
+            )),
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
   <div className="space-y-4">
     {step.rows.map((r, i) => (
@@ -128,19 +151,7 @@ const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
 
     {step.bars && <Bars bars={step.bars} />}
 
-    {step.grid && (
-      <div className="overflow-x-auto">
-        <div className="grid w-max grid-cols-9 gap-0.5 rounded-xl border border-white/10 p-1">
-          {step.grid.cells.flatMap((line, r) =>
-            line.map((c, j) => (
-              <div key={`${r}-${j}`} className={cn(j % 3 === 2 && j < 8 && "mr-1", r % 3 === 2 && r < 8 && "mb-1")}>
-                <Box cell={c} small />
-              </div>
-            )),
-          )}
-        </div>
-      </div>
-    )}
+    {step.grid && <Grid grid={step.grid} />}
 
     {(step.map || step.vars.length > 0) && (
       <div className="grid gap-3 sm:grid-cols-2">

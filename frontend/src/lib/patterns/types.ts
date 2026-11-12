@@ -30,7 +30,8 @@ export interface PatternStep extends BaseStep {
   stage: string;
   rows: PRow[];
   map?: { title: string; entries: PEntry[] };
-  grid?: { title: string; cells: PCell[][] };
+  /** A grid of any size; `blocks` adds a gap every n rows/columns (3 for Sudoku). */
+  grid?: { title: string; cells: PCell[][]; blocks?: number };
   /** Bars (heights), for problems about walls and water. */
   bars?: {
     values: number[];

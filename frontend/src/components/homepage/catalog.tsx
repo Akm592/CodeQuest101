@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   PanelsLeftRight,
   Layers2,
+  SearchCode,
   Boxes,
   Brain,
   Code2,
@@ -108,6 +109,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Two Pointers", description: "NeetCode 150: palindromes, 3Sum, trapping rain water", icon: <ArrowLeftRight />, key: "twoPointers", level: "Medium" },
     { title: "Sliding Window", description: "NeetCode 150: stock profit, substrings, window max", icon: <PanelsLeftRight />, key: "slidingWindow", level: "Medium" },
     { title: "Stack", description: "NeetCode 150: brackets, RPN, monotonic stacks", icon: <Layers2 />, key: "stackPattern", level: "Medium" },
+    { title: "Binary Search", description: "NeetCode 150: rotated arrays, Koko, median of two arrays", icon: <SearchCode />, key: "binarySearchPattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -134,7 +136,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 

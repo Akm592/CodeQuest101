@@ -1,14 +1,14 @@
 # NeetCode 150 on CodeQuest: progress and what's left
 
-_Last updated: 8 November 2026._
+_Last updated: 12 November 2026._
 
 CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neetcode.io/roadmap) into animated, step-by-step pages, one page per NeetCode category, in NeetCode's order. Each problem is credited to NeetCode with a link to their video.
 
 ## Status at a glance
 
-- **Done:** 27 of 150 problems, 4 of 18 categories.
-- **Left:** 123 problems in 14 categories.
-- **Next up:** Binary Search (7 problems).
+- **Done:** 34 of 150 problems, 5 of 18 categories.
+- **Left:** 116 problems in 13 categories.
+- **Next up:** Linked List (11 problems). It needs a new linked-list view first.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -16,7 +16,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 2 | Two Pointers | 5 | ✅ Done | `/visualize/twoPointers` | `c0f36d6` |
 | 3 | Sliding Window | 6 | ✅ Done | `/visualize/slidingWindow` | `01db307` |
 | 4 | Stack | 7 | ✅ Done | `/visualize/stackPattern` | `ddd7c56` |
-| 5 | Binary Search | 7 | ⬜ To do | | |
+| 5 | Binary Search | 7 | ✅ Done | `/visualize/binarySearchPattern` | "Interview Patterns: Binary Search" |
 | 6 | Linked List | 11 | ⬜ To do | | |
 | 7 | Trees | 15 | ⬜ To do | | |
 | 8 | Tries | 3 | ⬜ To do | | |
@@ -49,24 +49,13 @@ Best Time to Buy And Sell Stock, Longest Substring Without Repeating Characters,
 
 Valid Parentheses, Min Stack, Evaluate Reverse Polish Notation, Generate Parentheses, Daily Temperatures, Car Fleet, Largest Rectangle In Histogram.
 
+### Binary Search (7) · `/visualize/binarySearchPattern`
+
+Binary Search, Search a 2D Matrix, Koko Eating Bananas, Find Minimum In Rotated Sorted Array, Search In Rotated Sorted Array, Time Based Key Value Store, Median of Two Sorted Arrays.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 5. Binary Search (7)
-
-- **Visual idea:** A row with L, M, R markers that halve the range; for “search the answer” problems (Koko), a number line of candidate speeds with the feasible side shaded. Rotated arrays: show which half is sorted.
-- **Link to:** `binarySearch` (existing visualizer: link to it, like Sliding Window links `longestSubarray`)
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Binary Search | Easy |  | [`binary-search`](https://leetcode.com/problems/binary-search/) | [`s4DPM8ct1pI`](https://www.youtube.com/watch?v=s4DPM8ct1pI) |
-| Search a 2D Matrix | Medium |  | [`search-a-2d-matrix`](https://leetcode.com/problems/search-a-2d-matrix/) | [`Ber2pi2C0j0`](https://www.youtube.com/watch?v=Ber2pi2C0j0) |
-| Koko Eating Bananas | Medium |  | [`koko-eating-bananas`](https://leetcode.com/problems/koko-eating-bananas/) | [`U2SozAs9RzA`](https://www.youtube.com/watch?v=U2SozAs9RzA) |
-| Find Minimum In Rotated Sorted Array | Medium | Yes | [`find-minimum-in-rotated-sorted-array`](https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/) | [`nIVW4P8b1VA`](https://www.youtube.com/watch?v=nIVW4P8b1VA) |
-| Search In Rotated Sorted Array | Medium | Yes | [`search-in-rotated-sorted-array`](https://leetcode.com/problems/search-in-rotated-sorted-array/) | [`U8XENwh8Oy8`](https://www.youtube.com/watch?v=U8XENwh8Oy8) |
-| Time Based Key Value Store | Medium |  | [`time-based-key-value-store`](https://leetcode.com/problems/time-based-key-value-store/) | [`fu2cD_6E8Hw`](https://www.youtube.com/watch?v=fu2cD_6E8Hw) |
-| Median of Two Sorted Arrays | Hard |  | [`median-of-two-sorted-arrays`](https://leetcode.com/problems/median-of-two-sorted-arrays/) | [`q6IEA26hvXc`](https://www.youtube.com/watch?v=q6IEA26hvXc) |
 
 ### 6. Linked List (11)
 
@@ -296,7 +285,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | Linked list (boxes and arrows, named pointers) | Linked List | Arrows must be able to flip direction for reversals. |
 | Binary tree (nodes by depth, a value per node) | Trees, Heap | Show each node's return value for recursive problems. |
 | Trie | Tries | Could share the tree view. |
-| Grid of any size | Graphs, Backtracking, 2-D DP, Tries | Generalise the existing 9×9 grid. |
+| Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
 | Recursion tree | Backtracking | Branches for choices, dead ends crossed out. |
 | Timeline | Intervals | Intervals as bars on one axis. |
@@ -346,7 +335,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first four categories
+## Lessons from the first five categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -354,3 +343,5 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Long titles overflow on phones** unless grid items have `min-w-0`.
 - **Bars of similar values look identical when drawn from zero.** Use `bars.floor`.
 - **Highlight what the data means**, not just an index. In Largest Rectangle, highlight the bar a stack entry's height came from.
+- **Make “ruled out” obvious.** Faded (idle) cells must look clearly different from cells still in play; binary search depends on seeing the range halve.
+- **Examples should show the idea.** An example that finds the target on the first guess teaches nothing.
