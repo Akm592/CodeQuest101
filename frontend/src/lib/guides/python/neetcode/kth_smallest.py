@@ -1,0 +1,50 @@
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val, self.left, self.right = val, left, right
+
+
+def build(level):
+    """A tree from LeetCode's level order, e.g. [3, 9, 20, None, None, 15, 7]."""
+    if not level or level[0] is None:
+        return None
+    root = TreeNode(level[0])
+    queue, i = [root], 1
+    while queue and i < len(level):
+        node = queue.pop(0)
+        for side in ("left", "right"):
+            if i < len(level) and level[i] is not None:
+                setattr(node, side, TreeNode(level[i]))
+                queue.append(getattr(node, side))
+            i += 1
+    return root
+
+
+def to_level(root):
+    out, queue = [], [root]
+    while queue:
+        node = queue.pop(0)
+        out.append(node.val if node else None)
+        if node:
+            queue += [node.left, node.right]
+    while out and out[-1] is None:
+        out.pop()
+    return out
+
+
+def kth_smallest(root, k):
+    """In-order traversal visits a BST in sorted order; stop at the k-th
+    visit. Iterative, with a stack. O(height + k) time."""
+    stack, node = [], root
+    while stack or node:
+        while node:  # go as far left as possible
+            stack.append(node)
+            node = node.left
+        node = stack.pop()  # the next smallest
+        k -= 1
+        if k == 0:
+            return node.val
+        node = node.right
+
+
+print(kth_smallest(build([3, 1, 4, None, 2]), 1))                # 1
+print(kth_smallest(build([5, 3, 6, 2, 4, None, None, 1]), 3))    # 3

@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 45 of 150 problems, 6 of 18 categories.
-- **Left:** 105 problems in 12 categories.
-- **Next up:** Trees (15 problems). It needs a new tree view first.
+- **Done:** 60 of 150 problems, 7 of 18 categories.
+- **Left:** 90 problems in 11 categories.
+- **Next up:** Tries (3 problems). The tree view can likely be reused or adapted for a trie.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -18,7 +18,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 4 | Stack | 7 | ✅ Done | `/visualize/stackPattern` | `ddd7c56` |
 | 5 | Binary Search | 7 | ✅ Done | `/visualize/binarySearchPattern` | "Interview Patterns: Binary Search" |
 | 6 | Linked List | 11 | ✅ Done | `/visualize/linkedListPattern` | "Interview Patterns: Linked List" |
-| 7 | Trees | 15 | ⬜ To do | | |
+| 7 | Trees | 15 | ✅ Done | `/visualize/treesPattern` | "Interview Patterns: Trees" |
 | 8 | Tries | 3 | ⬜ To do | | |
 | 9 | Heap / Priority Queue | 7 | ⬜ To do | | |
 | 10 | Backtracking | 9 | ⬜ To do | | |
@@ -57,32 +57,13 @@ Binary Search, Search a 2D Matrix, Koko Eating Bananas, Find Minimum In Rotated 
 
 Reverse Linked List, Merge Two Sorted Lists, Reorder List, Remove Nth Node From End of List, Copy List With Random Pointer, Add Two Numbers, Linked List Cycle, Find The Duplicate Number, LRU Cache, Merge K Sorted Lists, Reverse Nodes In K Group.
 
+### Trees (15) · `/visualize/treesPattern`
+
+Invert Binary Tree, Maximum Depth, Diameter, Balanced Binary Tree, Same Tree, Subtree of Another Tree, Lowest Common Ancestor of a BST, Level Order Traversal, Right Side View, Count Good Nodes, Validate BST, Kth Smallest in a BST, Construct Tree from Preorder and Inorder, Maximum Path Sum, Serialize and Deserialize.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 7. Trees (15)
-
-- **Visual idea:** Needs a tree view in StepView (nodes laid out by depth, tones for visited/current, values returned up the tree shown next to each node). Many answers are “what each node returns”, so show that.
-- **Link to:** `binaryTree`, `tree`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Invert Binary Tree | Easy | Yes | [`invert-binary-tree`](https://leetcode.com/problems/invert-binary-tree/) | [`OnSn2XEQ4MY`](https://www.youtube.com/watch?v=OnSn2XEQ4MY) |
-| Maximum Depth of Binary Tree | Easy | Yes | [`maximum-depth-of-binary-tree`](https://leetcode.com/problems/maximum-depth-of-binary-tree/) | [`hTM3phVI6YQ`](https://www.youtube.com/watch?v=hTM3phVI6YQ) |
-| Diameter of Binary Tree | Easy |  | [`diameter-of-binary-tree`](https://leetcode.com/problems/diameter-of-binary-tree/) | [`bkxqA8Rfv04`](https://www.youtube.com/watch?v=bkxqA8Rfv04) |
-| Balanced Binary Tree | Easy |  | [`balanced-binary-tree`](https://leetcode.com/problems/balanced-binary-tree/) | [`QfJsau0ItOY`](https://www.youtube.com/watch?v=QfJsau0ItOY) |
-| Same Tree | Easy | Yes | [`same-tree`](https://leetcode.com/problems/same-tree/) | [`vRbbcKXCxOw`](https://www.youtube.com/watch?v=vRbbcKXCxOw) |
-| Subtree of Another Tree | Easy | Yes | [`subtree-of-another-tree`](https://leetcode.com/problems/subtree-of-another-tree/) | [`E36O5SWp-LE`](https://www.youtube.com/watch?v=E36O5SWp-LE) |
-| Lowest Common Ancestor of a Binary Search Tree | Medium | Yes | [`lowest-common-ancestor-of-a-binary-search-tree`](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/) | [`gs2LMfuOR9k`](https://www.youtube.com/watch?v=gs2LMfuOR9k) |
-| Binary Tree Level Order Traversal | Medium | Yes | [`binary-tree-level-order-traversal`](https://leetcode.com/problems/binary-tree-level-order-traversal/) | [`6ZnyEApgFYg`](https://www.youtube.com/watch?v=6ZnyEApgFYg) |
-| Binary Tree Right Side View | Medium |  | [`binary-tree-right-side-view`](https://leetcode.com/problems/binary-tree-right-side-view/) | [`d4zLyf32e3I`](https://www.youtube.com/watch?v=d4zLyf32e3I) |
-| Count Good Nodes In Binary Tree | Medium |  | [`count-good-nodes-in-binary-tree`](https://leetcode.com/problems/count-good-nodes-in-binary-tree/) | [`7cp5imvDzl4`](https://www.youtube.com/watch?v=7cp5imvDzl4) |
-| Validate Binary Search Tree | Medium | Yes | [`validate-binary-search-tree`](https://leetcode.com/problems/validate-binary-search-tree/) | [`s6ATEkipzow`](https://www.youtube.com/watch?v=s6ATEkipzow) |
-| Kth Smallest Element In a Bst | Medium | Yes | [`kth-smallest-element-in-a-bst`](https://leetcode.com/problems/kth-smallest-element-in-a-bst/) | [`5LUXSvjmGCw`](https://www.youtube.com/watch?v=5LUXSvjmGCw) |
-| Construct Binary Tree From Preorder And Inorder Traversal | Medium | Yes | [`construct-binary-tree-from-preorder-and-inorder-traversal`](https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/) | [`ihj4IQGZ2zc`](https://www.youtube.com/watch?v=ihj4IQGZ2zc) |
-| Binary Tree Maximum Path Sum | Hard | Yes | [`binary-tree-maximum-path-sum`](https://leetcode.com/problems/binary-tree-maximum-path-sum/) | [`Hr5cWUld4vU`](https://www.youtube.com/watch?v=Hr5cWUld4vU) |
-| Serialize And Deserialize Binary Tree | Hard | Yes | [`serialize-and-deserialize-binary-tree`](https://leetcode.com/problems/serialize-and-deserialize-binary-tree/) | [`u4JAi2JJhI8`](https://www.youtube.com/watch?v=u4JAi2JJhI8) |
 
 ### 8. Tries (3)
 
@@ -268,7 +249,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | View | Needed by | Notes |
 |---|---|---|
 | Linked list (boxes and arrows, named pointers) | Linked List | ✅ Done: `step.links` (`LinkView.tsx`), nodes on a row/column grid. Could also serve small graphs. |
-| Binary tree (nodes by depth, a value per node) | Trees, Heap | Show each node's return value for recursive problems. |
+| Binary tree (nodes by depth, a value per node) | Trees, Heap | ✅ Done: `step.tree` (`TreeView.tsx`), in-order layout, notes beside nodes, several trees side by side. Helpers in `lib/patterns/trees/tree.ts` (level order, random trees and BSTs). |
 | Trie | Tries | Could share the tree view. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
@@ -320,7 +301,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first six categories
+## Lessons from the first seven categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -332,3 +313,5 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Examples should show the idea.** An example that finds the target on the first guess teaches nothing.
 - **Test the picture, not just the answer.** For linked lists, following the drawn arrows on the last step must spell out the answer, and no node may have two next arrows.
 - **Labels need a halo** when arrows can pass under them.
+- **Keep the best-so-far on screen.** A highlighted best answer that vanishes on the next step is confusing.
+- **Leave room for notes** beside the last node or column, or they get cut off.

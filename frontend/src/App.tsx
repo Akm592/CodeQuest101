@@ -34,6 +34,7 @@ const SlidingWindowPage = lazy(() => import("./components/patterns/SlidingWindow
 const StackPage = lazy(() => import("./components/patterns/StackPage"));
 const BinarySearchPage = lazy(() => import("./components/patterns/BinarySearchPage"));
 const LinkedListPage = lazy(() => import("./components/patterns/LinkedListPage"));
+const TreesPage = lazy(() => import("./components/patterns/TreesPage"));
 const SortingAlgorithmVisualizer = lazy(() => import("./components/SortingAlgorithmVisualizer"));
 const LinkedListVisualizer = lazy(() => import("./components/LinkedListVisualizer"));
 const LongestSubarraySumKVisualizer = lazy(() => import("./components/LongestSubarraySumKVisualizer"));
@@ -111,6 +112,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   stackPattern: { kind: "page", title: "Stack", Component: StackPage },
   binarySearchPattern: { kind: "page", title: "Binary Search", Component: BinarySearchPage },
   linkedListPattern: { kind: "page", title: "Linked List", Component: LinkedListPage },
+  treesPattern: { kind: "page", title: "Trees", Component: TreesPage },
 };
 
 /** Deliberately plain: the UI checker samples ~1.4s after load, so a fallback

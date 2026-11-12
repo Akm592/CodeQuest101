@@ -11,6 +11,7 @@ import {
   Layers2,
   SearchCode,
   Link2,
+  TreePine,
   Boxes,
   Brain,
   Code2,
@@ -112,6 +113,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Stack", description: "NeetCode 150: brackets, RPN, monotonic stacks", icon: <Layers2 />, key: "stackPattern", level: "Medium" },
     { title: "Binary Search", description: "NeetCode 150: rotated arrays, Koko, median of two arrays", icon: <SearchCode />, key: "binarySearchPattern", level: "Medium" },
     { title: "Linked List", description: "NeetCode 150: reversing, Floyd's cycle, LRU cache", icon: <Link2 />, key: "linkedListPattern", level: "Medium" },
+    { title: "Trees", description: "NeetCode 150: DFS, BFS, BSTs, path sums", icon: <TreePine />, key: "treesPattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", description: "Roll downhill to the lowest error", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -138,7 +140,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 

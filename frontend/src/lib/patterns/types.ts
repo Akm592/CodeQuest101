@@ -44,6 +44,22 @@ export interface LEdge {
   dashed?: boolean;
 }
 
+/** A node in a binary-tree picture: x is its column (in-order position), depth its row. */
+export interface TNode {
+  id: string;
+  v: string;
+  x: number;
+  depth: number;
+  parent?: string;
+  tone?: VizTone;
+  /** Pointer names under the node. */
+  tag?: string;
+  /** A short note beside the node, e.g. what it returns. */
+  note?: string;
+  /** Colour of the edge from the parent to this node. */
+  edgeTone?: VizTone;
+}
+
 export interface PatternStep extends BaseStep {
   /** The guide stage this step belongs to. */
   stage: string;
@@ -67,6 +83,8 @@ export interface PatternStep extends BaseStep {
   };
   /** Nodes and arrows, for linked lists. */
   links?: { title?: string; nodes: LNode[]; edges: LEdge[]; rowLabels?: Record<number, string> };
+  /** One or more binary trees. */
+  tree?: { title?: string; nodes: TNode[]; labels?: { x: number; text: string }[] };
   vars: { name: string; value: string; tone?: VizTone }[];
   /** Basic operations so far (hash lookups/inserts, array reads/writes). */
   ops: number;

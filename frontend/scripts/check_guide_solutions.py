@@ -887,6 +887,172 @@ for _ in range(300):
     ok &= m.to_list(m.reverse_k_group(m.build(xs), k)) == want
 check("reverse nodes in k-group matches reversing each full block (300 cases)", ok)
 
+print("\nNeetCode 150: Trees")
+tr = {name: load(f"neetcode/{name}") for name in ["invert_tree", "max_depth", "diameter_tree", "balanced_tree", "same_tree", "subtree", "lca_bst", "level_order", "right_side_view", "good_nodes", "validate_bst", "kth_smallest", "build_tree", "max_path_sum", "serialize_tree"]}
+B = tr["invert_tree"]  # every module has the same build / to_level helpers
+def rtree(n, lo=1, hi=9, unique=False):
+    """A random tree in level order, plus its nodes as (value, left, right) dicts."""
+    if n == 0:
+        return []
+    vals = rng.sample(range(lo, hi + 1), n) if unique else [rng.randint(lo, hi) for _ in range(n)]
+    root = B.TreeNode(vals[0])
+    nodes = [root]
+    for v in vals[1:]:
+        while True:
+            t = rng.choice(nodes)
+            side = rng.choice(["left", "right"])
+            if getattr(t, side) is None:
+                c = B.TreeNode(v)
+                setattr(t, side, c)
+                nodes.append(c)
+                break
+    return B.to_level(root)
+def bst(n):
+    vals = rng.sample(range(1, 50), n)
+    root = None
+    for v in vals:
+        if root is None:
+            root = B.TreeNode(v)
+            continue
+        t = root
+        while True:
+            side = "left" if v < t.val else "right"
+            if getattr(t, side) is None:
+                setattr(t, side, B.TreeNode(v))
+                break
+            t = getattr(t, side)
+    return B.to_level(root), sorted(vals)
+def nodes_of(t):
+    return [t] + nodes_of(t.left) + nodes_of(t.right) if t else []
+def h(t):
+    return 1 + max(h(t.left), h(t.right)) if t else 0
+def mirror(t):
+    return B.TreeNode(t.val, mirror(t.right), mirror(t.left)) if t else None
+ok = True
+for _ in range(200):
+    lv = rtree(rng.randint(0, 9))
+    ok &= tr["invert_tree"].to_level(tr["invert_tree"].invert_tree(tr["invert_tree"].build(lv))) == B.to_level(mirror(B.build(lv)))
+    ok &= tr["max_depth"].max_depth(tr["max_depth"].build(lv)) == h(B.build(lv))
+    ok &= tr["diameter_tree"].diameter_of_binary_tree(tr["diameter_tree"].build(lv)) == max([0] + [h(t.left) + h(t.right) for t in nodes_of(B.build(lv))])
+    ok &= tr["balanced_tree"].is_balanced(tr["balanced_tree"].build(lv)) == all(abs(h(t.left) - h(t.right)) <= 1 for t in nodes_of(B.build(lv)))
+check("invert, max depth, diameter and balanced match direct definitions (200 trees)", ok)
+ok = True
+for _ in range(300):
+    a = rtree(rng.randint(0, 6), 1, 3)
+    b = a if rng.random() < 0.4 else rtree(rng.randint(0, 6), 1, 3)
+    ok &= tr["same_tree"].is_same_tree(tr["same_tree"].build(a), tr["same_tree"].build(b)) == (a == b)
+    sub = rtree(rng.randint(1, 3), 1, 3)
+    if rng.random() < 0.5 and a:
+        sub = B.to_level(rng.choice(nodes_of(B.build(a))))
+    want = any(B.to_level(t) == sub for t in nodes_of(B.build(a)))
+    ok &= tr["subtree"].is_subtree(tr["subtree"].build(a), tr["subtree"].build(sub)) == want
+check("same tree and subtree match comparing level-order lists (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv, vals = bst(rng.randint(2, 12))
+    p, q = rng.sample(vals, 2)
+    root = B.build(lv)
+    def path(t, v):
+        out = []
+        while t:
+            out.append(t.val)
+            if t.val == v:
+                return out
+            t = t.left if v < t.val else t.right
+    pa, pb = path(root, p), path(root, q)
+    i = 0
+    while i < min(len(pa), len(pb)) and pa[i] == pb[i]:
+        i += 1
+    ok &= tr["lca_bst"].lowest_common_ancestor(tr["lca_bst"].build(lv), p, q) == pa[i - 1]
+    k = rng.randint(1, len(vals))
+    ok &= tr["kth_smallest"].kth_smallest(tr["kth_smallest"].build(lv), k) == vals[k - 1]
+check("LCA of a BST matches comparing root paths; kth smallest matches sorting (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv = rtree(rng.randint(0, 10))
+    levels, depth_of = {}, {}
+    def walk(t, d):
+        if t:
+            levels.setdefault(d, []).append(t.val)
+            walk(t.left, d + 1)
+            walk(t.right, d + 1)
+    walk(B.build(lv), 0)
+    want = [levels[d] for d in sorted(levels)]
+    ok &= tr["level_order"].level_order(tr["level_order"].build(lv)) == want
+    ok &= tr["right_side_view"].right_side_view(tr["right_side_view"].build(lv)) == [l[-1] for l in want]
+check("level order and right side view match a depth-tagged DFS (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv = rtree(rng.randint(1, 10))
+    good = 0
+    def walk(t, path):
+        global good
+        if t:
+            good += all(v <= t.val for v in path)
+            walk(t.left, path + [t.val])
+            walk(t.right, path + [t.val])
+    walk(B.build(lv), [])
+    ok &= tr["good_nodes"].good_nodes(tr["good_nodes"].build(lv)) == good
+check("count good nodes matches checking every root path (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv, vals = bst(rng.randint(1, 10))
+    if rng.random() < 0.5 and len(vals) > 1:
+        idx = [i for i, v in enumerate(lv) if v is not None]
+        i, j = rng.sample(idx, 2)
+        lv[i], lv[j] = lv[j], lv[i]
+    ino = []
+    def inorder(t):
+        if t:
+            inorder(t.left)
+            ino.append(t.val)
+            inorder(t.right)
+    inorder(B.build(lv))
+    ok &= tr["validate_bst"].is_valid_bst(tr["validate_bst"].build(lv)) == all(a < b for a, b in zip(ino, ino[1:]))
+check("validate BST matches “inorder is strictly increasing” (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv = rtree(rng.randint(1, 10), 1, 40, unique=True)
+    pre, ino = [], []
+    def walk(t):
+        if t:
+            pre.append(t.val)
+            walk(t.left)
+            ino.append(t.val)
+            walk(t.right)
+    walk(B.build(lv))
+    m = tr["build_tree"]
+    ok &= m.to_level(m.build_tree(pre, ino)) == lv
+check("construct tree from preorder and inorder rebuilds the tree (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv = rtree(rng.randint(1, 9), -8, 8)
+    root = B.build(lv)
+    adj = {}
+    for t in nodes_of(root):
+        adj.setdefault(id(t), [])
+        for c in (t.left, t.right):
+            if c:
+                adj[id(t)].append(c)
+                adj.setdefault(id(c), []).append(t)
+    best = -10**9
+    def dfs(t, seen, total):
+        global best
+        best = max(best, total)
+        for n in adj[id(t)]:
+            if id(n) not in seen:
+                dfs(n, seen | {id(n)}, total + n.val)
+    for t in nodes_of(root):
+        dfs(t, {id(t)}, t.val)
+    ok &= tr["max_path_sum"].max_path_sum(tr["max_path_sum"].build(lv)) == best
+check("max path sum matches trying every path in the tree (300 cases)", ok)
+ok = True
+for _ in range(300):
+    lv = rtree(rng.randint(0, 10), -20, 20)
+    c = tr["serialize_tree"].Codec()
+    ok &= tr["serialize_tree"].to_level(c.deserialize(c.serialize(tr["serialize_tree"].build(lv)))) == lv
+check("serialize then deserialize gives back the same tree (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:
