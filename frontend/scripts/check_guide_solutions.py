@@ -1731,6 +1731,53 @@ for _ in range(300):
     ok &= gd["valid_parenthesis_string"].check_valid_string(t) == any_ok
 check("partition labels and valid parenthesis string match brute force (300 cases)", ok)
 
+print("\nNeetCode 150: Intervals")
+iv = {name: load(f"neetcode/{name}") for name in ["insert_interval", "merge_intervals", "non_overlapping", "meeting_rooms", "meeting_rooms_ii", "min_interval_query"]}
+def covered(ivs):
+    """Merge by marking every half-step covered, as an independent check."""
+    pts = sorted({x for a, b in ivs for x in (a, b)})
+    if not pts:
+        return []
+    cover = set()
+    for a, b in ivs:
+        cover |= {2 * x for x in range(a, b + 1)} | {2 * x + 1 for x in range(a, b)}
+    out, cur = [], None
+    for h in range(2 * pts[0], 2 * pts[-1] + 1):
+        if h in cover:
+            cur = [h // 2, h // 2] if cur is None else [cur[0], (h + 1) // 2 if h % 2 else h // 2]
+        elif cur is not None:
+            out.append(cur); cur = None
+    if cur is not None:
+        out.append(cur)
+    return out
+def rand_ivs(n_lo, n_hi):
+    return [[a, a + rng.randint(1, 4)] for a in (rng.randint(0, 10) for _ in range(rng.randint(n_lo, n_hi)))]
+ok = True
+for _ in range(300):
+    ivs = rand_ivs(1, 6)
+    ok &= iv["merge_intervals"].merge([x[:] for x in ivs]) == covered(ivs)
+    base = covered(rand_ivs(0, 4))
+    a = rng.randint(0, 10)
+    new = [a, a + rng.randint(0, 4)]
+    ok &= iv["insert_interval"].insert([x[:] for x in base], new[:]) == covered(base + [new])
+check("merge and insert interval match marking the covered points (300 cases)", ok)
+ok = True
+for _ in range(300):
+    ivs = rand_ivs(1, 7)
+    best = max(r for r in range(len(ivs) + 1) for c in itertools.combinations(sorted(ivs), r) if all(c[k][0] >= c[k - 1][1] for k in range(1, r)))
+    ok &= iv["non_overlapping"].erase_overlap_intervals([x[:] for x in ivs]) == len(ivs) - best
+    clash = any(a[0] < b[1] and b[0] < a[1] for a, b in itertools.combinations(ivs, 2))
+    ok &= iv["meeting_rooms"].can_attend_meetings([x[:] for x in ivs]) == (not clash)
+    ok &= iv["meeting_rooms_ii"].min_meeting_rooms([x[:] for x in ivs]) == max(sum(1 for a, b in ivs if a <= t < b) for t in range(0, 16))
+check("non-overlapping intervals and meeting rooms i and ii match brute force (300 cases)", ok)
+ok = True
+for _ in range(300):
+    ivs = rand_ivs(1, 5)
+    qs = [rng.randint(0, 15) for _ in range(rng.randint(1, 5))]
+    want = [min((b - a + 1 for a, b in ivs if a <= q <= b), default=-1) for q in qs]
+    ok &= iv["min_interval_query"].min_interval([x[:] for x in ivs], qs) == want
+check("minimum interval for each query matches scanning every interval (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

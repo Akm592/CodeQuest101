@@ -15,11 +15,12 @@ import { DP2 } from "./dp2";
 import { GRAPHS } from "./graphs";
 import { GREEDY } from "./greedy";
 import { HEAP } from "./heap";
+import { INTERVALS } from "./intervals";
 import { TRIES } from "./tries";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING, ...GRAPHS, ...ADVANCED_GRAPHS, ...DP1, ...DP2, ...GREEDY].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING, ...GRAPHS, ...ADVANCED_GRAPHS, ...DP1, ...DP2, ...GREEDY, ...INTERVALS].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {

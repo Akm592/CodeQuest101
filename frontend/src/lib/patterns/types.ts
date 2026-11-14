@@ -108,6 +108,18 @@ export interface PatternStep extends BaseStep {
   };
   /** Nodes and arrows, for linked lists. */
   links?: { title?: string; nodes: LNode[]; edges: LEdge[]; rowLabels?: Record<number, string> };
+  /** Intervals on a shared number line, one bar per lane. */
+  timeline?: {
+    title?: string;
+    /** Labels shown left of each lane. */
+    lanes?: string[];
+    bars: { lane: number; start: number; end: number; tone?: VizTone; text?: string; dashed?: boolean }[];
+    /** Vertical lines at points, e.g. query positions. */
+    marks?: { x: number; label?: string; tone?: VizTone }[];
+    /** Force the axis to cover at least this range. */
+    min?: number;
+    max?: number;
+  };
   /** A small graph of nodes and edges (or arrows, if directed). */
   graph?: { title?: string; nodes: GNode[]; edges: GEdge[]; directed?: boolean };
   /** One or more binary trees. */

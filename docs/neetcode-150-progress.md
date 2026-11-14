@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 129 of 150 problems, 15 of 18 categories.
-- **Left:** 21 problems in 3 categories.
-- **Next up:** Intervals (6 problems). Needs a timeline view: intervals as bars on one axis.
+- **Done:** 135 of 150 problems, 16 of 18 categories.
+- **Left:** 15 problems in 2 categories.
+- **Next up:** Math & Geometry (8 problems). Rotate Image, Spiral Matrix and Set Matrix Zeroes use the grid view; the rest are rows and variables.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -27,7 +27,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 13 | 1-D Dynamic Programming | 12 | ✅ Done | `/visualize/dp1Pattern` | "Interview Patterns: 1-D Dynamic Programming" |
 | 14 | 2-D Dynamic Programming | 11 | ✅ Done | `/visualize/dp2Pattern` | "Interview Patterns: 2-D Dynamic Programming" |
 | 15 | Greedy | 8 | ✅ Done | `/visualize/greedyPattern` | "Interview Patterns: Greedy" |
-| 16 | Intervals | 6 | ⬜ To do | | |
+| 16 | Intervals | 6 | ✅ Done | `/visualize/intervalsPattern` | "Interview Patterns: Intervals" |
 | 17 | Math & Geometry | 8 | ⬜ To do | | |
 | 18 | Bit Manipulation | 7 | ⬜ To do | | |
 
@@ -93,23 +93,13 @@ Unique Paths, Longest Common Subsequence, Best Time to Buy and Sell Stock with C
 
 Maximum Subarray, Jump Game, Jump Game II, Gas Station, Hand of Straights, Merge Triplets to Form Target Triplet, Partition Labels, Valid Parenthesis String.
 
+### Intervals (6) · `/visualize/intervalsPattern`
+
+Insert Interval, Merge Intervals, Non-overlapping Intervals, Meeting Rooms, Meeting Rooms II, Minimum Interval to Include Each Query.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 16. Intervals (6)
-
-- **Visual idea:** A timeline view: intervals as horizontal bars on a shared axis, merged ones changing colour. Meeting Rooms II: a heap of end times.
-- **Link to:** none
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Insert Interval | Medium | Yes | [`insert-interval`](https://leetcode.com/problems/insert-interval/) | [`A8NUOmlwOlM`](https://www.youtube.com/watch?v=A8NUOmlwOlM) |
-| Merge Intervals | Medium | Yes | [`merge-intervals`](https://leetcode.com/problems/merge-intervals/) | [`44H3cEC2fFM`](https://www.youtube.com/watch?v=44H3cEC2fFM) |
-| Non Overlapping Intervals | Medium | Yes | [`non-overlapping-intervals`](https://leetcode.com/problems/non-overlapping-intervals/) | [`nONCGxWoUfM`](https://www.youtube.com/watch?v=nONCGxWoUfM) |
-| Meeting Rooms | Easy | Yes | [`meeting-rooms`](https://leetcode.com/problems/meeting-rooms/) | [`PaJxqZVPhbg`](https://www.youtube.com/watch?v=PaJxqZVPhbg) |
-| Meeting Rooms II | Medium | Yes | [`meeting-rooms-ii`](https://leetcode.com/problems/meeting-rooms-ii/) | [`FdzJmTCVyJU`](https://www.youtube.com/watch?v=FdzJmTCVyJU) |
-| Minimum Interval to Include Each Query | Hard |  | [`minimum-interval-to-include-each-query`](https://leetcode.com/problems/minimum-interval-to-include-each-query/) | [`5hQ5WWW5awQ`](https://www.youtube.com/watch?v=5hQ5WWW5awQ) |
 
 ### 17. Math & Geometry (8)
 
@@ -153,7 +143,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | ✅ Done: `step.graph` (`GraphView.tsx`): round nodes at given x/y or round a circle, lines or arrows, edge labels, dashed edges. Helpers in `lib/patterns/graphs/` (`grid.ts`, `graph.ts` with union-find). |
 | Recursion tree | Backtracking | ✅ Done: `lib/patterns/backtracking/rtree.ts` records calls while the solver runs and lays the whole tree out once (nodes never move; each step reveals the next call). Drawn by `TreeView`. Skips drawing above 400 nodes. |
-| Timeline | Intervals | Intervals as bars on one axis. |
+| Timeline | Intervals | ✅ Done: `step.timeline` (`TimelineView.tsx`): one bar per lane on a shared axis, lane labels, point marks for queries or sweep moments. |
 | Bit row | Bit Manipulation | 8 or 32 cells of 0/1. |
 
 ## How to add a category (checklist)

@@ -10,6 +10,7 @@ import { C } from "../ml/colors";
 import { Surface } from "../ui/surface";
 import LinkView from "./LinkView";
 import GraphView from "./GraphView";
+import TimelineView from "./TimelineView";
 import TreeView from "./TreeView";
 
 // Literal class names so Tailwind sees them.
@@ -161,6 +162,8 @@ const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
     {step.tree && <TreeView tree={step.tree} />}
 
     {step.graph && <GraphView graph={step.graph} />}
+
+    {step.timeline && <TimelineView timeline={step.timeline} />}
 
     {(step.map || step.vars.length > 0) && (
       <div className="grid gap-3 sm:grid-cols-2">
