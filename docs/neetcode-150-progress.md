@@ -1,14 +1,14 @@
 # NeetCode 150 on CodeQuest: progress and what's left
 
-_Last updated: 12 November 2026._
+_Last updated: 14 November 2026._
 
 CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neetcode.io/roadmap) into animated, step-by-step pages, one page per NeetCode category, in NeetCode's order. Each problem is credited to NeetCode with a link to their video.
 
 ## Status at a glance
 
-- **Done:** 60 of 150 problems, 7 of 18 categories.
-- **Left:** 90 problems in 11 categories.
-- **Next up:** Tries (3 problems). The tree view can likely be reused or adapted for a trie.
+- **Done:** 63 of 150 problems, 8 of 18 categories.
+- **Left:** 87 problems in 10 categories.
+- **Next up:** Heap / Priority Queue (7 problems). The tree view can draw the heap; a row can show the array behind it.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -19,7 +19,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 5 | Binary Search | 7 | ✅ Done | `/visualize/binarySearchPattern` | "Interview Patterns: Binary Search" |
 | 6 | Linked List | 11 | ✅ Done | `/visualize/linkedListPattern` | "Interview Patterns: Linked List" |
 | 7 | Trees | 15 | ✅ Done | `/visualize/treesPattern` | "Interview Patterns: Trees" |
-| 8 | Tries | 3 | ⬜ To do | | |
+| 8 | Tries | 3 | ✅ Done | `/visualize/triesPattern` | "Interview Patterns: Tries" |
 | 9 | Heap / Priority Queue | 7 | ⬜ To do | | |
 | 10 | Backtracking | 9 | ⬜ To do | | |
 | 11 | Graphs | 13 | ⬜ To do | | |
@@ -61,20 +61,13 @@ Reverse Linked List, Merge Two Sorted Lists, Reorder List, Remove Nth Node From 
 
 Invert Binary Tree, Maximum Depth, Diameter, Balanced Binary Tree, Same Tree, Subtree of Another Tree, Lowest Common Ancestor of a BST, Level Order Traversal, Right Side View, Count Good Nodes, Validate BST, Kth Smallest in a BST, Construct Tree from Preorder and Inorder, Maximum Path Sum, Serialize and Deserialize.
 
+### Tries (3) · `/visualize/triesPattern`
+
+Implement Trie (Prefix Tree), Design Add and Search Words Data Structure, Word Search II.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 8. Tries (3)
-
-- **Visual idea:** A trie view (nodes = letters, end-of-word marks). Word Search II also needs the grid view (already exists for Sudoku).
-- **Link to:** `trie`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Implement Trie Prefix Tree | Medium | Yes | [`implement-trie-prefix-tree`](https://leetcode.com/problems/implement-trie-prefix-tree/) | [`oobqoCJlHA0`](https://www.youtube.com/watch?v=oobqoCJlHA0) |
-| Design Add And Search Words Data Structure | Medium | Yes | [`design-add-and-search-words-data-structure`](https://leetcode.com/problems/design-add-and-search-words-data-structure/) | [`BTf05gs_8iU`](https://www.youtube.com/watch?v=BTf05gs_8iU) |
-| Word Search II | Hard | Yes | [`word-search-ii`](https://leetcode.com/problems/word-search-ii/) | [`asbcE9mZz_U`](https://www.youtube.com/watch?v=asbcE9mZz_U) |
 
 ### 9. Heap / Priority Queue (7)
 
@@ -250,7 +243,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 |---|---|---|
 | Linked list (boxes and arrows, named pointers) | Linked List | ✅ Done: `step.links` (`LinkView.tsx`), nodes on a row/column grid. Could also serve small graphs. |
 | Binary tree (nodes by depth, a value per node) | Trees, Heap | ✅ Done: `step.tree` (`TreeView.tsx`), in-order layout, notes beside nodes, several trees side by side. Helpers in `lib/patterns/trees/tree.ts` (level order, random trees and BSTs). |
-| Trie | Tries | Could share the tree view. |
+| Trie | Tries | ✅ Done: `TreeView` with `ring` for word ends; `trieLayout` in `lib/patterns/tries/trie.ts` handles any number of children. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
 | Recursion tree | Backtracking | Branches for choices, dead ends crossed out. |
@@ -301,7 +294,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first seven categories
+## Lessons from the first eight categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -315,3 +308,5 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Labels need a halo** when arrows can pass under them.
 - **Keep the best-so-far on screen.** A highlighted best answer that vanishes on the next step is confusing.
 - **Leave room for notes** beside the last node or column, or they get cut off.
+- **Pick a big input that shows why the pattern exists.** Random Word Search II boards made the trie only ~2× better, because most words fail on their first letter. The classic slow input (a board of a's, words like “aaaaab”) shows the real 10× gap.
+- **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.

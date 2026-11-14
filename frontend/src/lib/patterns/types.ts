@@ -58,6 +58,8 @@ export interface TNode {
   note?: string;
   /** Colour of the edge from the parent to this node. */
   edgeTone?: VizTone;
+  /** Draw a second ring around the node (a trie node where a word ends). */
+  ring?: boolean;
 }
 
 export interface PatternStep extends BaseStep {

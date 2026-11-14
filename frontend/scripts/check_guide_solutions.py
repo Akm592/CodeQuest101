@@ -1064,6 +1064,50 @@ for _ in range(300):
     ok &= tr["serialize_tree"].to_level(c.deserialize(c.serialize(tr["serialize_tree"].build(lv)))) == lv
 check("serialize then deserialize gives back the same tree (300 cases)", ok)
 
+print("\nNeetCode 150: Tries")
+tri = {name: load(f"neetcode/{name}") for name in ["implement_trie", "word_dictionary", "word_search_ii"]}
+ok = True
+for _ in range(300):
+    t, words = tri["implement_trie"].Trie(), set()
+    for _ in range(rng.randint(3, 12)):
+        w = "".join(rng.choice("abc") for _ in range(rng.randint(1, 4)))
+        op = rng.choice(["insert", "search", "startsWith"])
+        if op == "insert":
+            t.insert(w); words.add(w)
+        elif op == "search":
+            ok &= t.search(w) == (w in words)
+        else:
+            ok &= t.startsWith(w) == any(x.startswith(w) for x in words)
+check("trie matches a plain set of words (300 runs)", ok)
+ok = True
+for _ in range(300):
+    d, words = tri["word_dictionary"].WordDictionary(), []
+    for _ in range(rng.randint(3, 10)):
+        w = "".join(rng.choice("abc") for _ in range(rng.randint(1, 3)))
+        if rng.random() < 0.5:
+            d.addWord(w); words.append(w)
+        else:
+            p = "".join("." if rng.random() < 0.4 else c for c in w)
+            ok &= d.search(p) == any(len(x) == len(p) and all(a in (".", b) for a, b in zip(p, x)) for x in words)
+check("add and search words matches comparing with every word (300 runs)", ok)
+def word_on_board(board, w):
+    rows, cols = len(board), len(board[0])
+    def go(r, c, i, used):
+        if not (0 <= r < rows and 0 <= c < cols) or (r, c) in used or board[r][c] != w[i]:
+            return False
+        if i == len(w) - 1:
+            return True
+        return any(go(r + dr, c + dc, i + 1, used | {(r, c)}) for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+    return any(go(r, c, 0, frozenset()) for r in range(rows) for c in range(cols))
+ok = True
+for _ in range(300):
+    rows, cols = rng.randint(1, 4), rng.randint(1, 4)
+    board = [[rng.choice("abc") for _ in range(cols)] for _ in range(rows)]
+    words = list({"".join(rng.choice("abc") for _ in range(rng.randint(1, 5))) for _ in range(rng.randint(1, 8))})
+    got = tri["word_search_ii"].find_words([row[:] for row in board], words)
+    ok &= len(got) == len(set(got)) and sorted(got) == sorted(w for w in words if word_on_board(board, w))
+check("word search ii matches a separate search per word (300 boards)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

@@ -1,6 +1,7 @@
 // Draws binary trees: each node at its column (in-order position) and depth,
 // with lines to its children, pointer labels under it and a note (such as the
-// value it returns) beside it.
+// value it returns) beside it. Also draws tries: any number of children, and a
+// double ring where a word ends.
 
 import * as React from "react";
 
@@ -73,6 +74,7 @@ const TreeView: React.FC<{ tree: NonNullable<PatternStep["tree"]> }> = ({ tree }
               const fill = n.tone ? FILL[n.tone] : C.card;
               return (
                 <g key={n.id} opacity={n.tone === "idle" ? 0.4 : 1}>
+                  {n.ring && <circle cx={px(n)} cy={py(n)} r={R + 3.5} fill="none" stroke={n.tone && n.tone !== "idle" ? FILL[n.tone] : C.fg} strokeOpacity={0.7} strokeWidth={1.3} />}
                   <circle cx={px(n)} cy={py(n)} r={R} fill={fill} fillOpacity={n.tone && n.tone !== "idle" ? 0.3 : 1} stroke={n.tone ? FILL[n.tone] : C.grid} strokeWidth={1.5} />
                   <text x={px(n)} y={py(n) + 4.5} textAnchor="middle" fontSize={12.5} fontFamily="ui-monospace, monospace" fill={C.fg}>
                     {n.v}

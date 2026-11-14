@@ -12,6 +12,7 @@ import {
   SearchCode,
   Link2,
   TreePine,
+  TextSearch,
   Boxes,
   Brain,
   Code2,
@@ -115,6 +116,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Binary Search", seoTitle: "Binary Search Interview Pattern Visualizer", description: "Explore binary search interview problems with animated rotated arrays, Koko eating bananas and median examples. Follow the search boundaries step by step.", icon: <SearchCode />, key: "binarySearchPattern", level: "Medium" },
     { title: "Linked List", seoTitle: "Linked List Interview Pattern Visualizer", description: "Learn linked list interview patterns with pointer animations for reversal, cycle detection and LRU cache problems. Explore explanations and Python solutions.", icon: <Link2 />, key: "linkedListPattern", level: "Medium" },
     { title: "Trees", seoTitle: "Tree Interview Pattern Visualizer", description: "Explore tree interview patterns with interactive DFS, BFS, binary search tree and path sum problems. Follow each step and study Python solutions.", icon: <TreePine />, key: "treesPattern", level: "Medium" },
+    { title: "Tries", seoTitle: "Trie Interview Pattern Visualizer", description: "Explore trie interview patterns with interactive prefix trees, wildcard search and Word Search II. Follow each letter and study Python solutions.", icon: <TextSearch />, key: "triesPattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", seoTitle: "Gradient Descent Visualizer: Learning Rate and Optimizers", description: "Explore gradient descent with interactive learning rates, loss contours and optimizer comparisons. See how SGD, momentum and Adam move toward a minimum.", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -141,7 +143,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 
