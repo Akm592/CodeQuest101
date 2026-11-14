@@ -96,6 +96,7 @@ const Intro: React.FC = () => (
         <h3 className="font-semibold text-foreground">The template (Python)</h3>
         <pre className="overflow-x-auto rounded-xl border border-white/10 bg-white/[0.03] p-3 font-mono text-[12.5px] leading-relaxed text-muted-foreground">
 {`l, r = lo, hi
+best = None  # stays None if no candidate works
 while l <= r:
     m = (l + r) // 2
     if ok(m):        # m works: remember it,

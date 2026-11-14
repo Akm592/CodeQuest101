@@ -117,8 +117,8 @@ const ProblemWorkspace: React.FC<{ problem: AnyProblem }> = ({ problem: p }) => 
           )}
           <p className="text-sm leading-relaxed text-muted-foreground">{p.bruteIdea}</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            “ops” counts basic steps: lookups, inserts, comparisons, array reads. On tiny inputs brute force can even win, because it may stumble on
-            the answer early; as n grows, the gap opens up.
+            “ops” is an illustrative count of selected algorithm operations, with estimates for sorting. It excludes drawing and frame creation
+            and is not a timing benchmark. The complexity describes the Python solution. On small inputs a brute-force search may find the answer sooner.
           </p>
         </Surface>
       </div>

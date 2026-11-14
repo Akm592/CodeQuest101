@@ -26,6 +26,11 @@ describe("worked examples match the known answers", () => {
 });
 
 describe("the animations' list answers match the slow solutions", () => {
+  it("counts equal arrival times as merging at the target", () => {
+    const frames = get("car-fleet").run({ target: 12, position: [10, 8], speed: [2, 4] });
+    expect(frames.find((s) => s.stage === "join")!.explanation).toContain("at or before the target");
+    expect(frames.at(-1)!.answer).toBe("1");
+  });
   for (const id of ["min-stack", "daily-temperatures", "generate-parentheses"])
     it(id, () => {
       const p = get(id);

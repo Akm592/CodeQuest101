@@ -18,7 +18,7 @@ export function row(
 }
 
 export const show = (xs: readonly (string | number)[]) => `[${xs.join(", ")}]`;
-export const quote = (s: string) => `"${s}"`;
+export const quote = (s: string) => JSON.stringify(s);
 
 export function rngFor(seed: number) {
   const r = seededRng(seed * 2654435761);

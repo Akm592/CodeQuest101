@@ -40,7 +40,7 @@ const figures: ConceptFigure[] = [
   },
   {
     title: "Grow until it breaks, then shrink",
-    caption: "For “longest” or “shortest” windows, R adds one item at a time. When the window breaks the rule, L drops items from the left until it's fine again. Both only move right, so it's O(n).",
+    caption: "For a longest valid window, R adds one item at a time and L drops items when the rule breaks. For a shortest covering window, shrink while it stays valid, recording the best. Both pointers only move right.",
     art: (
       <Art label="A string a b c a with a repeat; R adds the second a, then L drops the first a">
         <Arrowhead id="sw-r" color={C.teal} />
@@ -99,7 +99,7 @@ const Intro: React.FC = () => (
       <Surface variant="card" radius="2xl" className="min-w-0 space-y-2 p-4">
         <h3 className="font-semibold text-foreground">The template (Python)</h3>
         <pre className="overflow-x-auto rounded-xl border border-white/10 bg-white/[0.03] p-3 font-mono text-[12.5px] leading-relaxed text-muted-foreground">
-{`l = 0
+{`l = best = 0
 for r in range(len(s)):
     add(s[r])              # grow on the right
     while window_is_broken():

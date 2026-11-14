@@ -25,7 +25,7 @@ function run({ cap, calls }: Input): PatternStep[] {
       stage,
       explanation,
       rows: [row("calls", calls, Object.fromEntries(calls.map((_, j) => [j, j < k ? "idle" : j === k ? "current" : undefined])))],
-      links: { title: "usage order, least recent → most recent (each node also points back)", nodes, edges },
+      links: { title: "usage order, least recent → most recent (back links omitted from the picture)", nodes, edges },
       map: {
         title: `hash map: key → node (capacity ${cap})`,
         entries: [

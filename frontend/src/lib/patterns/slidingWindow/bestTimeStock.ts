@@ -32,8 +32,9 @@ function run(p: Input): PatternStep[] {
       rows: [],
       bars: { values: p, tones, tags },
       vars: [
-        { name: "buy price p[L]", value: String(p[l]) },
-        ...(done || r >= p.length ? [] : [{ name: "sell price p[R]", value: String(p[r]) }, { name: "profit", value: String(p[r] - p[l]), tone: "pointer" as const }]),
+        ...(done
+          ? bestPair ? [{ name: "buy price", value: String(p[bestPair[0]]) }, { name: "sell price", value: String(p[bestPair[1]]) }] : []
+          : [{ name: "buy price p[L]", value: String(p[l]) }, ...(r >= p.length ? [] : [{ name: "sell price p[R]", value: String(p[r]) }, { name: "profit", value: String(p[r] - p[l]), tone: "pointer" as const }])]),
         { name: "best", value: String(best), tone: "found" },
       ],
       ops,

@@ -35,7 +35,7 @@ function run({ a, b }: Input): PatternStep[] {
       explanation,
       rows: [],
       links: { nodes, edges: edgesOf(next, (f) => (f === "d" || merged.has(f) ? "found" : undefined)), rowLabels: { 0: "list1", 1: "dummy", 2: "list2" } },
-      vars: [{ name: "merged so far", value: show(walk(next, next.d).map((x) => val[x])), tone: "found" }],
+      vars: [{ name: "merged so far", value: show(walk(next, next.d).filter((x) => merged.has(x)).map((x) => val[x])), tone: "found" }],
       ops,
       ...extra,
     });

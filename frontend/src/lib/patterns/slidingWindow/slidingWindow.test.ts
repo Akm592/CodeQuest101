@@ -24,6 +24,35 @@ describe("worked examples match the known answers", () => {
 });
 
 describe("the animations' answers", () => {
+  it("the final longest-substring set and length describe the highlighted answer window", () => {
+    const p = get("longest-substring");
+    for (const input of [...p.examples.map((e) => e.input), ...Array.from({ length: 300 }, (_, i) => p.random(i + 1))]) {
+      const st = p.run(input).at(-1)!;
+      const window = st.rows[0].cells.filter((c) => c.tone === "found").map((c) => c.v);
+      expect(st.map!.entries.map((e) => e.k).sort()).toEqual([...window].sort());
+      expect(st.vars.find((v) => v.name === "window length")!.value).toBe(String(window.length));
+    }
+  });
+  it("the final replacement counts and required changes describe the highlighted answer", () => {
+    const p = get("character-replacement");
+    for (const input of [...p.examples.map((e) => e.input), ...Array.from({ length: 300 }, (_, i) => p.random(i + 1))]) {
+      const st = p.run(input).at(-1)!;
+      const window = st.rows[0].cells.filter((c) => c.tone === "found").map((c) => c.v);
+      const counts = [...new Set(window)].sort().map((c) => ({ k: c, v: String(window.filter((x) => x === c).length) }));
+      expect(st.map!.entries.map(({ k, v }) => ({ k, v }))).toEqual(counts);
+      const changes = window.length - Math.max(0, ...counts.map((c) => Number(c.v)));
+      expect(changes).toBeLessThanOrEqual(input.k);
+      expect(st.vars.find((v) => v.name === "actual changes needed")!.value).toBe(String(changes));
+    }
+  });
+  it("the final stock prices agree with the highlighted buy and sell days", () => {
+    const st = get("best-time-stock").run([3, 8, 2, 9, 1, 4]).at(-1)!;
+    expect(st.vars).toEqual([
+      { name: "buy price", value: "2" },
+      { name: "sell price", value: "9" },
+      { name: "best", value: "7", tone: "found" },
+    ]);
+  });
   it("Minimum Window shows the same window as the slow search, in quotes", () => {
     const p = get("minimum-window");
     for (const input of [...p.examples.map((e) => e.input), ...Array.from({ length: 300 }, (_, s) => p.random(s + 1))])

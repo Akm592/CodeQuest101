@@ -20,9 +20,9 @@ function run(s: Input): PatternStep[] {
       stage,
       explanation,
       rows: [stage === "done" ? windowRow("s", chars, bestAt[0], bestAt[1], Object.fromEntries(chars.map((_, i) => [i, i >= bestAt[0] && i <= bestAt[1] ? "found" : undefined]))) : windowRow("s", chars, l, r, over)],
-      map: { title: "In the window (a set)", entries: [...seen].sort().map((c) => ({ k: shownChar(c), v: "✓" })) },
+      map: { title: "In the window (a set)", entries: [...(stage === "done" ? new Set(s.slice(bestAt[0], bestAt[1] + 1)) : seen)].sort().map((c) => ({ k: shownChar(c), v: "✓" })) },
       vars: [
-        { name: "window length", value: String(Math.max(0, r - l + 1)) },
+        { name: "window length", value: String(stage === "done" ? best : Math.max(0, r - l + 1)) },
         { name: "best", value: String(best), tone: "found" },
       ],
       ops,

@@ -47,13 +47,17 @@ function run(h: Input): PatternStep[] {
       leftMax = Math.max(leftMax, h[l]);
       water[l] = leftMax - h[l];
       total += water[l];
-      snap("left", `leftMax (${leftMax === h[l] ? "now " : ""}${leftMax}) is the lower side, so position ${l}'s water level is decided by it: there's a wall at least as tall on the right. Water here = ${leftMax} − ${h[l]} = ${water[l]}.`, l);
+      snap("left", water[l] === 0
+        ? `Move L to position ${l}. Height ${h[l]} reaches or raises leftMax to ${leftMax}, so this bar gets no water: ${leftMax} − ${h[l]} = 0.`
+        : `The left maximum (${leftMax}) was smaller, with a wall at least as tall on the right. Water at position ${l} = ${leftMax} − ${h[l]} = ${water[l]}.`, l);
     } else {
       r--;
       rightMax = Math.max(rightMax, h[r]);
       water[r] = rightMax - h[r];
       total += water[r];
-      snap("right", `rightMax (${rightMax}) is the lower or equal side, so position ${r}'s level is decided by it: there's a wall at least as tall on the left. Water here = ${rightMax} − ${h[r]} = ${water[r]}.`, r);
+      snap("right", water[r] === 0
+        ? `Move R to position ${r}. Height ${h[r]} reaches or raises rightMax to ${rightMax}, so this bar gets no water: ${rightMax} − ${h[r]} = 0.`
+        : `The right maximum (${rightMax}) was lower or equal, with a wall at least as tall on the left. Water at position ${r} = ${rightMax} − ${h[r]} = ${water[r]}.`, r);
     }
   }
   snap("done", `The pointers met. Total water trapped: ${total}.`, null, { done: true, answer: String(total) });
@@ -120,7 +124,7 @@ export const trappingRain: PatternProblem<Input> = {
     complexity: { time: "O(n)", space: "O(1)", why: "Each bar is visited once by one pointer, and only four numbers are stored." },
     pitfalls: [
       "Water can't go negative: leftMax is updated before subtracting, so a new taller bar gets 0.",
-      "Use the lower of the two maxima to choose the side. Choosing by the bar heights themselves gives wrong answers.",
+      "This version chooses the side using the running maxima. A different correct variant compares the current bar heights while maintaining the corresponding maxima; keep its invariant and update order consistent.",
     ],
     tryThis: ["Pick “[0,1,0,2,1,0,1,3,2,1,2,1]” and watch the 6 units fill in.", "Pick “[3,0,2,0,4]”: the right side is taller, so everything fills from the left."],
     python: py,

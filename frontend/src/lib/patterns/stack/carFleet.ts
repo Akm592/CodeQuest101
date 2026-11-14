@@ -50,7 +50,7 @@ function run({ target, position, speed }: Input): PatternStep[] {
     const top = stack[stack.length - 1];
     if (top && noLater(c, top)) {
       leader[k] = cars.indexOf(top);
-      snap("join", k, `The car at ${c.p} would arrive at ${fmt(c.d, c.s)}, no later than the fleet ahead (${fmt(top.d, top.s)}). It catches up before the target and joins that fleet, so no new fleet.`);
+      snap("join", k, `The car at ${c.p} would arrive at ${fmt(c.d, c.s)}, no later than the fleet ahead (${fmt(top.d, top.s)}). It catches up at or before the target and joins that fleet, so no new fleet.`);
     } else {
       stack.push(c);
       leader[k] = k;

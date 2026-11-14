@@ -96,7 +96,7 @@ export const mergeKLists: PatternProblem<Input> = {
       { tone: "found", label: "Just merged" },
       { tone: "idle", label: "Already used this round" },
     ],
-    complexity: { time: "O(N log k)", space: "O(1) extra", why: "log₂ k rounds, each touching all N nodes once (re-linking nodes, not copying)." },
+    complexity: { time: "O(N log k)", space: "O(k) extra", why: "The Python solution re-links the N nodes over log₂ k rounds. Each round also allocates a list of up to O(k) head references; the nodes themselves are reused." },
     pitfalls: ["An odd list out has no partner: carry it to the next round.", "Empty lists (None heads) must be handled."],
     tryThis: ["Pick “k = 5”: 5 → 3 → 2 → 1 lists.", "Compare the brute-force count with the pattern on the big input."],
     python: py,

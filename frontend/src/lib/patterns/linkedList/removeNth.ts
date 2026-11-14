@@ -33,7 +33,7 @@ function run({ vals, n }: Input): PatternStep[] {
       links: { nodes, edges: edgesOf(next, (f) => (f === removed ? "idle" : removed && f === left ? "found" : undefined)) },
       vars: [
         { name: "n", value: String(n) },
-        ...(gap > 0 && stage !== "done" ? [{ name: "nodes from left to right", value: String(gap), tone: "pointer" as const }] : []),
+        ...(gap > 0 && stage !== "done" ? [{ name: "links from left to right", value: String(gap), tone: "pointer" as const }] : []),
       ],
       ops,
       ...extra,
@@ -43,7 +43,7 @@ function run({ vals, n }: Input): PatternStep[] {
   for (let k = 0; k < n; k++) {
     right = next[right]!;
     ops++;
-    snap("gap", `Move right forward (${k + 1} of ${n}). Once right is n nodes ahead, left and right stay that far apart.`);
+    snap("gap", `Move right forward from the head (${k + 1} of ${n} moves). After all ${n} moves, it is ${n + 1} links ahead of left on the dummy. Keep that gap while moving both.`);
   }
   while (right !== "nul") {
     left = next[left]!;
@@ -86,7 +86,7 @@ export const removeNth: PatternProblem<Input> = {
   guide: {
     title: "Remove Nth Node From End of List",
     idea: [
-      "You can't count from the end of a singly linked list, but you can use a gap. Put right n nodes ahead of left; then move both together. When right falls off the end, left is exactly one node before the n-th from the end.",
+      "Start left on the dummy and right on the head, then move right n times. It is now n + 1 links ahead of left. Move both together with that gap; when right reaches None, left is exactly one node before the n-th from the end.",
       "Starting left on a dummy node before the head means removing the head itself needs no special case.",
     ],
     whenToUse: ["“k-th from the end” in one pass: two pointers a fixed distance apart.", "Use a dummy node whenever the head might be removed or replaced."],

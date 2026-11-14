@@ -6,15 +6,16 @@ import type { PatternProblem, PatternStep } from "../types";
 
 type Input = string[];
 
-export const encode = (strs: string[]) => strs.map((s) => `${s.length}#${s}`).join("");
+export const encode = (strs: string[]) => strs.map((s) => `${[...s].length}#${s}`).join("");
 export function decode(s: string): string[] {
+  const chars = [...s];
   const out: string[] = [];
   let i = 0;
-  while (i < s.length) {
+  while (i < chars.length) {
     let j = i;
-    while (s[j] !== "#") j++;
-    const len = Number(s.slice(i, j));
-    out.push(s.slice(j + 1, j + 1 + len));
+    while (chars[j] !== "#") j++;
+    const len = Number(chars.slice(i, j).join(""));
+    out.push(chars.slice(j + 1, j + 1 + len).join(""));
     i = j + 1 + len;
   }
   return out;
@@ -26,19 +27,20 @@ function run(strs: Input): PatternStep[] {
   let ops = 0;
   const wordsRow = (hi: number | null, tone: "current" | "found" = "current") => row("strs", strs.map(quote), hi === null ? {} : { [hi]: tone });
   strs.forEach((w, k) => {
-    const start = encoded.length;
-    encoded += `${w.length}#${w}`;
-    ops += w.length + 2;
+    const start = [...encoded].length;
+    const length = [...w].length;
+    encoded += `${length}#${w}`;
+    ops += String(length).length + 1 + length;
     const tones = Object.fromEntries([...encoded].map((_, i) => [i, i >= start ? ("current" as const) : undefined]));
-    steps.push({ stage: "encode", explanation: `Write “${w}” as its length, a #, then the word itself: ${w.length}#${w}`, rows: [wordsRow(k), row("encoded", [...encoded], tones)], vars: [{ name: "length", value: String(w.length), tone: "pointer" }], ops });
+    steps.push({ stage: "encode", explanation: `Write “${w}” as its length, a #, then the word itself: ${length}#${w}`, rows: [wordsRow(k), row("encoded", [...encoded], tones)], vars: [{ name: "length", value: String(length), tone: "pointer" }], ops });
   });
   const chars = [...encoded];
   const out: string[] = [];
   let i = 0;
-  while (i < encoded.length) {
+  while (i < chars.length) {
     let j = i;
-    while (encoded[j] !== "#") j++;
-    const len = Number(encoded.slice(i, j));
+    while (chars[j] !== "#") j++;
+    const len = Number(chars.slice(i, j).join(""));
     ops += j - i + 1;
     steps.push({
       stage: "readLength",
@@ -47,7 +49,7 @@ function run(strs: Input): PatternStep[] {
       vars: [{ name: "length", value: String(len), tone: "pointer" }],
       ops,
     });
-    const word = encoded.slice(j + 1, j + 1 + len);
+    const word = chars.slice(j + 1, j + 1 + len).join("");
     out.push(word);
     ops += len;
     steps.push({
@@ -74,6 +76,7 @@ export const encodeDecode: PatternProblem<Input> = {
   examples: [
     { label: "neet code love you", input: ["neet", "code", "love", "you"] },
     { label: "tricky: # and digits", input: ["we#", "4you", "", "3#a"] },
+    { label: "Unicode and quotes", input: ["😀#", "𝄞", "a\"b", ""] },
   ],
   random: (seed) => {
     const g = rngFor(seed);
@@ -104,7 +107,7 @@ export const encodeDecode: PatternProblem<Input> = {
       { tone: "compare", label: "The # after the length" },
       { tone: "found", label: "Word read back" },
     ],
-    complexity: { time: "O(total characters)", space: "O(total characters)", why: "Each character is written once and read once." },
+    complexity: { time: "O(N + C)", space: "O(N + C)", why: "N is the number of strings and C their total character count. Length headers and the output list still take O(N) space when all strings are empty. Lengths count Unicode code points, as Python len does." },
     pitfalls: [
       "Lengths can have more than one digit (a 12-letter word is “12#…”), so read up to the #, not just one character.",
       "Empty strings must survive: “0#” decodes to “”.",

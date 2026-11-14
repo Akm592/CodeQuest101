@@ -20,6 +20,14 @@ describe("worked examples match the known answers", () => {
 });
 
 describe("the animations' answers", () => {
+  it("explains newly encountered taller bars without claiming the opposite wall is taller", () => {
+    const frames = get("trapping-rain").run([1, 5, 2]);
+    const step = frames.find((s) => s.stage === "left")!;
+    expect(step.vars.find((v) => v.name === "leftMax")!.value).toBe("5");
+    expect(step.explanation).toContain("no water");
+    expect(step.explanation).not.toContain("wall at least as tall");
+    expect(frames.at(-1)!.answer).toBe("0");
+  });
   it("Two Sum II shows the 1-based pair, and its examples have exactly one pair", () => {
     const p = get("two-sum-ii");
     for (const { input } of p.examples) {

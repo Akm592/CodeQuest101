@@ -18,17 +18,21 @@ function run({ s, k }: Input): PatternStep[] {
   let ops = 0;
   const realMax = () => Math.max(0, ...count.values());
   const snap = (stage: string, r: number, explanation: string, extra: Partial<PatternStep> = {}) => {
-    const len = Math.max(0, r - l + 1);
     const done = stage === "done";
+    const len = done ? best : Math.max(0, r - l + 1);
+    const shownCounts = done ? new Map<string, number>() : count;
+    if (done) for (const c of s.slice(bestAt[0], bestAt[1] + 1)) shownCounts.set(c, (shownCounts.get(c) ?? 0) + 1);
+    const actualMax = Math.max(0, ...shownCounts.values());
     steps.push({
       stage,
       explanation,
       rows: [done ? windowRow("s", chars, bestAt[0], bestAt[1], Object.fromEntries(chars.map((_, i) => [i, i >= bestAt[0] && i <= bestAt[1] ? "found" : undefined]))) : windowRow("s", chars, l, r, stage === "shrink" ? { [l]: "swap" } : {})],
-      map: { title: "Letter counts in the window", entries: [...count.entries()].filter(([, n]) => n > 0).sort().map(([c, n]) => ({ k: c, v: String(n), tone: n === realMax() ? "found" : undefined })) },
+      map: { title: "Letter counts in the window", entries: [...shownCounts.entries()].filter(([, n]) => n > 0).sort().map(([c, n]) => ({ k: c, v: String(n), tone: n === actualMax ? "found" : undefined })) },
       vars: [
         { name: "window length", value: String(len) },
         { name: "maxf (highest count seen)", value: String(maxf) },
-        { name: "to change = length − maxf", value: String(Math.max(0, len - maxf)), tone: len - maxf > k ? "swap" : "pointer" },
+        { name: "length − maxf (optimistic bound)", value: String(Math.max(0, len - maxf)), tone: len - maxf > k ? "swap" : "pointer" },
+        { name: "actual changes needed", value: String(len - actualMax), tone: len - actualMax > k ? "swap" : "pointer" },
         { name: "k", value: String(k) },
         { name: "best", value: String(best), tone: "found" },
       ],
@@ -137,7 +141,7 @@ export const characterReplacement: PatternProblem<Input> = {
     whenToUse: ["“Longest substring where at most k things are wrong”: count inside the window, shrink when the budget is broken.", "A window that only ever grows or slides (never shrinks below the best) is enough when you want the longest."],
     stages: [
       { id: "start", title: "Empty window", detail: "Counts are all zero.", pseudo: "count = {}; l = maxf = best = 0" },
-      { id: "grow", title: "Add s[R], record the length", detail: "Changes needed = length − maxf ≤ k: valid.", pseudo: "count[c] += 1; maxf = max(maxf, count[c])" },
+      { id: "grow", title: "Add s[R], record the length", detail: "A historical maxf can overestimate this window's most common count. The bound may be optimistic, but a new best length is still backed by a valid window.", pseudo: "count[c] += 1; maxf = max(maxf, count[c])" },
       { id: "shrink", title: "Too many changes → drop s[L]", detail: "length − maxf > k: remove the leftmost letter.", pseudo: "while (r - l + 1) - maxf > k: count[s[l]] -= 1; l += 1" },
       { id: "done", title: "R reached the end → best length", detail: "The longest valid window seen.", pseudo: "return best" },
     ],

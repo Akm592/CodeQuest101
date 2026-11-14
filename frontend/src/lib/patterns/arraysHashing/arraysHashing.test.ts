@@ -17,8 +17,18 @@ describe("examples follow the problem rules", () => {
 
 describe("encode / decode", () => {
   it("round-trips any strings, including #, digits and empty ones", () => {
-    const cases = [[""], ["", ""], ["#"], ["12#", "3"], ["a".repeat(15), "#1#2"], []];
+    const cases = [[""], ["", ""], ["#"], ["12#", "3"], ["a".repeat(15), "#1#2"], ["😀#", "𝄞", "a\"b", "\n"], []];
     for (const c of cases) expect(decode(encode(c))).toEqual(c);
+  });
+  it("uses the same Unicode lengths as the Python solution and highlights whole words", () => {
+    expect(encode(["😀", "𝄞", ""])).toBe("1#😀1#𝄞0#");
+    expect(decode("1#😀1#𝄞0#")).toEqual(["😀", "𝄞", ""]);
+    const p = ARRAYS_HASHING.find((q) => q.id === "encode-decode")!;
+    const input = ["😀#", "a\"b", "𝄞", ""];
+    const frames = p.run(input);
+    const words = frames.filter((s) => s.stage === "readWord").map((s) => s.rows[0].cells.filter((c) => c.tone === "found").map((c) => c.v).join(""));
+    expect(words).toEqual(input);
+    expect(JSON.parse(frames.at(-1)!.answer!)).toEqual(input);
   });
 });
 

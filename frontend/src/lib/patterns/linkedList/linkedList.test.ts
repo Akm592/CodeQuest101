@@ -40,6 +40,28 @@ describe("worked examples match the known answers", () => {
 });
 
 describe("the animations", () => {
+  it("handles an empty list when checking for a cycle", () => {
+    const frames = get("linked-list-cycle").run({ vals: [], pos: -1 });
+    expect(frames.at(-1)!.answer).toBe("false");
+    expect(frames.at(-1)!.done).toBe(true);
+  });
+  it("shows only the selected prefix as merged, even while the tail still links to unused nodes", () => {
+    const frames = get("merge-two-lists").run({ a: [1, 2, 4], b: [1, 3, 4] });
+    expect(frames.find((s) => s.stage === "pick")!.vars[0].value).toBe("[1]");
+    for (const st of frames.filter((s) => s.stage === "pick")) {
+      const fromDummy = follow(st, "d").slice(1);
+      const selected = st.links!.nodes.filter((n) => n.tone === "found").length;
+      expect(st.vars[0].value).toBe(`[${fromDummy.slice(0, selected).join(", ")}]`);
+    }
+  });
+  it("keeps n + 1 links between the dummy-based removal pointers", () => {
+    for (const input of inputs("remove-nth")) {
+      const frames = get("remove-nth").run(input);
+      for (const st of [frames.filter((s) => s.stage === "gap").at(-1)!, ...frames.filter((s) => s.stage === "walk")]) {
+        expect(st.vars.find((v) => v.name === "links from left to right")!.value).toBe(String(input.n + 1));
+      }
+    }
+  });
   it("every list answer shown matches the slow solution", () => {
     for (const p of LINKED_LIST) {
       for (const input of inputs(p.id)) {

@@ -14,6 +14,7 @@ import io
 import itertools
 import math
 import random
+import re
 import sys
 from functools import lru_cache
 from pathlib import Path
@@ -43,6 +44,26 @@ def check(label, ok):
 
 def random_word(alphabet="abc", max_len=6):
     return "".join(rng.choice(alphabet) for _ in range(rng.randint(0, max_len)))
+
+
+print("\ninterview teaching templates")
+components = PY_DIR.parents[2] / "components" / "patterns"
+binary_template = re.search(r"<pre[^>]*>\s*\{`(.*?)`\}\s*</pre>", (components / "BinarySearchPage.tsx").read_text(), re.S).group(1)
+for threshold, expected in ((0, 1), (4, 4), (10, None)):
+    namespace = {"lo": 1, "hi": 9, "ok": lambda m, threshold=threshold: m >= threshold}
+    exec("def run_template():\n" + "\n".join("    " + line for line in binary_template.splitlines()), namespace)
+    check(f"binary-search template returns {expected} for threshold {threshold}", namespace["run_template"]() == expected)
+
+window_template = re.search(r"<pre[^>]*>\s*\{`(.*?)`\}\s*</pre>", (components / "SlidingWindowPage.tsx").read_text(), re.S).group(1)
+for s, expected in (("", 0), ("abcabcbb", 3), ("bbbbb", 1)):
+    counts = {}
+    def add(c):
+        counts[c] = counts.get(c, 0) + 1
+    def remove(c):
+        counts[c] -= 1
+    namespace = {"s": s, "add": add, "remove": remove, "window_is_broken": lambda: any(n > 1 for n in counts.values())}
+    exec("def run_template():\n" + "\n".join("    " + line for line in window_template.splitlines()) + "\n    return best", namespace)
+    check(f"sliding-window template handles {s!r}", namespace["run_template"]() == expected)
 
 
 # --- Edit distance -----------------------------------------------------------

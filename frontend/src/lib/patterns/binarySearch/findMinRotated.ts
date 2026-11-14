@@ -39,7 +39,7 @@ function run(nums: Input): PatternStep[] {
     res = Math.min(res, nums[m]);
     ops++;
     if (nums[m] >= nums[l]) {
-      snap("right", m, `nums[M] = ${nums[m]} ≥ nums[L] = ${nums[l]}: L to M is in order, so the break (and the minimum) is to the right of M. L = M + 1.`);
+      snap("right", m, `nums[M] = ${nums[m]} ≥ nums[L] = ${nums[l]}: L to M is sorted. Its minimum is nums[L], already covered by the best seen so far. Any smaller unseen value must be right of M: L = M + 1.`);
       l = m + 1;
     } else {
       snap("left", m, `nums[M] = ${nums[m]} < nums[L] = ${nums[l]}: the order breaks somewhere between L and M, so the minimum is M or left of it. M is already counted: R = M − 1.`);

@@ -13,8 +13,8 @@ function run({ vals, pos }: Input): PatternStep[] {
   const id = (i: number) => `n${i}`;
   const next: Record<string, string | null> = { nul: null };
   vals.forEach((_, i) => (next[id(i)] = i + 1 < n ? id(i + 1) : pos >= 0 ? id(pos) : "nul"));
-  let slow: string | null = id(0);
-  let fast: string | null = id(0);
+  let slow: string | null = n ? id(0) : "nul";
+  let fast: string | null = slow;
   let ops = 0;
   const snap = (stage: string, explanation: string, extra: Partial<PatternStep> = {}) => {
     const tags = tagsOf([["slow", slow], ["fast", fast]]);
@@ -59,6 +59,7 @@ export const linkedListCycle: PatternProblem<Input> = {
     { label: "3→2→0→−4, back to 2", input: { vals: [3, 2, 0, -4], pos: 1 } },
     { label: "1→2, no cycle", input: { vals: [1, 2], pos: -1 } },
     { label: "6 nodes, back to 1st", input: { vals: [1, 2, 3, 4, 5, 6], pos: 0 } },
+    { label: "empty list", input: { vals: [], pos: -1 } },
   ],
   random: (seed) => {
     const g = rngFor(seed);

@@ -51,7 +51,14 @@ describe.each(ALL)("%s", (_t, p) => {
     for (const input of inputs) {
       const shown = p.run(input).at(-1)!.answer!;
       const want = p.solve(input);
-      if (typeof want === "boolean" || typeof want === "number") expect(shown, p.describe(input)).toBe(String(want));
+      let actual: unknown = shown;
+      if (typeof want === "boolean" || typeof want === "number" || p.id === "minimum-window") actual = JSON.parse(shown);
+      else if (Array.isArray(want)) {
+        if (p.id === "generate-parentheses") actual = shown.slice(1, -1).split(", ");
+        else if (p.id === "group-anagrams" || p.id === "3sum") actual = shown === "[]" ? [] : JSON.parse(`[${shown.replace(/\]\s+\[/g, "],[")}]`);
+        else actual = JSON.parse(shown);
+      }
+      expect(canon(p, actual), p.describe(input)).toBe(canon(p, want));
     }
   });
 

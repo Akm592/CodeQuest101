@@ -127,7 +127,7 @@ export const generateParentheses: PatternProblem<Input> = {
       { tone: "current", label: "Just added" },
       { tone: "found", label: "Complete string" },
     ],
-    complexity: { time: "O(4ⁿ / √n)", space: "O(n)", why: "The answer count is the n-th Catalan number, about 4ⁿ / n^1.5, and each takes O(n) to build. The stack is at most 2n deep." },
+    complexity: { time: "O(4ⁿ / √n)", space: "O(n) extra", why: "There are Cₙ answers, the n-th Catalan number, about 4ⁿ / n^1.5. Each has 2n characters, so returning them costs O(n·Cₙ) space and time. Excluding that output, the working stack and recursion use O(n) space." },
     pitfalls: [
       "Checking validity only at the end works but wastes time on hopeless prefixes like “)…”.",
       "Remember to pop after the recursive call, or the next branch starts from the wrong string.",
