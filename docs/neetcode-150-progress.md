@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 98 of 150 problems, 12 of 18 categories.
-- **Left:** 52 problems in 6 categories.
-- **Next up:** 1-D Dynamic Programming (12 problems). The dp array is a row; arrows or tags can show which earlier cells each entry is built from.
+- **Done:** 110 of 150 problems, 13 of 18 categories.
+- **Left:** 40 problems in 5 categories.
+- **Next up:** 2-D Dynamic Programming (11 problems). The grid view can show the dp table; tags or tones can mark the cells each entry reads.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -24,7 +24,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 10 | Backtracking | 9 | ✅ Done | `/visualize/backtrackingPattern` | "Interview Patterns: Backtracking" |
 | 11 | Graphs | 13 | ✅ Done | `/visualize/graphsPattern` | "Interview Patterns: Graphs" |
 | 12 | Advanced Graphs | 6 | ✅ Done | `/visualize/advancedGraphsPattern` | "Interview Patterns: Advanced Graphs" |
-| 13 | 1-D Dynamic Programming | 12 | ⬜ To do | | |
+| 13 | 1-D Dynamic Programming | 12 | ✅ Done | `/visualize/dp1Pattern` | "Interview Patterns: 1-D Dynamic Programming" |
 | 14 | 2-D Dynamic Programming | 11 | ⬜ To do | | |
 | 15 | Greedy | 8 | ⬜ To do | | |
 | 16 | Intervals | 6 | ⬜ To do | | |
@@ -81,29 +81,13 @@ Number of Islands, Clone Graph, Max Area of Island, Pacific Atlantic Water Flow,
 
 Reconstruct Itinerary, Min Cost to Connect All Points, Network Delay Time, Swim in Rising Water, Alien Dictionary, Cheapest Flights Within K Stops.
 
+### 1-D Dynamic Programming (12) · `/visualize/dp1Pattern`
+
+Climbing Stairs, Min Cost Climbing Stairs, House Robber, House Robber II, Longest Palindromic Substring, Palindromic Substrings, Decode Ways, Coin Change, Maximum Product Subarray, Word Break, Longest Increasing Subsequence, Partition Equal Subset Sum.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 13. 1-D Dynamic Programming (12)
-
-- **Visual idea:** The dp array filling left to right, with arrows from the cells each entry is built from. Show the recurrence with the actual numbers.
-- **Link to:** `dynamicProgramming`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Climbing Stairs | Easy | Yes | [`climbing-stairs`](https://leetcode.com/problems/climbing-stairs/) | [`Y0lT9Fck7qI`](https://www.youtube.com/watch?v=Y0lT9Fck7qI) |
-| Min Cost Climbing Stairs | Easy |  | [`min-cost-climbing-stairs`](https://leetcode.com/problems/min-cost-climbing-stairs/) | [`ktmzAZWkEZ0`](https://www.youtube.com/watch?v=ktmzAZWkEZ0) |
-| House Robber | Medium | Yes | [`house-robber`](https://leetcode.com/problems/house-robber/) | [`73r3KWiEvyk`](https://www.youtube.com/watch?v=73r3KWiEvyk) |
-| House Robber II | Medium | Yes | [`house-robber-ii`](https://leetcode.com/problems/house-robber-ii/) | [`rWAJCfYYOvM`](https://www.youtube.com/watch?v=rWAJCfYYOvM) |
-| Longest Palindromic Substring | Medium | Yes | [`longest-palindromic-substring`](https://leetcode.com/problems/longest-palindromic-substring/) | [`XYQecbcd6_c`](https://www.youtube.com/watch?v=XYQecbcd6_c) |
-| Palindromic Substrings | Medium | Yes | [`palindromic-substrings`](https://leetcode.com/problems/palindromic-substrings/) | [`4RACzI5-du8`](https://www.youtube.com/watch?v=4RACzI5-du8) |
-| Decode Ways | Medium | Yes | [`decode-ways`](https://leetcode.com/problems/decode-ways/) | [`6aEyTjOwlJU`](https://www.youtube.com/watch?v=6aEyTjOwlJU) |
-| Coin Change | Medium | Yes | [`coin-change`](https://leetcode.com/problems/coin-change/) | [`H9bfqozjoqs`](https://www.youtube.com/watch?v=H9bfqozjoqs) |
-| Maximum Product Subarray | Medium | Yes | [`maximum-product-subarray`](https://leetcode.com/problems/maximum-product-subarray/) | [`lXVy6YWFcRM`](https://www.youtube.com/watch?v=lXVy6YWFcRM) |
-| Word Break | Medium | Yes | [`word-break`](https://leetcode.com/problems/word-break/) | [`Sx9NNgInc3A`](https://www.youtube.com/watch?v=Sx9NNgInc3A) |
-| Longest Increasing Subsequence | Medium | Yes | [`longest-increasing-subsequence`](https://leetcode.com/problems/longest-increasing-subsequence/) | [`cjWnW0hdF1Y`](https://www.youtube.com/watch?v=cjWnW0hdF1Y) |
-| Partition Equal Subset Sum | Medium |  | [`partition-equal-subset-sum`](https://leetcode.com/problems/partition-equal-subset-sum/) | [`IsvocB5BJhw`](https://www.youtube.com/watch?v=IsvocB5BJhw) |
 
 ### 14. 2-D Dynamic Programming (11)
 
@@ -243,7 +227,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first twelve categories
+## Lessons from the first thirteen categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -261,6 +245,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.
 - **Compare like with like.** If the pattern's ops count comparisons and swaps, a sorting estimate must count comparisons and moves too. And a heap of size k only beats sorting clearly when n is large and k small, so pick the big input to match.
 - **Big inputs run in the browser** (the page computes the at-scale numbers live), so step generators must stay cheap: record light frames and build pictures once at the end, and skip drawing for huge runs.
+- **Check that a big example actually does work.** Partition's first big example had an odd total, so both methods stopped after one step. Also keep the brute force's at-scale cost to a few million operations: the page runs it live.
 - **Random big inputs can make a slow method look fine.** Swim in Rising Water's random grid let “try every t” finish early; a structured worst case (a snake of rising heights) shows the real gap.
 - **Test the tips.** Three “try this” tips described their examples wrongly until a test checked the facts they quote. Work tips out by hand, then test them.
 - **A big example must not favour the pattern by accident, or the slow way.** Redundant Connection's first big input put the extra edge last, which the slow method finds first.

@@ -12,6 +12,7 @@ import {
   SearchCode,
   Link2,
   TreePine,
+  Rows3,
   Route,
   Waypoints,
   Undo2,
@@ -125,6 +126,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Backtracking", seoTitle: "Backtracking Interview Pattern Visualizer", description: "Explore backtracking interview patterns with growing recursion trees for subsets, combinations, permutations and N-Queens. Watch choices get made, undone and pruned.", icon: <Undo2 />, key: "backtrackingPattern", level: "Medium" },
     { title: "Graphs", seoTitle: "Graph Interview Pattern Visualizer", description: "Explore graph interview patterns with animated BFS, DFS, union-find and topological sort on grids, courses and word ladders. Study each step and Python solutions.", icon: <Waypoints />, key: "graphsPattern", level: "Medium" },
     { title: "Advanced Graphs", seoTitle: "Advanced Graph Interview Pattern Visualizer", description: "Explore advanced graph interview patterns: Dijkstra, Prim's minimum spanning tree, Bellman-Ford with stops, alien dictionary and itineraries. Follow every heap pop and study Python solutions.", icon: <Route />, key: "advancedGraphsPattern", level: "Medium" },
+    { title: "1-D Dynamic Programming", seoTitle: "1-D Dynamic Programming Interview Pattern Visualizer", description: "Explore 1-D dynamic programming interview patterns: climbing stairs, house robber, coin change, word break and more. Watch the table fill and study Python solutions.", icon: <Rows3 />, key: "dp1Pattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", seoTitle: "Gradient Descent Visualizer: Learning Rate and Optimizers", description: "Explore gradient descent with interactive learning rates, loss contours and optimizer comparisons. See how SGD, momentum and Adam move toward a minimum.", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -151,7 +153,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 

@@ -1513,6 +1513,78 @@ for _ in range(300):
     ok &= (sorted(got) == letters and fits(got)) if possible else got == ""
 check("alien dictionary: a valid alphabet exactly when one exists (300 cases)", ok)
 
+print("\nNeetCode 150: 1-D Dynamic Programming")
+d1 = {name: load(f"neetcode/{name}") for name in ["climbing_stairs", "min_cost_stairs", "house_robber", "house_robber_ii", "longest_palindrome", "palindromic_substrings", "decode_ways", "coin_change", "max_product", "word_break", "lis", "partition_subset"]}
+@lru_cache(maxsize=None)
+def stairs(n):
+    return 1 if n <= 1 else stairs(n - 1) + stairs(n - 2)
+check("climbing stairs matches the recursion for n = 1..30", all(d1["climbing_stairs"].climb_stairs(n) == stairs(n) for n in range(1, 31)))
+ok = ok2 = ok3 = True
+for _ in range(300):
+    cost = [rng.randint(0, 20) for _ in range(rng.randint(2, 9))]
+    def mc(i):
+        return 0 if i >= len(cost) else cost[i] + min(mc(i + 1), mc(i + 2))
+    ok &= d1["min_cost_stairs"].min_cost_climbing_stairs(cost[:]) == min(mc(0), mc(1))
+    nums = [rng.randint(0, 12) for _ in range(rng.randint(1, 9))]
+    n = len(nums)
+    def best(idx):
+        return max((sum(nums[i] for i in c) for r in range(len(idx) + 1) for c in itertools.combinations(idx, r) if all(b - a > 1 for a, b in zip(c, c[1:]))), default=0)
+    ok2 &= d1["house_robber"].rob(nums) == best(list(range(n)))
+    circle = max((sum(nums[i] for i in c) for r in range(n + 1) for c in itertools.combinations(range(n), r) if all(b - a > 1 for a, b in zip(c, c[1:])) and not (n > 1 and 0 in c and n - 1 in c)), default=0)
+    ok3 &= d1["house_robber_ii"].rob(nums) == circle
+check("min cost climbing stairs matches the recursion (300 cases)", ok)
+check("house robber matches trying every non-adjacent set (300 cases)", ok2)
+check("house robber ii matches trying every set with no neighbours round the circle (300 cases)", ok3)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abc") for _ in range(rng.randint(1, 9)))
+    subs = [s[i:j] for i in range(len(s)) for j in range(i + 1, len(s) + 1)]
+    pals = [t for t in subs if t == t[::-1]]
+    got = d1["longest_palindrome"].longest_palindrome(s)
+    ok &= got == got[::-1] and got in s and len(got) == max(map(len, pals))
+    ok &= d1["palindromic_substrings"].count_substrings(s) == len(pals)
+check("longest palindrome and palindromic substrings match checking every substring (300 strings)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("0112223456") for _ in range(rng.randint(1, 8)))
+    def dec(i):
+        if i == len(s):
+            return 1
+        if s[i] == "0":
+            return 0
+        return dec(i + 1) + (dec(i + 2) if i + 1 < len(s) and 10 <= int(s[i:i + 2]) <= 26 else 0)
+    ok &= d1["decode_ways"].num_decodings(s) == dec(0)
+check("decode ways matches the recursion (300 strings)", ok)
+ok = True
+for _ in range(300):
+    coins = rng.sample(range(1, 8), rng.randint(1, 3))
+    amount = rng.randint(0, 15)
+    fewest = min((r for r in range(amount + 1) for c in itertools.combinations_with_replacement(coins, r) if sum(c) == amount), default=-1)
+    ok &= d1["coin_change"].coin_change(coins, amount) == fewest
+check("coin change matches trying every multiset of coins (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-4, 4) for _ in range(rng.randint(1, 8))]
+    want = max(math.prod(nums[i:j]) for i in range(len(nums)) for j in range(i + 1, len(nums) + 1))
+    ok &= d1["max_product"].max_product(nums) == want
+check("maximum product subarray matches every subarray (300 cases)", ok)
+ok = True
+for _ in range(300):
+    words = list({"".join(rng.choice("ab") for _ in range(rng.randint(1, 3))) for _ in range(rng.randint(1, 3))})
+    s = "".join(rng.choice("ab") for _ in range(rng.randint(1, 8)))
+    def wb(i):
+        return i == len(s) or any(s.startswith(w, i) and wb(i + len(w)) for w in words)
+    ok &= d1["word_break"].word_break(s, words) == wb(0)
+check("word break matches the recursion (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(0, 9) for _ in range(rng.randint(1, 10))]
+    want = max(len(c) for r in range(1, len(nums) + 1) for c in itertools.combinations(nums, r) if all(a < b for a, b in zip(c, c[1:])))
+    ok &= d1["lis"].length_of_lis(nums) == want
+    parts = [rng.randint(1, 9) for _ in range(rng.randint(1, 9))]
+    ok &= d1["partition_subset"].can_partition(parts) == any(2 * sum(c) == sum(parts) for r in range(len(parts) + 1) for c in itertools.combinations(parts, r))
+check("lis and partition equal subset sum match trying every subsequence / subset (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

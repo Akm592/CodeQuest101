@@ -39,7 +39,7 @@ const VISUALIZERS = [
   'binarySearch', 'sortingAlgorithms', 'linkedList', 'longestSubarray',
   'spiralMatrix', 'rotateImage', 'binaryTree', 'stack', 'hareTortoise',
   'tree', 'neuralNetwork', 'graph', 'heap',
-  'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie', 'arraysHashing', 'twoPointers', 'slidingWindow', 'stackPattern', 'binarySearchPattern', 'linkedListPattern', 'treesPattern', 'triesPattern', 'heapPattern', 'backtrackingPattern', 'graphsPattern', 'advancedGraphsPattern',
+  'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie', 'arraysHashing', 'twoPointers', 'slidingWindow', 'stackPattern', 'binarySearchPattern', 'linkedListPattern', 'treesPattern', 'triesPattern', 'heapPattern', 'backtrackingPattern', 'graphsPattern', 'advancedGraphsPattern', 'dp1Pattern',
   'gradientDescent', 'linearRegression', 'kMeans', 'attention', 'sampling', 'decisionTree', 'naiveBayes', 'randomForest', 'gradientBoosting',
 ];
 
