@@ -1585,6 +1585,75 @@ for _ in range(300):
     ok &= d1["partition_subset"].can_partition(parts) == any(2 * sum(c) == sum(parts) for r in range(len(parts) + 1) for c in itertools.combinations(parts, r))
 check("lis and partition equal subset sum match trying every subsequence / subset (300 cases)", ok)
 
+print("\nNeetCode 150: 2-D Dynamic Programming")
+import re  # to check regex matching against Python's own engine
+d2 = {name: load(f"neetcode/{name}") for name in ["unique_paths", "lcs", "stock_cooldown", "coin_change_ii", "target_sum", "interleaving_string", "longest_increasing_path", "distinct_subsequences", "edit_distance_nc", "burst_balloons", "regex_matching"]}
+check("unique paths matches the binomial coefficient (m, n = 1..9)", all(d2["unique_paths"].unique_paths(m, n) == math.comb(m + n - 2, m - 1) for m in range(1, 10) for n in range(1, 10)))
+def rs(alpha, lo, hi):
+    return "".join(rng.choice(alpha) for _ in range(rng.randint(lo, hi)))
+ok = True
+for _ in range(300):
+    a, b = rs("abc", 0, 6), rs("abc", 0, 6)
+    best = max((r for r in range(min(len(a), len(b)) + 1) for c in itertools.combinations(a, r) if any(c == d for d in itertools.combinations(b, r))), default=0)
+    ok &= d2["lcs"].longest_common_subsequence(a, b) == best
+    ok &= d2["edit_distance_nc"].min_distance(a, b) == edit_distance(a, b)
+    t = rs("ab", 1, 3)
+    ok &= d2["distinct_subsequences"].num_distinct(a, t) == sum(1 for c in itertools.combinations(range(len(a)), len(t)) if "".join(a[i] for i in c) == t)
+check("lcs, edit distance and distinct subsequences match brute force (300 cases)", ok)
+ok = True
+for _ in range(300):
+    prices = [rng.randint(0, 9) for _ in range(rng.randint(1, 8))]
+    def best(i, holding):
+        if i >= len(prices):
+            return 0
+        wait = best(i + 1, holding)
+        return max(wait, prices[i] + best(i + 2, False)) if holding else max(wait, -prices[i] + best(i + 1, True))
+    ok &= d2["stock_cooldown"].max_profit(prices) == best(0, False)
+check("stock with cooldown matches the plain recursion (300 cases)", ok)
+ok = True
+for _ in range(300):
+    coins = rng.sample(range(1, 7), rng.randint(1, 3))
+    amount = rng.randint(0, 12)
+    combos = {tuple(sorted(c)) for r in range(amount + 1) for c in itertools.combinations_with_replacement(coins, r) if sum(c) == amount}
+    ok &= d2["coin_change_ii"].change(amount, coins) == len(combos)
+    nums = [rng.randint(0, 4) for _ in range(rng.randint(1, 6))]
+    target = rng.randint(-5, 5)
+    ok &= d2["target_sum"].find_target_sum_ways(nums, target) == sum(1 for signs in itertools.product((1, -1), repeat=len(nums)) if sum(s * v for s, v in zip(signs, nums)) == target)
+check("coin change ii and target sum match counting every combination / sign choice (300 cases)", ok)
+def interleaves(s1, s2, s3):
+    """Try every set of positions in s3 for s1's letters; s2 fills the rest."""
+    if len(s1) + len(s2) != len(s3):
+        return False
+    for pos in itertools.combinations(range(len(s3)), len(s1)):
+        a, b, chosen = iter(s1), iter(s2), set(pos)
+        if "".join(next(a) if k in chosen else next(b) for k in range(len(s3))) == s3:
+            return True
+    return False
+ok = True
+for _ in range(300):
+    s1, s2 = rs("ab", 0, 4), rs("ab", 0, 4)
+    s3 = rs("ab", len(s1) + len(s2), len(s1) + len(s2)) if rng.random() < 0.5 else "".join(rng.sample(s1 + s2, len(s1 + s2)))
+    want = interleaves(s1, s2, s3)
+    ok &= d2["interleaving_string"].is_interleave(s1, s2, s3) == want
+check("interleaving string matches trying every way to place s1's letters (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s, p = rs("ab", 0, 5), "".join(rng.choice(["a", "b", ".", "a*", "b*", ".*"]) for _ in range(rng.randint(0, 4)))
+    ok &= d2["regex_matching"].is_match(s, p) == bool(re.fullmatch(p, s))
+check("regular expression matching agrees with Python's re.fullmatch (300 cases)", ok)
+ok = True
+for _ in range(200):
+    R, C = rng.randint(1, 4), rng.randint(1, 4)
+    m = [[rng.randint(0, 9) for _ in range(C)] for _ in range(R)]
+    def walk(r, c):
+        return 1 + max([walk(y, x) for y, x in four((r, c)) if 0 <= y < R and 0 <= x < C and m[y][x] > m[r][c]], default=0)
+    ok &= d2["longest_increasing_path"].longest_increasing_path(m) == max(walk(r, c) for r in range(R) for c in range(C))
+    b = [rng.randint(1, 9) for _ in range(rng.randint(1, 5))]
+    def burst(bs):
+        return max(((bs[i - 1] if i else 1) * bs[i] * (bs[i + 1] if i + 1 < len(bs) else 1) + burst(bs[:i] + bs[i + 1:]) for i in range(len(bs))), default=0)
+    ok &= d2["burst_balloons"].max_coins(b[:]) == burst(b)
+check("longest increasing path and burst balloons match exhaustive search (200 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

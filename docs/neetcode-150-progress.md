@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 110 of 150 problems, 13 of 18 categories.
-- **Left:** 40 problems in 5 categories.
-- **Next up:** 2-D Dynamic Programming (11 problems). The grid view can show the dp table; tags or tones can mark the cells each entry reads.
+- **Done:** 121 of 150 problems, 14 of 18 categories.
+- **Left:** 29 problems in 4 categories.
+- **Next up:** Greedy (8 problems). Mostly array rows with a running value; Jump Game can show reach as a row.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -25,7 +25,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 11 | Graphs | 13 | ✅ Done | `/visualize/graphsPattern` | "Interview Patterns: Graphs" |
 | 12 | Advanced Graphs | 6 | ✅ Done | `/visualize/advancedGraphsPattern` | "Interview Patterns: Advanced Graphs" |
 | 13 | 1-D Dynamic Programming | 12 | ✅ Done | `/visualize/dp1Pattern` | "Interview Patterns: 1-D Dynamic Programming" |
-| 14 | 2-D Dynamic Programming | 11 | ⬜ To do | | |
+| 14 | 2-D Dynamic Programming | 11 | ✅ Done | `/visualize/dp2Pattern` | "Interview Patterns: 2-D Dynamic Programming" |
 | 15 | Greedy | 8 | ⬜ To do | | |
 | 16 | Intervals | 6 | ⬜ To do | | |
 | 17 | Math & Geometry | 8 | ⬜ To do | | |
@@ -85,28 +85,13 @@ Reconstruct Itinerary, Min Cost to Connect All Points, Network Delay Time, Swim 
 
 Climbing Stairs, Min Cost Climbing Stairs, House Robber, House Robber II, Longest Palindromic Substring, Palindromic Substrings, Decode Ways, Coin Change, Maximum Product Subarray, Word Break, Longest Increasing Subsequence, Partition Equal Subset Sum.
 
+### 2-D Dynamic Programming (11) · `/visualize/dp2Pattern`
+
+Unique Paths, Longest Common Subsequence, Best Time to Buy and Sell Stock with Cooldown, Coin Change II, Target Sum, Interleaving String, Longest Increasing Path in a Matrix, Distinct Subsequences, Edit Distance, Burst Balloons, Regular Expression Matching.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 14. 2-D Dynamic Programming (11)
-
-- **Visual idea:** The dp table filling cell by cell (the grid view, with row/column headers), arrows from the cells each entry uses.
-- **Link to:** `dynamicProgramming`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Unique Paths | Medium | Yes | [`unique-paths`](https://leetcode.com/problems/unique-paths/) | [`IlEsdxuD4lY`](https://www.youtube.com/watch?v=IlEsdxuD4lY) |
-| Longest Common Subsequence | Medium | Yes | [`longest-common-subsequence`](https://leetcode.com/problems/longest-common-subsequence/) | [`Ua0GhsJSlWM`](https://www.youtube.com/watch?v=Ua0GhsJSlWM) |
-| Best Time to Buy And Sell Stock With Cooldown | Medium |  | [`best-time-to-buy-and-sell-stock-with-cooldown`](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/) | [`I7j0F7AHpb8`](https://www.youtube.com/watch?v=I7j0F7AHpb8) |
-| Coin Change II | Medium |  | [`coin-change-ii`](https://leetcode.com/problems/coin-change-ii/) | [`Mjy4hd2xgrs`](https://www.youtube.com/watch?v=Mjy4hd2xgrs) |
-| Target Sum | Medium |  | [`target-sum`](https://leetcode.com/problems/target-sum/) | [`g0npyaQtAQM`](https://www.youtube.com/watch?v=g0npyaQtAQM) |
-| Interleaving String | Medium |  | [`interleaving-string`](https://leetcode.com/problems/interleaving-string/) | [`3Rw3p9LrgvE`](https://www.youtube.com/watch?v=3Rw3p9LrgvE) |
-| Longest Increasing Path In a Matrix | Hard |  | [`longest-increasing-path-in-a-matrix`](https://leetcode.com/problems/longest-increasing-path-in-a-matrix/) | [`wCc_nd-GiEc`](https://www.youtube.com/watch?v=wCc_nd-GiEc) |
-| Distinct Subsequences | Hard |  | [`distinct-subsequences`](https://leetcode.com/problems/distinct-subsequences/) | [`-RDzMJ33nx8`](https://www.youtube.com/watch?v=-RDzMJ33nx8) |
-| Edit Distance | Medium |  | [`edit-distance`](https://leetcode.com/problems/edit-distance/) | [`XYi2-LPrwm4`](https://www.youtube.com/watch?v=XYi2-LPrwm4) |
-| Burst Balloons | Hard |  | [`burst-balloons`](https://leetcode.com/problems/burst-balloons/) | [`VFskby7lUbw`](https://www.youtube.com/watch?v=VFskby7lUbw) |
-| Regular Expression Matching | Hard |  | [`regular-expression-matching`](https://leetcode.com/problems/regular-expression-matching/) | [`HAA8mgxlov8`](https://www.youtube.com/watch?v=HAA8mgxlov8) |
 
 ### 15. Greedy (8)
 

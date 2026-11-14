@@ -42,6 +42,7 @@ const BacktrackingPage = lazy(() => import("./components/patterns/BacktrackingPa
 const GraphsPage = lazy(() => import("./components/patterns/GraphsPage"));
 const AdvancedGraphsPage = lazy(() => import("./components/patterns/AdvancedGraphsPage"));
 const Dp1Page = lazy(() => import("./components/patterns/Dp1Page"));
+const Dp2Page = lazy(() => import("./components/patterns/Dp2Page"));
 const SortingAlgorithmVisualizer = lazy(() => import("./components/SortingAlgorithmVisualizer"));
 const LinkedListVisualizer = lazy(() => import("./components/LinkedListVisualizer"));
 const LongestSubarraySumKVisualizer = lazy(() => import("./components/LongestSubarraySumKVisualizer"));
@@ -126,6 +127,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   graphsPattern: { kind: "page", title: "Graphs", Component: GraphsPage },
   advancedGraphsPattern: { kind: "page", title: "Advanced Graphs", Component: AdvancedGraphsPage },
   dp1Pattern: { kind: "page", title: "1-D Dynamic Programming", Component: Dp1Page },
+  dp2Pattern: { kind: "page", title: "2-D Dynamic Programming", Component: Dp2Page },
 };
 
 /** Deliberately plain: the UI checker samples ~1.4s after load, so a fallback
