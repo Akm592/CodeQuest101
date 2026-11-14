@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 70 of 150 problems, 9 of 18 categories.
-- **Left:** 80 problems in 9 categories.
-- **Next up:** Backtracking (9 problems). Needs a recursion-tree view (choices as branches, dead ends crossed out); Word Search and N-Queens can use the grid view.
+- **Done:** 79 of 150 problems, 10 of 18 categories.
+- **Left:** 71 problems in 8 categories.
+- **Next up:** Graphs (13 problems). Grid problems can use the grid view; the others need a small graph view (nodes and edges).
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -21,7 +21,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 7 | Trees | 15 | ✅ Done | `/visualize/treesPattern` | "Interview Patterns: Trees" |
 | 8 | Tries | 3 | ✅ Done | `/visualize/triesPattern` | "Interview Patterns: Tries" |
 | 9 | Heap / Priority Queue | 7 | ✅ Done | `/visualize/heapPattern` | "Interview Patterns: Heap / Priority Queue" |
-| 10 | Backtracking | 9 | ⬜ To do | | |
+| 10 | Backtracking | 9 | ✅ Done | `/visualize/backtrackingPattern` | "Interview Patterns: Backtracking" |
 | 11 | Graphs | 13 | ⬜ To do | | |
 | 12 | Advanced Graphs | 6 | ⬜ To do | | |
 | 13 | 1-D Dynamic Programming | 12 | ⬜ To do | | |
@@ -69,26 +69,13 @@ Implement Trie (Prefix Tree), Design Add and Search Words Data Structure, Word S
 
 Kth Largest Element in a Stream, Last Stone Weight, K Closest Points to Origin, Kth Largest Element in an Array, Task Scheduler, Design Twitter, Find Median from Data Stream.
 
+### Backtracking (9) · `/visualize/backtrackingPattern`
+
+Subsets, Combination Sum, Permutations, Subsets II, Combination Sum II, Word Search, Palindrome Partitioning, Letter Combinations of a Phone Number, N-Queens.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 10. Backtracking (9)
-
-- **Visual idea:** A recursion tree (choices as branches, dead ends crossed out) plus the current path as a stack row, like Generate Parentheses. Word Search and N-Queens use the grid view.
-- **Link to:** `nQueens`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Subsets | Medium |  | [`subsets`](https://leetcode.com/problems/subsets/) | [`REOH22Xwdkk`](https://www.youtube.com/watch?v=REOH22Xwdkk) |
-| Combination Sum | Medium | Yes | [`combination-sum`](https://leetcode.com/problems/combination-sum/) | [`GBKI9VSKdGg`](https://www.youtube.com/watch?v=GBKI9VSKdGg) |
-| Permutations | Medium |  | [`permutations`](https://leetcode.com/problems/permutations/) | [`s7AvT7cGdSo`](https://www.youtube.com/watch?v=s7AvT7cGdSo) |
-| Subsets II | Medium |  | [`subsets-ii`](https://leetcode.com/problems/subsets-ii/) | [`Vn2v6ajA7U0`](https://www.youtube.com/watch?v=Vn2v6ajA7U0) |
-| Combination Sum II | Medium |  | [`combination-sum-ii`](https://leetcode.com/problems/combination-sum-ii/) | [`rSA3t6BDDwg`](https://www.youtube.com/watch?v=rSA3t6BDDwg) |
-| Word Search | Medium | Yes | [`word-search`](https://leetcode.com/problems/word-search/) | [`pfiQ_PS1g8E`](https://www.youtube.com/watch?v=pfiQ_PS1g8E) |
-| Palindrome Partitioning | Medium |  | [`palindrome-partitioning`](https://leetcode.com/problems/palindrome-partitioning/) | [`3jvWodd7ht0`](https://www.youtube.com/watch?v=3jvWodd7ht0) |
-| Letter Combinations of a Phone Number | Medium |  | [`letter-combinations-of-a-phone-number`](https://leetcode.com/problems/letter-combinations-of-a-phone-number/) | [`0snEunUacZY`](https://www.youtube.com/watch?v=0snEunUacZY) |
-| N Queens | Hard |  | [`n-queens`](https://leetcode.com/problems/n-queens/) | [`Ph95IHmRp5M`](https://www.youtube.com/watch?v=Ph95IHmRp5M) |
 
 ### 11. Graphs (13)
 
@@ -235,7 +222,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | Trie | Tries | ✅ Done: `TreeView` with `ring` for word ends; `trieLayout` in `lib/patterns/tries/trie.ts` handles any number of children. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
-| Recursion tree | Backtracking | Branches for choices, dead ends crossed out. |
+| Recursion tree | Backtracking | ✅ Done: `lib/patterns/backtracking/rtree.ts` records calls while the solver runs and lays the whole tree out once (nodes never move; each step reveals the next call). Drawn by `TreeView`. Skips drawing above 400 nodes. |
 | Timeline | Intervals | Intervals as bars on one axis. |
 | Bit row | Bit Manipulation | 8 or 32 cells of 0/1. |
 
@@ -283,7 +270,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first nine categories
+## Lessons from the first ten categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -300,4 +287,6 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Pick a big input that shows why the pattern exists.** Random Word Search II boards made the trie only ~2× better, because most words fail on their first letter. The classic slow input (a board of a's, words like “aaaaab”) shows the real 10× gap.
 - **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.
 - **Compare like with like.** If the pattern's ops count comparisons and swaps, a sorting estimate must count comparisons and moves too. And a heap of size k only beats sorting clearly when n is large and k small, so pick the big input to match.
+- **Big inputs run in the browser** (the page computes the at-scale numbers live), so step generators must stay cheap: record light frames and build pictures once at the end, and skip drawing for huge runs.
+- **Name every reason.** When two things cause a result (two queens attacking one square), say both, each with its own reason.
 - **Check examples against LeetCode's constraints** (Kth Largest in a Stream guarantees k numbers before the first add returns).

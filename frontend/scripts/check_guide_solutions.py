@@ -1176,6 +1176,75 @@ for _ in range(300):
         ok &= m.findMedian() == (s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2)
 check("find median matches sorting after every add (300 runs)", ok)
 
+print("\nNeetCode 150: Backtracking")
+bt = {name: load(f"neetcode/{name}") for name in ["subsets", "combination_sum", "permutations", "subsets_ii", "combination_sum_ii", "word_search", "palindrome_partitioning", "letter_combinations", "n_queens"]}
+def canon(lists, inner=True):
+    return sorted(tuple(sorted(l)) if inner else tuple(l) for l in lists)
+ok = True
+for _ in range(200):
+    nums = rng.sample(range(1, 10), rng.randint(0, 5))
+    every = [[x for j, x in enumerate(nums) if m >> j & 1] for m in range(1 << len(nums))]
+    ok &= canon(bt["subsets"].subsets(nums)) == canon(every)
+    ok &= canon(bt["permutations"].permute(nums), False) == canon(itertools.permutations(nums), False)
+    ok &= canon(bt["permutations"].permute_insert(nums), False) == canon(itertools.permutations(nums), False)
+check("subsets and both permutation versions match itertools / bitmasks (200 cases)", ok)
+ok = True
+for _ in range(200):
+    nums = [rng.randint(1, 3) for _ in range(rng.randint(0, 6))]
+    want = sorted({tuple(sorted(c)) for r in range(len(nums) + 1) for c in itertools.combinations(nums, r)})
+    got = bt["subsets_ii"].subsets_with_dup(nums[:])
+    ok &= len(got) == len(want) and canon(got) == want
+check("subsets ii: every distinct subset exactly once (200 cases)", ok)
+ok = True
+for _ in range(200):
+    cands = rng.sample(range(2, 9), rng.randint(1, 4))
+    target = rng.randint(1, 16)
+    want = sorted({tuple(sorted(c)) for r in range(1, target // min(cands) + 1) for c in itertools.combinations_with_replacement(cands, r) if sum(c) == target})
+    got = bt["combination_sum"].combination_sum(cands, target)
+    ok &= len(got) == len(want) and canon(got) == want
+    many = [rng.randint(1, 5) for _ in range(rng.randint(1, 8))]
+    want2 = sorted({tuple(sorted(c)) for r in range(1, len(many) + 1) for c in itertools.combinations(many, r) if sum(c) == target})
+    got2 = bt["combination_sum_ii"].combination_sum2(many[:], target)
+    ok &= len(got2) == len(want2) and canon(got2) == want2
+check("combination sum i and ii match itertools, with no repeats (200 cases)", ok)
+def on_board(board, w):
+    R, C = len(board), len(board[0])
+    def go(r, c, i, used):
+        if not (0 <= r < R and 0 <= c < C) or (r, c) in used or board[r][c] != w[i]:
+            return False
+        return i == len(w) - 1 or any(go(r + a, c + b, i + 1, used | {(r, c)}) for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+    return any(go(r, c, 0, frozenset()) for r in range(R) for c in range(C))
+ok = True
+for _ in range(300):
+    cols = rng.randint(1, 4)
+    board = [[rng.choice("ABC") for _ in range(cols)] for _ in range(rng.randint(1, 3))]
+    w = "".join(rng.choice("ABC") for _ in range(rng.randint(1, 5)))
+    ok &= bt["word_search"].exist([r[:] for r in board], w) == on_board(board, w)
+check("word search matches a separate path search (300 boards)", ok)
+ok = True
+for _ in range(200):
+    s = "".join(rng.choice("ab") for _ in range(rng.randint(1, 8)))
+    want = []
+    for m in range(1 << (len(s) - 1)):
+        parts, start = [], 0
+        for j in range(len(s)):
+            if j == len(s) - 1 or m >> j & 1:
+                parts.append(s[start:j + 1]); start = j + 1
+        if all(p == p[::-1] for p in parts):
+            want.append(parts)
+    ok &= sorted(bt["palindrome_partitioning"].partition(s)) == sorted(want)
+check("palindrome partitioning matches trying every cut (200 strings)", ok)
+keys = {"2": "abc", "3": "def", "4": "ghi", "5": "jkl", "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz"}
+ok = bt["letter_combinations"].letter_combinations("") == []
+for _ in range(100):
+    d = "".join(rng.choice("23456789") for _ in range(rng.randint(1, 4)))
+    ok &= sorted(bt["letter_combinations"].letter_combinations(d)) == sorted("".join(p) for p in itertools.product(*(keys[c] for c in d)))
+check("letter combinations match itertools.product (100 cases, and empty input)", ok)
+def queens_ok(b):
+    q = [(r, row.index("Q")) for r, row in enumerate(b)]
+    return all(row.count("Q") == 1 for row in b) and len({c for _, c in q}) == len(q) and all(abs(r1 - r2) != abs(c1 - c2) for (r1, c1), (r2, c2) in itertools.combinations(q, 2))
+check("n-queens: 1, 0, 0, 2, 10, 4, 40, 92 solutions for n = 1..8, all valid and distinct", all(len(sols := bt["n_queens"].solve_n_queens(n)) == c and len({tuple(b) for b in sols}) == c and all(queens_ok(b) for b in sols) for n, c in zip(range(1, 9), [1, 0, 0, 2, 10, 4, 40, 92])))
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:
