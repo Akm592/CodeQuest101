@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 79 of 150 problems, 10 of 18 categories.
-- **Left:** 71 problems in 8 categories.
-- **Next up:** Graphs (13 problems). Grid problems can use the grid view; the others need a small graph view (nodes and edges).
+- **Done:** 92 of 150 problems, 11 of 18 categories.
+- **Left:** 58 problems in 7 categories.
+- **Next up:** Advanced Graphs (6 problems). The graph view (`GraphView.tsx`) already draws weighted edges; Dijkstra and MST need a heap row.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -22,7 +22,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 8 | Tries | 3 | ✅ Done | `/visualize/triesPattern` | "Interview Patterns: Tries" |
 | 9 | Heap / Priority Queue | 7 | ✅ Done | `/visualize/heapPattern` | "Interview Patterns: Heap / Priority Queue" |
 | 10 | Backtracking | 9 | ✅ Done | `/visualize/backtrackingPattern` | "Interview Patterns: Backtracking" |
-| 11 | Graphs | 13 | ⬜ To do | | |
+| 11 | Graphs | 13 | ✅ Done | `/visualize/graphsPattern` | "Interview Patterns: Graphs" |
 | 12 | Advanced Graphs | 6 | ⬜ To do | | |
 | 13 | 1-D Dynamic Programming | 12 | ⬜ To do | | |
 | 14 | 2-D Dynamic Programming | 11 | ⬜ To do | | |
@@ -73,30 +73,13 @@ Kth Largest Element in a Stream, Last Stone Weight, K Closest Points to Origin, 
 
 Subsets, Combination Sum, Permutations, Subsets II, Combination Sum II, Word Search, Palindrome Partitioning, Letter Combinations of a Phone Number, N-Queens.
 
+### Graphs (13) · `/visualize/graphsPattern`
+
+Number of Islands, Clone Graph, Max Area of Island, Pacific Atlantic Water Flow, Surrounded Regions, Rotting Oranges, Walls and Gates, Course Schedule, Course Schedule II, Redundant Connection, Number of Connected Components in an Undirected Graph, Graph Valid Tree, Word Ladder.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 11. Graphs (13)
-
-- **Visual idea:** Grid problems (islands, oranges, walls and gates) use the 9×9 grid view, generalised to any size. Node-and-edge problems need a small graph view. BFS queue / DFS stack shown as rows. Union-find: a parent array plus a forest.
-- **Link to:** `graph`, `topologicalSort` (Course Schedule)
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Number of Islands | Medium | Yes | [`number-of-islands`](https://leetcode.com/problems/number-of-islands/) | [`pV2kpPD66nE`](https://www.youtube.com/watch?v=pV2kpPD66nE) |
-| Clone Graph | Medium | Yes | [`clone-graph`](https://leetcode.com/problems/clone-graph/) | [`mQeF6bN8hMk`](https://www.youtube.com/watch?v=mQeF6bN8hMk) |
-| Max Area of Island | Medium |  | [`max-area-of-island`](https://leetcode.com/problems/max-area-of-island/) | [`iJGr1OtmH0c`](https://www.youtube.com/watch?v=iJGr1OtmH0c) |
-| Pacific Atlantic Water Flow | Medium | Yes | [`pacific-atlantic-water-flow`](https://leetcode.com/problems/pacific-atlantic-water-flow/) | [`s-VkcjHqkGI`](https://www.youtube.com/watch?v=s-VkcjHqkGI) |
-| Surrounded Regions | Medium |  | [`surrounded-regions`](https://leetcode.com/problems/surrounded-regions/) | [`9z2BunfoZ5Y`](https://www.youtube.com/watch?v=9z2BunfoZ5Y) |
-| Rotting Oranges | Medium |  | [`rotting-oranges`](https://leetcode.com/problems/rotting-oranges/) | [`y704fEOx0s0`](https://www.youtube.com/watch?v=y704fEOx0s0) |
-| Walls And Gates | Medium |  | [`walls-and-gates`](https://leetcode.com/problems/walls-and-gates/) | [`e69C6xhiSQE`](https://www.youtube.com/watch?v=e69C6xhiSQE) |
-| Course Schedule | Medium | Yes | [`course-schedule`](https://leetcode.com/problems/course-schedule/) | [`EgI5nU9etnU`](https://www.youtube.com/watch?v=EgI5nU9etnU) |
-| Course Schedule II | Medium |  | [`course-schedule-ii`](https://leetcode.com/problems/course-schedule-ii/) | [`Akt3glAwyfY`](https://www.youtube.com/watch?v=Akt3glAwyfY) |
-| Redundant Connection | Medium |  | [`redundant-connection`](https://leetcode.com/problems/redundant-connection/) | [`FXWRE67PLL0`](https://www.youtube.com/watch?v=FXWRE67PLL0) |
-| Number of Connected Components In An Undirected Graph | Medium | Yes | [`number-of-connected-components-in-an-undirected-graph`](https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/) | [`8f1XPm4WOUc`](https://www.youtube.com/watch?v=8f1XPm4WOUc) |
-| Graph Valid Tree | Medium | Yes | [`graph-valid-tree`](https://leetcode.com/problems/graph-valid-tree/) | [`bXsUuownnoQ`](https://www.youtube.com/watch?v=bXsUuownnoQ) |
-| Word Ladder | Hard |  | [`word-ladder`](https://leetcode.com/problems/word-ladder/) | [`h9iTnkgv05E`](https://www.youtube.com/watch?v=h9iTnkgv05E) |
 
 ### 12. Advanced Graphs (6)
 
@@ -221,7 +204,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | Binary tree (nodes by depth, a value per node) | Trees, Heap | ✅ Done: `step.tree` (`TreeView.tsx`), in-order layout, notes beside nodes, several trees side by side. Helpers in `lib/patterns/trees/tree.ts` (level order, random trees and BSTs). Heaps: `lib/patterns/heap/heap.ts` (a heap that records each push/pop path, drawn by index with the array as a row). |
 | Trie | Tries | ✅ Done: `TreeView` with `ring` for word ends; `trieLayout` in `lib/patterns/tries/trie.ts` handles any number of children. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
-| Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
+| Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | ✅ Done: `step.graph` (`GraphView.tsx`): round nodes at given x/y or round a circle, lines or arrows, edge labels, dashed edges. Helpers in `lib/patterns/graphs/` (`grid.ts`, `graph.ts` with union-find). |
 | Recursion tree | Backtracking | ✅ Done: `lib/patterns/backtracking/rtree.ts` records calls while the solver runs and lays the whole tree out once (nodes never move; each step reveals the next call). Drawn by `TreeView`. Skips drawing above 400 nodes. |
 | Timeline | Intervals | Intervals as bars on one axis. |
 | Bit row | Bit Manipulation | 8 or 32 cells of 0/1. |
@@ -270,7 +253,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first ten categories
+## Lessons from the first eleven categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -288,5 +271,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.
 - **Compare like with like.** If the pattern's ops count comparisons and swaps, a sorting estimate must count comparisons and moves too. And a heap of size k only beats sorting clearly when n is large and k small, so pick the big input to match.
 - **Big inputs run in the browser** (the page computes the at-scale numbers live), so step generators must stay cheap: record light frames and build pictures once at the end, and skip drawing for huge runs.
+- **Test the tips.** Three “try this” tips described their examples wrongly until a test checked the facts they quote. Work tips out by hand, then test them.
+- **A big example must not favour the pattern by accident, or the slow way.** Redundant Connection's first big input put the extra edge last, which the slow method finds first.
 - **Name every reason.** When two things cause a result (two queens attacking one square), say both, each with its own reason.
 - **Check examples against LeetCode's constraints** (Kth Largest in a Stream guarantees k numbers before the first add returns).

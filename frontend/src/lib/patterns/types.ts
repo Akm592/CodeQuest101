@@ -62,6 +62,29 @@ export interface TNode {
   ring?: boolean;
 }
 
+/** A node in a small graph picture. x and y are in layout units (about 64px); leave them out to place nodes round a circle. */
+export interface GNode {
+  id: string;
+  v: string;
+  x?: number;
+  y?: number;
+  tone?: VizTone;
+  /** Pointer names under the node. */
+  tag?: string;
+  /** A short note beside the node, e.g. its distance. */
+  note?: string;
+}
+
+/** An edge from a to b: a line, or an arrow when the graph is directed. */
+export interface GEdge {
+  a: string;
+  b: string;
+  tone?: VizTone;
+  /** A weight or other label at the middle of the edge. */
+  label?: string;
+  dashed?: boolean;
+}
+
 export interface PatternStep extends BaseStep {
   /** The guide stage this step belongs to. */
   stage: string;
@@ -85,6 +108,8 @@ export interface PatternStep extends BaseStep {
   };
   /** Nodes and arrows, for linked lists. */
   links?: { title?: string; nodes: LNode[]; edges: LEdge[]; rowLabels?: Record<number, string> };
+  /** A small graph of nodes and edges (or arrows, if directed). */
+  graph?: { title?: string; nodes: GNode[]; edges: GEdge[]; directed?: boolean };
   /** One or more binary trees. */
   tree?: { title?: string; nodes: TNode[]; labels?: { x: number; text: string }[] };
   vars: { name: string; value: string; tone?: VizTone }[];

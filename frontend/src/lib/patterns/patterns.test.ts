@@ -9,12 +9,13 @@ import { SLIDING_WINDOW } from "./slidingWindow";
 import { STACK } from "./stack";
 import { TREES } from "./trees";
 import { BACKTRACKING } from "./backtracking";
+import { GRAPHS } from "./graphs";
 import { HEAP } from "./heap";
 import { TRIES } from "./tries";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING, ...GRAPHS].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {

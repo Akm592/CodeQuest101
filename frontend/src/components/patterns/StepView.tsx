@@ -9,6 +9,7 @@ import { cn } from "../../lib/utils";
 import { C } from "../ml/colors";
 import { Surface } from "../ui/surface";
 import LinkView from "./LinkView";
+import GraphView from "./GraphView";
 import TreeView from "./TreeView";
 
 // Literal class names so Tailwind sees them.
@@ -111,7 +112,7 @@ const Box: React.FC<{ cell: PCell; small?: boolean }> = ({ cell, small }) => (
     >
       {cell.v}
     </div>
-    {!small && <span className="h-3.5 font-mono text-[10px] leading-none text-muted-foreground">{cell.tag ?? ""}</span>}
+    {(!small || cell.tag) && <span className="h-3.5 font-mono text-[10px] leading-none text-muted-foreground">{cell.tag ?? ""}</span>}
   </div>
 );
 
@@ -158,6 +159,8 @@ const StepView: React.FC<{ step: PatternStep }> = ({ step }) => (
     {step.links && <LinkView links={step.links} />}
 
     {step.tree && <TreeView tree={step.tree} />}
+
+    {step.graph && <GraphView graph={step.graph} />}
 
     {(step.map || step.vars.length > 0) && (
       <div className="grid gap-3 sm:grid-cols-2">

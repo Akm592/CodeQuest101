@@ -1245,6 +1245,186 @@ def queens_ok(b):
     return all(row.count("Q") == 1 for row in b) and len({c for _, c in q}) == len(q) and all(abs(r1 - r2) != abs(c1 - c2) for (r1, c1), (r2, c2) in itertools.combinations(q, 2))
 check("n-queens: 1, 0, 0, 2, 10, 4, 40, 92 solutions for n = 1..8, all valid and distinct", all(len(sols := bt["n_queens"].solve_n_queens(n)) == c and len({tuple(b) for b in sols}) == c and all(queens_ok(b) for b in sols) for n, c in zip(range(1, 9), [1, 0, 0, 2, 10, 4, 40, 92])))
 
+print("\nNeetCode 150: Graphs")
+gr = {name: load(f"neetcode/{name}") for name in ["num_islands", "clone_graph", "max_area_island", "pacific_atlantic", "surrounded_regions", "rotting_oranges", "walls_and_gates", "course_schedule", "course_schedule_ii", "redundant_connection", "count_components", "graph_valid_tree", "word_ladder"]}
+def rgrid(vals, R=None, C=None):
+    R, C = R or rng.randint(1, 5), C or rng.randint(1, 5)
+    return [[rng.choice(vals) for _ in range(C)] for _ in range(R)]
+def comps(cells, nbrs):
+    """Connected groups of cells by a plain union-find."""
+    par = {c: c for c in cells}
+    def find(x):
+        while par[x] != x:
+            x = par[x]
+        return x
+    for c in cells:
+        for d in nbrs(c):
+            if d in par:
+                par[find(c)] = find(d)
+    groups = {}
+    for c in cells:
+        groups.setdefault(find(c), []).append(c)
+    return list(groups.values())
+four = lambda rc: [(rc[0] + 1, rc[1]), (rc[0] - 1, rc[1]), (rc[0], rc[1] + 1), (rc[0], rc[1] - 1)]
+ok = ok2 = True
+for _ in range(300):
+    g = rgrid("01")
+    land = [(r, c) for r in range(len(g)) for c in range(len(g[0])) if g[r][c] == "1"]
+    groups = comps(land, four)
+    ok &= gr["num_islands"].num_islands(g) == len(groups)
+    ok2 &= gr["max_area_island"].max_area_of_island([[int(v) for v in row] for row in g]) == max((len(x) for x in groups), default=0)
+check("number of islands matches union-find (300 grids)", ok)
+check("max area of island matches union-find (300 grids)", ok2)
+ok = True
+for _ in range(200):
+    n = rng.randint(1, 6)
+    edges = {(rng.randrange(i), i) for i in range(1, n)} | {tuple(sorted(rng.sample(range(n), 2))) for _ in range(rng.randint(0, 3)) if n > 1}
+    adj = [sorted(b + 1 for a, b in edges if a == i) + sorted(a + 1 for a, b in edges if b == i) for i in range(n)]
+    adj = [sorted(set(l)) for l in adj]
+    orig = gr["clone_graph"].build(adj)
+    copy = gr["clone_graph"].clone_graph(orig)
+    seen, stack, fresh = set(), [copy], True
+    while stack:
+        x = stack.pop()
+        if id(x) in seen:
+            continue
+        seen.add(id(x))
+        stack.extend(x.neighbors)
+    orig_ids, stack = set(), [orig]
+    while stack:
+        x = stack.pop()
+        if id(x) in orig_ids:
+            continue
+        orig_ids.add(id(x))
+        stack.extend(x.neighbors)
+    ok &= gr["clone_graph"].to_adj(copy) == adj and not (seen & orig_ids)
+check("clone graph: same shape, and no node shared with the original (200 graphs)", ok)
+def drains(h, r, c):
+    R, C = len(h), len(h[0])
+    seen, stack, p, a = {(r, c)}, [(r, c)], False, False
+    while stack:
+        y, x = stack.pop()
+        p |= y == 0 or x == 0
+        a |= y == R - 1 or x == C - 1
+        for ny, nx in four((y, x)):
+            if 0 <= ny < R and 0 <= nx < C and (ny, nx) not in seen and h[ny][nx] <= h[y][x]:
+                seen.add((ny, nx)); stack.append((ny, nx))
+    return p and a
+ok = True
+for _ in range(200):
+    h = rgrid(range(1, 6))
+    ok &= sorted(gr["pacific_atlantic"].pacific_atlantic(h)) == [[r, c] for r in range(len(h)) for c in range(len(h[0])) if drains(h, r, c)]
+check("pacific atlantic matches following the water from every cell (200 grids)", ok)
+ok = True
+for _ in range(300):
+    b = rgrid("XO")
+    R, C = len(b), len(b[0])
+    os_ = [(r, c) for r in range(R) for c in range(C) if b[r][c] == "O"]
+    want = [row[:] for row in b]
+    for grp in comps(os_, four):
+        if not any(r in (0, R - 1) or c in (0, C - 1) for r, c in grp):
+            for r, c in grp:
+                want[r][c] = "X"
+    got = [row[:] for row in b]
+    gr["surrounded_regions"].solve(got)
+    ok &= got == want
+check("surrounded regions matches capturing every region that misses the border (300 boards)", ok)
+def rot_slow(g):
+    g = [row[:] for row in g]
+    t = 0
+    while True:
+        new = [(r, c) for r in range(len(g)) for c in range(len(g[0])) if g[r][c] == 1 and any(0 <= y < len(g) and 0 <= x < len(g[0]) and g[y][x] == 2 for y, x in four((r, c)))]
+        if not new:
+            break
+        for r, c in new:
+            g[r][c] = 2
+        t += 1
+    return -1 if any(1 in row for row in g) else t
+check("rotting oranges matches a minute-by-minute simulation (300 grids)", all(gr["rotting_oranges"].oranges_rotting([row[:] for row in g]) == rot_slow(g) for g in (rgrid([0, 1, 1, 2]) for _ in range(300))))
+INF = gr["walls_and_gates"].INF
+ok = True
+for _ in range(300):
+    g = rgrid([INF, INF, -1, 0])
+    R, C = len(g), len(g[0])
+    want = [row[:] for row in g]
+    for r in range(R):
+        for c in range(C):
+            if g[r][c] != INF:
+                continue
+            seen, frontier, d = {(r, c)}, [(r, c)], 0
+            while frontier and want[r][c] == INF:
+                d += 1
+                nxt = []
+                for y, x in frontier:
+                    for ny, nx in four((y, x)):
+                        if 0 <= ny < R and 0 <= nx < C and (ny, nx) not in seen and g[ny][nx] != -1:
+                            if g[ny][nx] == 0:
+                                want[r][c] = d
+                            seen.add((ny, nx)); nxt.append((ny, nx))
+                frontier = nxt
+    got = [row[:] for row in g]
+    gr["walls_and_gates"].walls_and_gates(got)
+    ok &= got == want
+check("walls and gates matches a BFS from every room to its nearest gate (300 grids)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(1, 6)
+    pre = list({(a, b) for a, b in (rng.sample(range(n), 2) for _ in range(rng.randint(0, n + 1)) if n > 1)})
+    taken, order, progress = set(), [], True
+    while progress:
+        progress = False
+        for c in range(n):
+            if c not in taken and all(b in taken for a, b in pre if a == c):
+                taken.add(c); order.append(c); progress = True
+    possible = len(order) == n
+    ok &= gr["course_schedule"].can_finish(n, [list(p) for p in pre]) == possible
+    got = gr["course_schedule_ii"].find_order(n, [list(p) for p in pre])
+    if possible:
+        pos = {c: i for i, c in enumerate(got)}
+        ok &= sorted(got) == list(range(n)) and all(pos[b] < pos[a] for a, b in pre)
+    else:
+        ok &= got == []
+check("course schedule i and ii: possible exactly when Kahn finishes, and every order respects the prerequisites (300 cases)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(3, 8)
+    edges = [[rng.randint(1, v - 1), v] for v in range(2, n + 1)]
+    while True:
+        a, b = sorted(rng.sample(range(1, n + 1), 2))
+        if [a, b] not in edges and [b, a] not in edges:
+            edges.append([a, b]); break
+    rng.shuffle(edges)
+    want = None
+    for i in range(len(edges) - 1, -1, -1):
+        rest = edges[:i] + edges[i + 1:]
+        if len(comps(list(range(1, n + 1)), lambda v: [b for a, b in rest if a == v] + [a for a, b in rest if b == v])) == 1:
+            want = edges[i]; break
+    ok &= gr["redundant_connection"].find_redundant_connection([e[:] for e in edges]) == want
+check("redundant connection matches removing each edge and checking for a tree (300 cases)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(1, 7)
+    edges = [list(e) for e in {tuple(sorted(rng.sample(range(n), 2))) for _ in range(rng.randint(0, n)) if n > 1}]
+    groups = comps(list(range(n)), lambda v: [b for a, b in edges if a == v] + [a for a, b in edges if b == v])
+    ok &= gr["count_components"].count_components(n, edges) == len(groups)
+    ok &= gr["graph_valid_tree"].valid_tree(n, edges) == (len(groups) == 1 and len(edges) == n - 1)
+check("connected components and valid tree match union-find and the n - 1 edges rule (300 graphs)", ok)
+ok = True
+for _ in range(300):
+    words = list({"".join(rng.choice("abc") for _ in range(3)) for _ in range(rng.randint(2, 8))})
+    begin, end = "".join(rng.choice("abc") for _ in range(3)), rng.choice(words)
+    dist, frontier = {begin: 1}, [begin]
+    while frontier:
+        nxt = []
+        for w in frontier:
+            for x in words:
+                if x not in dist and sum(p != q for p, q in zip(w, x)) == 1:
+                    dist[x] = dist[w] + 1; nxt.append(x)
+        frontier = nxt
+    want = dist.get(end, 0) if begin != end else 1
+    ok &= gr["word_ladder"].ladder_length(begin, end, words[:]) == want
+check("word ladder matches a BFS that compares every pair of words (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:
