@@ -2,9 +2,19 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { ADVANCED_GRAPHS } from "../../lib/patterns/advancedGraphs";
 import { ARRAYS_HASHING } from "../../lib/patterns/arraysHashing";
+import { BACKTRACKING } from "../../lib/patterns/backtracking";
 import { BINARY_SEARCH } from "../../lib/patterns/binarySearch";
+import { BITS } from "../../lib/patterns/bits";
+import { DP1 } from "../../lib/patterns/dp1";
+import { DP2 } from "../../lib/patterns/dp2";
+import { GRAPHS } from "../../lib/patterns/graphs";
+import { GREEDY } from "../../lib/patterns/greedy";
+import { HEAP } from "../../lib/patterns/heap";
+import { INTERVALS } from "../../lib/patterns/intervals";
 import { LINKED_LIST } from "../../lib/patterns/linkedList";
+import { MATH } from "../../lib/patterns/math";
 import { SLIDING_WINDOW } from "../../lib/patterns/slidingWindow";
 import { STACK } from "../../lib/patterns/stack";
 import { TREES } from "../../lib/patterns/trees";
@@ -14,7 +24,7 @@ import StepView from "./StepView";
 
 describe("interview diagrams", () => {
   it("renders every example frame with finite diagram coordinates", () => {
-    for (const p of [...ARRAYS_HASHING, ...BINARY_SEARCH, ...LINKED_LIST, ...SLIDING_WINDOW, ...STACK, ...TREES, ...TRIES, ...TWO_POINTERS]) {
+    for (const p of [...ARRAYS_HASHING, ...BINARY_SEARCH, ...LINKED_LIST, ...SLIDING_WINDOW, ...STACK, ...TREES, ...TRIES, ...TWO_POINTERS, ...HEAP, ...BACKTRACKING, ...GRAPHS, ...ADVANCED_GRAPHS, ...DP1, ...DP2, ...GREEDY, ...INTERVALS, ...MATH, ...BITS]) {
       for (const example of p.examples) for (const step of p.run(example.input)) {
         const html = renderToStaticMarkup(createElement(StepView, { step }));
         expect(html, `${p.title}: ${example.label}: ${step.stage}`).not.toMatch(/(?:cx|cy|x|y|width|height|points|d|style)="[^"]*(?:NaN|Infinity|undefined)/);
