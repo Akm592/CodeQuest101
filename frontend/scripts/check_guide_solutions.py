@@ -1654,6 +1654,83 @@ for _ in range(200):
     ok &= d2["burst_balloons"].max_coins(b[:]) == burst(b)
 check("longest increasing path and burst balloons match exhaustive search (200 cases)", ok)
 
+print("\nNeetCode 150: Greedy")
+gd = {name: load(f"neetcode/{name}") for name in ["max_subarray", "jump_game", "jump_game_ii", "gas_station", "hand_of_straights", "merge_triplets", "partition_labels", "valid_parenthesis_string"]}
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-6, 6) for _ in range(rng.randint(1, 9))]
+    ok &= gd["max_subarray"].max_sub_array(nums) == max(sum(nums[i:j]) for i in range(len(nums)) for j in range(i + 1, len(nums) + 1))
+    jumps = [rng.randint(0, 3) for _ in range(rng.randint(1, 8))]
+    reach = {0}
+    for i in range(len(jumps)):
+        if i in reach:
+            reach |= set(range(i + 1, i + jumps[i] + 1))
+    ok &= gd["jump_game"].can_jump(jumps) == (len(jumps) - 1 in reach)
+    steps = [rng.randint(1, 3) for _ in range(rng.randint(1, 8))]
+    dist, queue = {0: 0}, [0]  # plain BFS over indexes
+    for i in queue:
+        for j in range(i + 1, min(len(steps), i + steps[i] + 1)):
+            if j not in dist:
+                dist[j] = dist[i] + 1
+                queue.append(j)
+    ok &= gd["jump_game_ii"].jump(steps) == dist[len(steps) - 1]
+check("maximum subarray, jump game and jump game ii match brute force (300 cases)", ok)
+ok = True
+for _ in range(300):
+    n = rng.randint(1, 6)
+    gas, cost = [rng.randint(0, 5) for _ in range(n)], [rng.randint(0, 5) for _ in range(n)]
+    def works(s):
+        tank = 0
+        for k in range(n):
+            i = (s + k) % n
+            tank += gas[i] - cost[i]
+            if tank < 0:
+                return False
+        return True
+    ok &= gd["gas_station"].can_complete_circuit(gas, cost) == next((s for s in range(n) if works(s)), -1)
+check("gas station matches trying every start (300 cases)", ok)
+ok = True
+for _ in range(300):
+    size = rng.randint(1, 3)
+    hand = [rng.randint(1, 6) for _ in range(rng.randint(1, 9))]
+    def can_group(cards):
+        if not cards:
+            return True
+        low = min(cards)
+        rest = list(cards)
+        for v in range(low, low + size):
+            if v not in rest:
+                return False
+            rest.remove(v)
+        return can_group(rest)
+    ok &= gd["hand_of_straights"].is_n_straight_hand(hand[:], size) == (len(hand) % size == 0 and can_group(hand))
+    trips = [[rng.randint(1, 5) for _ in range(3)] for _ in range(rng.randint(1, 5))]
+    target = [rng.randint(1, 5) for _ in range(3)]
+    ok &= gd["merge_triplets"].merge_triplets(trips, target) == any([max(t[k] for t in c) for k in range(3)] == target for r in range(1, len(trips) + 1) for c in itertools.combinations(trips, r))
+check("hand of straights and merge triplets match exhaustive search (300 cases)", ok)
+ok = True
+for _ in range(300):
+    s = "".join(rng.choice("abcde") for _ in range(rng.randint(1, 10)))
+    # The most parts: cut after i whenever no letter in s[:i+1] appears again later.
+    want, size = [], 0
+    for i in range(len(s)):
+        size += 1
+        if not set(s[:i + 1]) & set(s[i + 1:]):
+            want.append(size); size = 0
+    ok &= gd["partition_labels"].partition_labels(s) == want
+    t = "".join(rng.choice("()*") for _ in range(rng.randint(1, 8)))
+    def balanced(x):
+        depth = 0
+        for c in x:
+            depth += 1 if c == "(" else -1
+            if depth < 0:
+                return False
+        return depth == 0
+    stars = [i for i, c in enumerate(t) if c == "*"]
+    any_ok = any(balanced("".join(choice[stars.index(i)] if c == "*" else c for i, c in enumerate(t))) for choice in itertools.product(["(", ")", ""], repeat=len(stars)))
+    ok &= gd["valid_parenthesis_string"].check_valid_string(t) == any_ok
+check("partition labels and valid parenthesis string match brute force (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

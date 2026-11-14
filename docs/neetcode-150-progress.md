@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 121 of 150 problems, 14 of 18 categories.
-- **Left:** 29 problems in 4 categories.
-- **Next up:** Greedy (8 problems). Mostly array rows with a running value; Jump Game can show reach as a row.
+- **Done:** 129 of 150 problems, 15 of 18 categories.
+- **Left:** 21 problems in 3 categories.
+- **Next up:** Intervals (6 problems). Needs a timeline view: intervals as bars on one axis.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -26,7 +26,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 12 | Advanced Graphs | 6 | ✅ Done | `/visualize/advancedGraphsPattern` | "Interview Patterns: Advanced Graphs" |
 | 13 | 1-D Dynamic Programming | 12 | ✅ Done | `/visualize/dp1Pattern` | "Interview Patterns: 1-D Dynamic Programming" |
 | 14 | 2-D Dynamic Programming | 11 | ✅ Done | `/visualize/dp2Pattern` | "Interview Patterns: 2-D Dynamic Programming" |
-| 15 | Greedy | 8 | ⬜ To do | | |
+| 15 | Greedy | 8 | ✅ Done | `/visualize/greedyPattern` | "Interview Patterns: Greedy" |
 | 16 | Intervals | 6 | ⬜ To do | | |
 | 17 | Math & Geometry | 8 | ⬜ To do | | |
 | 18 | Bit Manipulation | 7 | ⬜ To do | | |
@@ -89,25 +89,13 @@ Climbing Stairs, Min Cost Climbing Stairs, House Robber, House Robber II, Longes
 
 Unique Paths, Longest Common Subsequence, Best Time to Buy and Sell Stock with Cooldown, Coin Change II, Target Sum, Interleaving String, Longest Increasing Path in a Matrix, Distinct Subsequences, Edit Distance, Burst Balloons, Regular Expression Matching.
 
+### Greedy (8) · `/visualize/greedyPattern`
+
+Maximum Subarray, Jump Game, Jump Game II, Gas Station, Hand of Straights, Merge Triplets to Form Target Triplet, Partition Labels, Valid Parenthesis String.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 15. Greedy (8)
-
-- **Visual idea:** Mostly array rows with a running value (Kadane's sum, the farthest reach in Jump Game) and a short “why greedy is safe” proof per problem.
-- **Link to:** none
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Maximum Subarray | Medium | Yes | [`maximum-subarray`](https://leetcode.com/problems/maximum-subarray/) | [`5WZl3MMT0Eg`](https://www.youtube.com/watch?v=5WZl3MMT0Eg) |
-| Jump Game | Medium | Yes | [`jump-game`](https://leetcode.com/problems/jump-game/) | [`Yan0cv2cLy8`](https://www.youtube.com/watch?v=Yan0cv2cLy8) |
-| Jump Game II | Medium |  | [`jump-game-ii`](https://leetcode.com/problems/jump-game-ii/) | [`dJ7sWiOoK7g`](https://www.youtube.com/watch?v=dJ7sWiOoK7g) |
-| Gas Station | Medium |  | [`gas-station`](https://leetcode.com/problems/gas-station/) | [`lJwbPZGo05A`](https://www.youtube.com/watch?v=lJwbPZGo05A) |
-| Hand of Straights | Medium |  | [`hand-of-straights`](https://leetcode.com/problems/hand-of-straights/) | [`amnrMCVd2YI`](https://www.youtube.com/watch?v=amnrMCVd2YI) |
-| Merge Triplets to Form Target Triplet | Medium |  | [`merge-triplets-to-form-target-triplet`](https://leetcode.com/problems/merge-triplets-to-form-target-triplet/) | [`kShkQLQZ9K4`](https://www.youtube.com/watch?v=kShkQLQZ9K4) |
-| Partition Labels | Medium |  | [`partition-labels`](https://leetcode.com/problems/partition-labels/) | [`B7m8UmZE-vw`](https://www.youtube.com/watch?v=B7m8UmZE-vw) |
-| Valid Parenthesis String | Medium |  | [`valid-parenthesis-string`](https://leetcode.com/problems/valid-parenthesis-string/) | [`QhPdNS143Qg`](https://www.youtube.com/watch?v=QhPdNS143Qg) |
 
 ### 16. Intervals (6)
 
