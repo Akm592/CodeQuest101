@@ -46,6 +46,7 @@ const Dp2Page = lazy(() => import("./components/patterns/Dp2Page"));
 const GreedyPage = lazy(() => import("./components/patterns/GreedyPage"));
 const IntervalsPage = lazy(() => import("./components/patterns/IntervalsPage"));
 const MathPage = lazy(() => import("./components/patterns/MathPage"));
+const BitsPage = lazy(() => import("./components/patterns/BitsPage"));
 const SortingAlgorithmVisualizer = lazy(() => import("./components/SortingAlgorithmVisualizer"));
 const LinkedListVisualizer = lazy(() => import("./components/LinkedListVisualizer"));
 const LongestSubarraySumKVisualizer = lazy(() => import("./components/LongestSubarraySumKVisualizer"));
@@ -134,6 +135,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   greedyPattern: { kind: "page", title: "Greedy", Component: GreedyPage },
   intervalsPattern: { kind: "page", title: "Intervals", Component: IntervalsPage },
   mathPattern: { kind: "page", title: "Math & Geometry", Component: MathPage },
+  bitsPattern: { kind: "page", title: "Bit Manipulation", Component: BitsPage },
 };
 
 /** Deliberately plain: the UI checker samples ~1.4s after load, so a fallback

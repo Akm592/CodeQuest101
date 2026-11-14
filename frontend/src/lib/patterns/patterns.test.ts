@@ -11,6 +11,7 @@ import { STACK } from "./stack";
 import { TREES } from "./trees";
 import { ADVANCED_GRAPHS } from "./advancedGraphs";
 import { BACKTRACKING } from "./backtracking";
+import { BITS } from "./bits";
 import { DP1 } from "./dp1";
 import { DP2 } from "./dp2";
 import { GRAPHS } from "./graphs";
@@ -21,7 +22,7 @@ import { TRIES } from "./tries";
 import { TWO_POINTERS } from "./twoPointers";
 import type { AnyProblem } from "./types";
 
-const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING, ...GRAPHS, ...ADVANCED_GRAPHS, ...DP1, ...DP2, ...GREEDY, ...INTERVALS, ...MATH].map((p) => [p.title, p]);
+const ALL: [string, AnyProblem][] = [...ARRAYS_HASHING, ...TWO_POINTERS, ...SLIDING_WINDOW, ...STACK, ...BINARY_SEARCH, ...LINKED_LIST, ...TREES, ...TRIES, ...HEAP, ...BACKTRACKING, ...GRAPHS, ...ADVANCED_GRAPHS, ...DP1, ...DP2, ...GREEDY, ...INTERVALS, ...MATH, ...BITS].map((p) => [p.title, p]);
 const canon = (p: AnyProblem, a: unknown) => JSON.stringify(p.canon ? p.canon(a) : a);
 
 describe.each(ALL)("%s", (_t, p) => {

@@ -1830,6 +1830,29 @@ for _ in range(200):
             ok &= ds.count(q) == want
 check("detect squares matches trying every triple of stored points (200 runs)", ok)
 
+print("\nNeetCode 150: Bit Manipulation")
+bm = {name: load(f"neetcode/{name}") for name in ["single_number", "number_of_1_bits", "counting_bits", "reverse_bits", "missing_number", "sum_two_integers", "reverse_integer"]}
+ok = True
+for _ in range(300):
+    vals = rng.sample(range(-50, 50), rng.randint(1, 6))
+    nums = vals[1:] * 2 + vals[:1]
+    rng.shuffle(nums)
+    ok &= bm["single_number"].single_number(nums) == vals[0]
+    n = rng.randint(0, 2 ** 32 - 1)
+    ok &= bm["number_of_1_bits"].hamming_weight(n) == bin(n).count("1")
+    ok &= bm["reverse_bits"].reverse_bits(n) == int(format(n, "032b")[::-1], 2)
+    m = rng.randint(1, 30)
+    ok &= bm["missing_number"].missing_number([v for v in rng.sample(range(m + 1), m + 1) if v != m // 2]) == m // 2
+    a, b = rng.randint(-1000, 1000), rng.randint(-1000, 1000)
+    ok &= bm["sum_two_integers"].get_sum(a, b) == a + b
+check("single number, 1 bits, reverse bits, missing number and sum of two integers match Python (300 cases)", ok)
+check("counting bits matches bin(i).count('1') for n = 0..300", all(bm["counting_bits"].count_bits(n) == [bin(i).count("1") for i in range(n + 1)] for n in range(0, 301, 7)))
+def rev_ref(x):
+    r = int(str(abs(x))[::-1]) * (1 if x >= 0 else -1)
+    return r if -2 ** 31 <= r <= 2 ** 31 - 1 else 0
+xs = [rng.randint(-2 ** 31, 2 ** 31 - 1) for _ in range(300)] + [0, 2 ** 31 - 1, -2 ** 31, 1463847412, -1463847412, 1534236469]
+check("reverse integer matches reversing the string with full-size ints, including the 32-bit edges", all(bm["reverse_integer"].reverse(x) == rev_ref(x) for x in xs))
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

@@ -12,6 +12,7 @@ import {
   SearchCode,
   Link2,
   TreePine,
+  Binary,
   Sigma,
   CalendarRange,
   Zap,
@@ -135,6 +136,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Greedy", seoTitle: "Greedy Interview Pattern Visualizer", description: "Explore greedy interview patterns: Kadane's maximum subarray, jump games, gas station, partition labels and more, each with the reason the greedy choice is safe.", icon: <Zap />, key: "greedyPattern", level: "Medium" },
     { title: "Intervals", seoTitle: "Intervals Interview Pattern Visualizer", description: "Explore interval interview patterns on an animated timeline: insert and merge intervals, meeting rooms and interval queries. Sort, sweep and study Python solutions.", icon: <CalendarRange />, key: "intervalsPattern", level: "Medium" },
     { title: "Math & Geometry", seoTitle: "Math and Geometry Interview Pattern Visualizer", description: "Explore math and geometry interview problems: rotate image, spiral matrix, fast powers, big-number multiplication and detect squares, animated step by step.", icon: <Sigma />, key: "mathPattern", level: "Medium" },
+    { title: "Bit Manipulation", seoTitle: "Bit Manipulation Interview Pattern Visualizer", description: "Explore bit manipulation interview problems: XOR tricks, counting and reversing bits, and adding without plus, with every bit shown step by step.", icon: <Binary />, key: "bitsPattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", seoTitle: "Gradient Descent Visualizer: Learning Rate and Optimizers", description: "Explore gradient descent with interactive learning rates, loss contours and optimizer comparisons. See how SGD, momentum and Adam move toward a minimum.", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -161,7 +163,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern" | "bitsPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 

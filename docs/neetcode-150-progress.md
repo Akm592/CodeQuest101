@@ -1,14 +1,13 @@
-# NeetCode 150 on CodeQuest: progress and what's left
+# NeetCode 150 on CodeQuest: progress
 
-_Last updated: 14 November 2026._
+_Last updated: 15 November 2026._
 
 CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neetcode.io/roadmap) into animated, step-by-step pages, one page per NeetCode category, in NeetCode's order. Each problem is credited to NeetCode with a link to their video.
 
 ## Status at a glance
 
-- **Done:** 143 of 150 problems, 17 of 18 categories.
-- **Left:** 7 problems in 1 categories.
-- **Next up:** Bit Manipulation (7 problems), the last category: bit rows, and 32-bit values as a 4 × 8 grid.
+- **Done:** all 150 problems, all 18 categories.
+- **Left:** nothing. Every category has its own page under Interview Patterns.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -29,7 +28,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 15 | Greedy | 8 | ✅ Done | `/visualize/greedyPattern` | "Interview Patterns: Greedy" |
 | 16 | Intervals | 6 | ✅ Done | `/visualize/intervalsPattern` | "Interview Patterns: Intervals" |
 | 17 | Math & Geometry | 8 | ✅ Done | `/visualize/mathPattern` | "Interview Patterns: Math & Geometry" |
-| 18 | Bit Manipulation | 7 | ⬜ To do | | |
+| 18 | Bit Manipulation | 7 | ✅ Done | `/visualize/bitsPattern` | "Interview Patterns: Bit Manipulation" |
 
 ## Done
 
@@ -101,27 +100,13 @@ Insert Interval, Merge Intervals, Non-overlapping Intervals, Meeting Rooms, Meet
 
 Rotate Image, Spiral Matrix, Set Matrix Zeroes, Happy Number, Plus One, Pow(x, n), Multiply Strings, Detect Squares.
 
-## Left to build
+### Bit Manipulation (7) · `/visualize/bitsPattern`
 
-Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
+Single Number, Number of 1 Bits, Counting Bits, Reverse Bits, Missing Number, Sum of Two Integers, Reverse Integer.
 
-### 18. Bit Manipulation (7)
+## Views built for the patterns pages
 
-- **Visual idea:** A bit row (32 or 8 cells of 0/1) under each number, with XOR / AND / shifts shown cell by cell.
-- **Link to:** none
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Single Number | Easy |  | [`single-number`](https://leetcode.com/problems/single-number/) | [`qMPX1AOa83k`](https://www.youtube.com/watch?v=qMPX1AOa83k) |
-| Number of 1 Bits | Easy | Yes | [`number-of-1-bits`](https://leetcode.com/problems/number-of-1-bits/) | [`5Km3utixwZs`](https://www.youtube.com/watch?v=5Km3utixwZs) |
-| Counting Bits | Easy | Yes | [`counting-bits`](https://leetcode.com/problems/counting-bits/) | [`RyBM56RIWrM`](https://www.youtube.com/watch?v=RyBM56RIWrM) |
-| Reverse Bits | Easy | Yes | [`reverse-bits`](https://leetcode.com/problems/reverse-bits/) | [`UcoN6UjAI64`](https://www.youtube.com/watch?v=UcoN6UjAI64) |
-| Missing Number | Easy | Yes | [`missing-number`](https://leetcode.com/problems/missing-number/) | [`WnPLSRLSANE`](https://www.youtube.com/watch?v=WnPLSRLSANE) |
-| Sum of Two Integers | Medium | Yes | [`sum-of-two-integers`](https://leetcode.com/problems/sum-of-two-integers/) | [`gVUrDV4tZfY`](https://www.youtube.com/watch?v=gVUrDV4tZfY) |
-| Reverse Integer | Medium |  | [`reverse-integer`](https://leetcode.com/problems/reverse-integer/) | [`HAgLH58IgJQ`](https://www.youtube.com/watch?v=HAgLH58IgJQ) |
-## New views the remaining categories need
-
-The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws array rows, a hash map card, a 9×9 grid, bars (with water, a container box, a rectangle and a floor) and variables. The categories left will need:
+The step view (`frontend/src/components/patterns/StepView.tsx`) draws array rows, a hash map card, variables, bars, a grid of any size, linked lists, trees (and tries, heaps, recursion trees), graphs and timelines. What each category needed:
 
 | View | Needed by | Notes |
 |---|---|---|
@@ -132,7 +117,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | ✅ Done: `step.graph` (`GraphView.tsx`): round nodes at given x/y or round a circle, lines or arrows, edge labels, dashed edges. Helpers in `lib/patterns/graphs/` (`grid.ts`, `graph.ts` with union-find). |
 | Recursion tree | Backtracking | ✅ Done: `lib/patterns/backtracking/rtree.ts` records calls while the solver runs and lays the whole tree out once (nodes never move; each step reveals the next call). Drawn by `TreeView`. Skips drawing above 400 nodes. |
 | Timeline | Intervals | ✅ Done: `step.timeline` (`TimelineView.tsx`): one bar per lane on a shared axis, lane labels, point marks for queries or sweep moments. |
-| Bit row | Bit Manipulation | 8 or 32 cells of 0/1. |
+| Bit row | Bit Manipulation | ✅ Done: rows of 0/1 cells (8 bits) and the grid view as a 4 × 8 block for 32-bit values. |
 
 ## How to add a category (checklist)
 
@@ -178,7 +163,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first thirteen categories
+## Lessons from building all eighteen categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
