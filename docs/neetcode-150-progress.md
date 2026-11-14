@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 63 of 150 problems, 8 of 18 categories.
-- **Left:** 87 problems in 10 categories.
-- **Next up:** Heap / Priority Queue (7 problems). The tree view can draw the heap; a row can show the array behind it.
+- **Done:** 70 of 150 problems, 9 of 18 categories.
+- **Left:** 80 problems in 9 categories.
+- **Next up:** Backtracking (9 problems). Needs a recursion-tree view (choices as branches, dead ends crossed out); Word Search and N-Queens can use the grid view.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -20,7 +20,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 6 | Linked List | 11 | ✅ Done | `/visualize/linkedListPattern` | "Interview Patterns: Linked List" |
 | 7 | Trees | 15 | ✅ Done | `/visualize/treesPattern` | "Interview Patterns: Trees" |
 | 8 | Tries | 3 | ✅ Done | `/visualize/triesPattern` | "Interview Patterns: Tries" |
-| 9 | Heap / Priority Queue | 7 | ⬜ To do | | |
+| 9 | Heap / Priority Queue | 7 | ✅ Done | `/visualize/heapPattern` | "Interview Patterns: Heap / Priority Queue" |
 | 10 | Backtracking | 9 | ⬜ To do | | |
 | 11 | Graphs | 13 | ⬜ To do | | |
 | 12 | Advanced Graphs | 6 | ⬜ To do | | |
@@ -65,24 +65,13 @@ Invert Binary Tree, Maximum Depth, Diameter, Balanced Binary Tree, Same Tree, Su
 
 Implement Trie (Prefix Tree), Design Add and Search Words Data Structure, Word Search II.
 
+### Heap / Priority Queue (7) · `/visualize/heapPattern`
+
+Kth Largest Element in a Stream, Last Stone Weight, K Closest Points to Origin, Kth Largest Element in an Array, Task Scheduler, Design Twitter, Find Median from Data Stream.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 9. Heap / Priority Queue (7)
-
-- **Visual idea:** Show the heap both as a tree and as the array behind it; highlight sift-up / sift-down swaps. Find Median: two heaps side by side.
-- **Link to:** `heap`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Kth Largest Element In a Stream | Easy |  | [`kth-largest-element-in-a-stream`](https://leetcode.com/problems/kth-largest-element-in-a-stream/) | [`hOjcdrqMoQ8`](https://www.youtube.com/watch?v=hOjcdrqMoQ8) |
-| Last Stone Weight | Easy |  | [`last-stone-weight`](https://leetcode.com/problems/last-stone-weight/) | [`B-QCq79-Vfw`](https://www.youtube.com/watch?v=B-QCq79-Vfw) |
-| K Closest Points to Origin | Medium |  | [`k-closest-points-to-origin`](https://leetcode.com/problems/k-closest-points-to-origin/) | [`rI2EBUEMfTk`](https://www.youtube.com/watch?v=rI2EBUEMfTk) |
-| Kth Largest Element In An Array | Medium |  | [`kth-largest-element-in-an-array`](https://leetcode.com/problems/kth-largest-element-in-an-array/) | [`XEmy13g1Qxc`](https://www.youtube.com/watch?v=XEmy13g1Qxc) |
-| Task Scheduler | Medium |  | [`task-scheduler`](https://leetcode.com/problems/task-scheduler/) | [`s8p8ukTyA2I`](https://www.youtube.com/watch?v=s8p8ukTyA2I) |
-| Design Twitter | Medium |  | [`design-twitter`](https://leetcode.com/problems/design-twitter/) | [`pNichitDD2E`](https://www.youtube.com/watch?v=pNichitDD2E) |
-| Find Median From Data Stream | Hard | Yes | [`find-median-from-data-stream`](https://leetcode.com/problems/find-median-from-data-stream/) | [`itmhHWaHupI`](https://www.youtube.com/watch?v=itmhHWaHupI) |
 
 ### 10. Backtracking (9)
 
@@ -242,7 +231,7 @@ The step view (`frontend/src/components/patterns/StepView.tsx`) currently draws 
 | View | Needed by | Notes |
 |---|---|---|
 | Linked list (boxes and arrows, named pointers) | Linked List | ✅ Done: `step.links` (`LinkView.tsx`), nodes on a row/column grid. Could also serve small graphs. |
-| Binary tree (nodes by depth, a value per node) | Trees, Heap | ✅ Done: `step.tree` (`TreeView.tsx`), in-order layout, notes beside nodes, several trees side by side. Helpers in `lib/patterns/trees/tree.ts` (level order, random trees and BSTs). |
+| Binary tree (nodes by depth, a value per node) | Trees, Heap | ✅ Done: `step.tree` (`TreeView.tsx`), in-order layout, notes beside nodes, several trees side by side. Helpers in `lib/patterns/trees/tree.ts` (level order, random trees and BSTs). Heaps: `lib/patterns/heap/heap.ts` (a heap that records each push/pop path, drawn by index with the array as a row). |
 | Trie | Tries | ✅ Done: `TreeView` with `ring` for word ends; `trieLayout` in `lib/patterns/tries/trie.ts` handles any number of children. |
 | Grid of any size | Graphs, Backtracking, 2-D DP, Tries | ✅ Done: `grid.blocks` adds Sudoku-style gaps. |
 | Small graph (nodes and edges, weights) | Graphs, Advanced Graphs | Fixed layouts per example are fine. |
@@ -294,7 +283,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first eight categories
+## Lessons from the first nine categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -310,3 +299,5 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Leave room for notes** beside the last node or column, or they get cut off.
 - **Pick a big input that shows why the pattern exists.** Random Word Search II boards made the trie only ~2× better, because most words fail on their first letter. The classic slow input (a board of a's, words like “aaaaab”) shows the real 10× gap.
 - **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.
+- **Compare like with like.** If the pattern's ops count comparisons and swaps, a sorting estimate must count comparisons and moves too. And a heap of size k only beats sorting clearly when n is large and k small, so pick the big input to match.
+- **Check examples against LeetCode's constraints** (Kth Largest in a Stream guarantees k numbers before the first add returns).

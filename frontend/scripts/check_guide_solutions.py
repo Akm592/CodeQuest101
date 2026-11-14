@@ -1108,6 +1108,74 @@ for _ in range(300):
     ok &= len(got) == len(set(got)) and sorted(got) == sorted(w for w in words if word_on_board(board, w))
 check("word search ii matches a separate search per word (300 boards)", ok)
 
+print("\nNeetCode 150: Heap / Priority Queue")
+hp = {name: load(f"neetcode/{name}") for name in ["kth_largest_stream", "last_stone_weight", "k_closest", "kth_largest_array", "task_scheduler", "design_twitter", "find_median"]}
+ok = True
+for _ in range(300):
+    k = rng.randint(1, 4)
+    nums = [rng.randint(-9, 9) for _ in range(rng.randint(k - 1, 6))]
+    seen, kth = nums[:], hp["kth_largest_stream"].KthLargest(k, nums[:])
+    for _ in range(rng.randint(1, 6)):
+        v = rng.randint(-9, 9)
+        seen.append(v)
+        ok &= kth.add(v) == sorted(seen, reverse=True)[k - 1]
+check("kth largest in a stream matches sorting everything (300 runs)", ok)
+def stones_slow(s):
+    s = sorted(s)
+    while len(s) > 1:
+        a, b = s.pop(), s.pop()
+        if a != b:
+            s.append(a - b)
+            s.sort()
+    return s[0] if s else 0
+check("last stone weight matches re-sorting each turn (300 cases)", all(hp["last_stone_weight"].last_stone_weight(s[:]) == stones_slow(s) for s in ([rng.randint(1, 20) for _ in range(rng.randint(1, 9))] for _ in range(300))))
+ok = True
+for _ in range(300):
+    pts = [[rng.randint(-6, 6), rng.randint(-6, 6)] for _ in range(rng.randint(1, 8))]
+    k = rng.randint(1, len(pts))
+    want = sorted(x * x + y * y for x, y in pts)[:k]
+    for f in (hp["k_closest"].k_closest, hp["k_closest"].k_closest_heapify):
+        got = f([p[:] for p in pts], k)
+        ok &= sorted(x * x + y * y for x, y in got) == want and all(p in pts for p in got)
+check("k closest points: both heap versions keep k points at the k smallest distances (300 cases)", ok)
+ok = True
+for _ in range(300):
+    nums = [rng.randint(-9, 9) for _ in range(rng.randint(1, 10))]
+    k = rng.randint(1, len(nums))
+    want = sorted(nums, reverse=True)[k - 1]
+    ok &= hp["kth_largest_array"].find_kth_largest(nums[:], k) == want and hp["kth_largest_array"].quickselect(nums[:], k) == want
+check("kth largest in an array: heap and quickselect match sorting (300 cases)", ok)
+def schedule_formula(tasks, n):
+    counts = [tasks.count(t) for t in set(tasks)]
+    most = max(counts)
+    return max(len(tasks), (most - 1) * (n + 1) + counts.count(most))
+check("task scheduler matches the counting formula (300 cases)", all(hp["task_scheduler"].least_interval(list(t), n) == schedule_formula(t, n) for t, n in (("".join(rng.choice("ABCD") for _ in range(rng.randint(1, 12))), rng.randint(0, 4)) for _ in range(300))))
+ok = True
+for _ in range(300):
+    tw, posts, follows, tid = hp["design_twitter"].Twitter(), [], {}, 0
+    for _ in range(rng.randint(3, 25)):
+        op, a, b = rng.random(), rng.randint(1, 3), rng.randint(1, 3)
+        if op < 0.5:
+            tid += 1
+            tw.postTweet(a, tid); posts.append((a, tid))
+        elif op < 0.65:
+            tw.follow(a, b); follows.setdefault(a, set()).add(b)
+        elif op < 0.75:
+            tw.unfollow(a, b); follows.setdefault(a, set()).discard(b)
+        else:
+            who = follows.get(a, set()) | {a}
+            ok &= tw.getNewsFeed(a) == [t for u, t in reversed(posts) if u in who][:10]
+check("design twitter feeds match filtering every post (300 runs)", ok)
+ok = True
+for _ in range(300):
+    m, seen = hp["find_median"].MedianFinder(), []
+    for _ in range(rng.randint(1, 12)):
+        v = rng.randint(-20, 20)
+        m.addNum(v); seen.append(v)
+        s, n = sorted(seen), len(seen)
+        ok &= m.findMedian() == (s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2)
+check("find median matches sorting after every add (300 runs)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:
