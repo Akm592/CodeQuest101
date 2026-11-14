@@ -1425,6 +1425,94 @@ for _ in range(300):
     ok &= gr["word_ladder"].ladder_length(begin, end, words[:]) == want
 check("word ladder matches a BFS that compares every pair of words (300 cases)", ok)
 
+print("\nNeetCode 150: Advanced Graphs")
+ag = {name: load(f"neetcode/{name}") for name in ["reconstruct_itinerary", "min_cost_connect", "network_delay", "swim_rising_water", "alien_dictionary", "cheapest_flights"]}
+ok = True
+for _ in range(200):
+    names = ["JFK", "ATL", "SFO", "LHR"][:rng.randint(2, 4)]
+    at, tickets = "JFK", []
+    for _ in range(rng.randint(1, 6)):
+        to = rng.choice([x for x in names if x != at]); tickets.append([at, to]); at = to
+    rng.shuffle(tickets)
+    # Every ordering of the tickets that forms a path from JFK; the answer is the smallest.
+    best = min((["JFK"] + [b for _, b in perm]) for perm in itertools.permutations(tickets) if perm[0][0] == "JFK" and all(perm[i][1] == perm[i + 1][0] for i in range(len(perm) - 1)))
+    ok &= ag["reconstruct_itinerary"].find_itinerary([t[:] for t in tickets]) == best
+check("reconstruct itinerary matches the smallest valid ordering of the tickets (200 cases)", ok)
+def mst_brute(pts):
+    """Kruskal, as an independent method."""
+    n = len(pts)
+    es = sorted((abs(a[0] - b[0]) + abs(a[1] - b[1]), i, j) for i, a in enumerate(pts) for j, b in enumerate(pts) if i < j)
+    par = list(range(n))
+    def find(x):
+        while par[x] != x:
+            x = par[x]
+        return x
+    total = 0
+    for d, i, j in es:
+        if find(i) != find(j):
+            par[find(i)] = find(j); total += d
+    return total
+check("min cost to connect points matches Kruskal (200 cases)", all(ag["min_cost_connect"].min_cost_connect_points(p) == mst_brute(p) for p in ([[rng.randint(-9, 9), rng.randint(-9, 9)] for _ in range(rng.randint(1, 8))] for _ in range(200))))
+ok = ok2 = True
+for _ in range(200):
+    n = rng.randint(1, 6)
+    edges = [[rng.randint(1, n), rng.randint(1, n), rng.randint(1, 9)] for _ in range(rng.randint(0, 10))]
+    edges = [e for e in edges if e[0] != e[1]]
+    k = rng.randint(1, n)
+    d = {k: 0}
+    for _ in range(n):
+        for u, v, w in edges:
+            if u in d and d[u] + w < d.get(v, float("inf")):
+                d[v] = d[u] + w
+    ok &= ag["network_delay"].network_delay_time(edges, n, k) == (max(d.values()) if len(d) == n else -1)
+    m = rng.randint(2, 5)
+    fl = [[a, b, rng.randint(1, 9) * 10] for a, b in {(rng.randrange(m), rng.randrange(m)) for _ in range(rng.randint(1, 8))} if a != b]
+    src, dst, kk = rng.randrange(m), rng.randrange(m), rng.randint(0, 2)
+    best = [float("inf")]
+    def go(c, cost, left):
+        if c == dst:
+            best[0] = min(best[0], cost)
+        if left:
+            for a, b, p in fl:
+                if a == c:
+                    go(b, cost + p, left - 1)
+    go(src, 0, kk + 1)
+    ok2 &= ag["cheapest_flights"].find_cheapest_price(m, fl, src, dst, kk) == (-1 if best[0] == float("inf") else best[0])
+check("network delay time matches Bellman-Ford (200 cases)", ok)
+check("cheapest flights matches trying every route of up to k + 1 flights (200 cases)", ok2)
+ok = True
+for _ in range(200):
+    n = rng.randint(1, 4)
+    vals = rng.sample(range(n * n), n * n)
+    g = [vals[r * n:(r + 1) * n] for r in range(n)]
+    t = 0
+    while True:
+        seen, stack = ({(0, 0)}, [(0, 0)]) if g[0][0] <= t else (set(), [])
+        while stack:
+            r, c = stack.pop()
+            for y, x in four((r, c)):
+                if 0 <= y < n and 0 <= x < n and (y, x) not in seen and g[y][x] <= t:
+                    seen.add((y, x)); stack.append((y, x))
+        if (n - 1, n - 1) in seen:
+            break
+        t += 1
+    ok &= ag["swim_rising_water"].swim_in_water(g) == t
+check("swim in rising water matches trying t = 0, 1, 2, ... (200 grids)", ok)
+ok = True
+for _ in range(300):
+    alpha = rng.sample("abcd", 4)
+    words = sorted(("".join(rng.choice(alpha) for _ in range(rng.randint(1, 3))) for _ in range(rng.randint(1, 5))), key=lambda w: [alpha.index(c) for c in w])
+    if rng.random() < 0.3 and len(words) > 1:
+        words[0], words[1] = words[1], words[0]
+    got = ag["alien_dictionary"].alien_order(words[:])
+    letters = sorted(set("".join(words)))
+    def fits(order):
+        key = lambda w: [order.index(c) for c in w]
+        return all(key(words[i]) <= key(words[i + 1]) for i in range(len(words) - 1))
+    possible = any(fits("".join(p)) for p in itertools.permutations(letters))
+    ok &= (sorted(got) == letters and fits(got)) if possible else got == ""
+check("alien dictionary: a valid alphabet exactly when one exists (300 cases)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

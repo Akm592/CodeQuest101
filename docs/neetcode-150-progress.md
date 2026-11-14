@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 92 of 150 problems, 11 of 18 categories.
-- **Left:** 58 problems in 7 categories.
-- **Next up:** Advanced Graphs (6 problems). The graph view (`GraphView.tsx`) already draws weighted edges; Dijkstra and MST need a heap row.
+- **Done:** 98 of 150 problems, 12 of 18 categories.
+- **Left:** 52 problems in 6 categories.
+- **Next up:** 1-D Dynamic Programming (12 problems). The dp array is a row; arrows or tags can show which earlier cells each entry is built from.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -23,7 +23,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 9 | Heap / Priority Queue | 7 | ✅ Done | `/visualize/heapPattern` | "Interview Patterns: Heap / Priority Queue" |
 | 10 | Backtracking | 9 | ✅ Done | `/visualize/backtrackingPattern` | "Interview Patterns: Backtracking" |
 | 11 | Graphs | 13 | ✅ Done | `/visualize/graphsPattern` | "Interview Patterns: Graphs" |
-| 12 | Advanced Graphs | 6 | ⬜ To do | | |
+| 12 | Advanced Graphs | 6 | ✅ Done | `/visualize/advancedGraphsPattern` | "Interview Patterns: Advanced Graphs" |
 | 13 | 1-D Dynamic Programming | 12 | ⬜ To do | | |
 | 14 | 2-D Dynamic Programming | 11 | ⬜ To do | | |
 | 15 | Greedy | 8 | ⬜ To do | | |
@@ -77,23 +77,13 @@ Subsets, Combination Sum, Permutations, Subsets II, Combination Sum II, Word Sea
 
 Number of Islands, Clone Graph, Max Area of Island, Pacific Atlantic Water Flow, Surrounded Regions, Rotting Oranges, Walls and Gates, Course Schedule, Course Schedule II, Redundant Connection, Number of Connected Components in an Undirected Graph, Graph Valid Tree, Word Ladder.
 
+### Advanced Graphs (6) · `/visualize/advancedGraphsPattern`
+
+Reconstruct Itinerary, Min Cost to Connect All Points, Network Delay Time, Swim in Rising Water, Alien Dictionary, Cheapest Flights Within K Stops.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 12. Advanced Graphs (6)
-
-- **Visual idea:** Weighted graph view with distances on nodes; the priority queue as a row (Dijkstra, Prim). Alien Dictionary reuses topological sort.
-- **Link to:** `graph`, `topologicalSort`
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Reconstruct Itinerary | Hard |  | [`reconstruct-itinerary`](https://leetcode.com/problems/reconstruct-itinerary/) | [`ZyB_gQ8vqGA`](https://www.youtube.com/watch?v=ZyB_gQ8vqGA) |
-| Min Cost to Connect All Points | Medium |  | [`min-cost-to-connect-all-points`](https://leetcode.com/problems/min-cost-to-connect-all-points/) | [`f7JOBJIC-NA`](https://www.youtube.com/watch?v=f7JOBJIC-NA) |
-| Network Delay Time | Medium |  | [`network-delay-time`](https://leetcode.com/problems/network-delay-time/) | [`EaphyqKU4PQ`](https://www.youtube.com/watch?v=EaphyqKU4PQ) |
-| Swim In Rising Water | Hard |  | [`swim-in-rising-water`](https://leetcode.com/problems/swim-in-rising-water/) | [`amvrKlMLuGY`](https://www.youtube.com/watch?v=amvrKlMLuGY) |
-| Alien Dictionary | Hard | Yes | [`alien-dictionary`](https://leetcode.com/problems/alien-dictionary/) | [`6kTZYvNNyps`](https://www.youtube.com/watch?v=6kTZYvNNyps) |
-| Cheapest Flights Within K Stops | Medium |  | [`cheapest-flights-within-k-stops`](https://leetcode.com/problems/cheapest-flights-within-k-stops/) | [`5eIK3zUdYmE`](https://www.youtube.com/watch?v=5eIK3zUdYmE) |
 
 ### 13. 1-D Dynamic Programming (12)
 
@@ -253,7 +243,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - Every problem links to NeetCode's video and to LeetCode. The credits section at the bottom of each page (in `PatternPage`) says the approaches follow NeetCode, while the animations, explanations and code were written for CodeQuest.
 - Problem statements are summarised in our own words, never copied from LeetCode.
 
-## Lessons from the first eleven categories
+## Lessons from the first twelve categories
 
 - **Check that examples have one answer.** Two Sum and Two Sum II examples once had two valid pairs. Tests now check this.
 - **Tiny inputs can make brute force look better.** That's why every problem has a `big` input and an at-scale comparison.
@@ -271,6 +261,7 @@ Then take screenshots (Playwright, installed with `npm i --no-save playwright` a
 - **Dead ends need their own colour even on the current node**, or a failed branch looks like progress.
 - **Compare like with like.** If the pattern's ops count comparisons and swaps, a sorting estimate must count comparisons and moves too. And a heap of size k only beats sorting clearly when n is large and k small, so pick the big input to match.
 - **Big inputs run in the browser** (the page computes the at-scale numbers live), so step generators must stay cheap: record light frames and build pictures once at the end, and skip drawing for huge runs.
+- **Random big inputs can make a slow method look fine.** Swim in Rising Water's random grid let “try every t” finish early; a structured worst case (a snake of rising heights) shows the real gap.
 - **Test the tips.** Three “try this” tips described their examples wrongly until a test checked the facts they quote. Work tips out by hand, then test them.
 - **A big example must not favour the pattern by accident, or the slow way.** Redundant Connection's first big input put the extra edge last, which the slow method finds first.
 - **Name every reason.** When two things cause a result (two queens attacking one square), say both, each with its own reason.
