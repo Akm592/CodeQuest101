@@ -1778,6 +1778,58 @@ for _ in range(300):
     ok &= iv["min_interval_query"].min_interval([x[:] for x in ivs], qs) == want
 check("minimum interval for each query matches scanning every interval (300 cases)", ok)
 
+print("\nNeetCode 150: Math & Geometry")
+mg = {name: load(f"neetcode/{name}") for name in ["rotate_image", "spiral_matrix", "set_matrix_zeroes", "happy_number", "plus_one", "pow_x_n", "multiply_strings", "detect_squares"]}
+ok = True
+for _ in range(200):
+    n = rng.randint(1, 5)
+    m = [[rng.randint(0, 9) for _ in range(n)] for _ in range(n)]
+    got = [row[:] for row in m]
+    mg["rotate_image"].rotate(got)
+    ok &= got == [list(r) for r in zip(*m[::-1])]
+    R, C = rng.randint(1, 5), rng.randint(1, 5)
+    g = [[r * C + c for c in range(C)] for r in range(R)]
+    want, grid_ = [], [row[:] for row in g]
+    while grid_:
+        want += grid_.pop(0)
+        grid_ = [list(r) for r in zip(*grid_)][::-1]  # turn the rest anticlockwise
+    ok &= mg["spiral_matrix"].spiral_order(g) == want
+    z = [[0 if rng.random() < 0.2 else 1 for _ in range(C)] for _ in range(R)]
+    zr = {r for r in range(R) if 0 in z[r]}
+    zc = {c for c in range(C) if any(z[r][c] == 0 for r in range(R))}
+    got = [row[:] for row in z]
+    mg["set_matrix_zeroes"].set_zeroes(got)
+    ok &= got == [[0 if r in zr or c in zc else z[r][c] for c in range(C)] for r in range(R)]
+check("rotate image, spiral matrix and set matrix zeroes match simple rebuilds (200 cases)", ok)
+def happy_slow(n):
+    for _ in range(1000):
+        if n == 1:
+            return True
+        n = sum(int(d) ** 2 for d in str(n))
+    return n == 1
+check("happy number matches 1,000 rounds of the process (n = 1..500)", all(mg["happy_number"].is_happy(n) == happy_slow(n) for n in range(1, 501)))
+ok = True
+for _ in range(300):
+    digits = [rng.randint(1, 9)] + [rng.choice([9, 9, 0, 5]) for _ in range(rng.randint(0, 6))]
+    ok &= mg["plus_one"].plus_one(digits[:]) == [int(d) for d in str(int("".join(map(str, digits))) + 1)]
+    a, b = str(rng.randint(0, 10 ** rng.randint(1, 12))), str(rng.randint(0, 10 ** rng.randint(1, 12)))
+    ok &= mg["multiply_strings"].multiply(a, b) == str(int(a) * int(b))
+    x, e = rng.choice([2, 3, -2, 0.5, 1.5]), rng.randint(-8, 12)
+    ok &= math.isclose(mg["pow_x_n"].my_pow(x, e), x ** e, rel_tol=1e-9)
+check("plus one, multiply strings and pow match Python's own arithmetic (300 cases)", ok)
+ok = True
+for _ in range(200):
+    ds, pts = mg["detect_squares"].DetectSquares(), []
+    for _ in range(rng.randint(3, 12)):
+        q = [rng.randint(0, 3), rng.randint(0, 3)]
+        if rng.random() < 0.7:
+            ds.add(q); pts.append(tuple(q))
+        else:
+            want = sum(1 for a in pts for b in pts for c in pts
+                       if a[0] != q[0] and abs(a[0] - q[0]) == abs(a[1] - q[1]) and b == (a[0], q[1]) and c == (q[0], a[1]))
+            ok &= ds.count(q) == want
+check("detect squares matches trying every triple of stored points (200 runs)", ok)
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

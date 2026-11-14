@@ -6,9 +6,9 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 
 ## Status at a glance
 
-- **Done:** 135 of 150 problems, 16 of 18 categories.
-- **Left:** 15 problems in 2 categories.
-- **Next up:** Math & Geometry (8 problems). Rotate Image, Spiral Matrix and Set Matrix Zeroes use the grid view; the rest are rows and variables.
+- **Done:** 143 of 150 problems, 17 of 18 categories.
+- **Left:** 7 problems in 1 categories.
+- **Next up:** Bit Manipulation (7 problems), the last category: bit rows, and 32-bit values as a 4 × 8 grid.
 
 | # | Category | Problems | Status | Page | Commit |
 |---|---|---|---|---|---|
@@ -28,7 +28,7 @@ CodeQuest's **Interview Patterns** section turns the [NeetCode 150](https://neet
 | 14 | 2-D Dynamic Programming | 11 | ✅ Done | `/visualize/dp2Pattern` | "Interview Patterns: 2-D Dynamic Programming" |
 | 15 | Greedy | 8 | ✅ Done | `/visualize/greedyPattern` | "Interview Patterns: Greedy" |
 | 16 | Intervals | 6 | ✅ Done | `/visualize/intervalsPattern` | "Interview Patterns: Intervals" |
-| 17 | Math & Geometry | 8 | ⬜ To do | | |
+| 17 | Math & Geometry | 8 | ✅ Done | `/visualize/mathPattern` | "Interview Patterns: Math & Geometry" |
 | 18 | Bit Manipulation | 7 | ⬜ To do | | |
 
 ## Done
@@ -97,25 +97,13 @@ Maximum Subarray, Jump Game, Jump Game II, Gas Station, Hand of Straights, Merge
 
 Insert Interval, Merge Intervals, Non-overlapping Intervals, Meeting Rooms, Meeting Rooms II, Minimum Interval to Include Each Query.
 
+### Math & Geometry (8) · `/visualize/mathPattern`
+
+Rotate Image, Spiral Matrix, Set Matrix Zeroes, Happy Number, Plus One, Pow(x, n), Multiply Strings, Detect Squares.
+
 ## Left to build
 
 Each table lists the problem, its difficulty, whether it's in the Blind 75, its LeetCode slug and NeetCode's YouTube video id, which is everything a problem file needs. **Visual idea** suggests how to show the category; **Link to** names existing CodeQuest pages to link from the intro.
-
-### 17. Math & Geometry (8)
-
-- **Visual idea:** Rotate Image and Spiral Matrix: the grid view with arrows. The rest are mostly rows and variables.
-- **Link to:** `rotateImage`, `spiralMatrix` (existing visualizers)
-
-| Problem | Difficulty | Blind 75 | LeetCode slug | NeetCode video |
-|---|---|---|---|---|
-| Rotate Image | Medium | Yes | [`rotate-image`](https://leetcode.com/problems/rotate-image/) | [`fMSJSS7eO1w`](https://www.youtube.com/watch?v=fMSJSS7eO1w) |
-| Spiral Matrix | Medium | Yes | [`spiral-matrix`](https://leetcode.com/problems/spiral-matrix/) | [`BJnMZNwUk1M`](https://www.youtube.com/watch?v=BJnMZNwUk1M) |
-| Set Matrix Zeroes | Medium | Yes | [`set-matrix-zeroes`](https://leetcode.com/problems/set-matrix-zeroes/) | [`T41rL0L3Pnw`](https://www.youtube.com/watch?v=T41rL0L3Pnw) |
-| Happy Number | Easy |  | [`happy-number`](https://leetcode.com/problems/happy-number/) | [`ljz85bxOYJ0`](https://www.youtube.com/watch?v=ljz85bxOYJ0) |
-| Plus One | Easy |  | [`plus-one`](https://leetcode.com/problems/plus-one/) | [`jIaA8boiG1s`](https://www.youtube.com/watch?v=jIaA8boiG1s) |
-| Pow(x, n) | Medium |  | [`powx-n`](https://leetcode.com/problems/powx-n/) | [`g9YQyYi4IQQ`](https://www.youtube.com/watch?v=g9YQyYi4IQQ) |
-| Multiply Strings | Medium |  | [`multiply-strings`](https://leetcode.com/problems/multiply-strings/) | [`1vZswirL8Y8`](https://www.youtube.com/watch?v=1vZswirL8Y8) |
-| Detect Squares | Medium |  | [`detect-squares`](https://leetcode.com/problems/detect-squares/) | [`bahebearrDc`](https://www.youtube.com/watch?v=bahebearrDc) |
 
 ### 18. Bit Manipulation (7)
 

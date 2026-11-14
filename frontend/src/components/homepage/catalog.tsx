@@ -12,6 +12,7 @@ import {
   SearchCode,
   Link2,
   TreePine,
+  Sigma,
   CalendarRange,
   Zap,
   Grid3x3,
@@ -133,6 +134,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "2-D Dynamic Programming", seoTitle: "2-D Dynamic Programming Interview Pattern Visualizer", description: "Explore 2-D dynamic programming interview patterns: unique paths, LCS, edit distance, regex matching and burst balloons. Watch each table fill cell by cell.", icon: <Grid3x3 />, key: "dp2Pattern", level: "Medium" },
     { title: "Greedy", seoTitle: "Greedy Interview Pattern Visualizer", description: "Explore greedy interview patterns: Kadane's maximum subarray, jump games, gas station, partition labels and more, each with the reason the greedy choice is safe.", icon: <Zap />, key: "greedyPattern", level: "Medium" },
     { title: "Intervals", seoTitle: "Intervals Interview Pattern Visualizer", description: "Explore interval interview patterns on an animated timeline: insert and merge intervals, meeting rooms and interval queries. Sort, sweep and study Python solutions.", icon: <CalendarRange />, key: "intervalsPattern", level: "Medium" },
+    { title: "Math & Geometry", seoTitle: "Math and Geometry Interview Pattern Visualizer", description: "Explore math and geometry interview problems: rotate image, spiral matrix, fast powers, big-number multiplication and detect squares, animated step by step.", icon: <Sigma />, key: "mathPattern", level: "Medium" },
   ],
   machineLearning: [
     { title: "Gradient Descent", seoTitle: "Gradient Descent Visualizer: Learning Rate and Optimizers", description: "Explore gradient descent with interactive learning rates, loss contours and optimizer comparisons. See how SGD, momentum and Adam move toward a minimum.", icon: <TrendingDown />, key: "gradientDescent", level: "Easy" },
@@ -159,7 +161,7 @@ export type VisualizationKey =
   | "longestSubarray" | "spiralMatrix" | "rotateImage" | "sortingAlgorithms"
   | "binarySearch" | "hareTortoise" | "dynamicProgramming" | "topologicalSort"
   | "nQueens"
-  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern"
+  | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
   | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
 
