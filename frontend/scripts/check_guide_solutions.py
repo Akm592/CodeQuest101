@@ -1874,6 +1874,70 @@ def rev_ref(x):
 xs = [rng.randint(-2 ** 31, 2 ** 31 - 1) for _ in range(300)] + [0, 2 ** 31 - 1, -2 ** 31, 1463847412, -1463847412, 1534236469]
 check("reverse integer matches reversing the string with full-size ints, including the 32-bit edges", all(bm["reverse_integer"].reverse(x) == rev_ref(x) for x in xs))
 
+print("\nRAG: standard-library teaching pipeline")
+rag = load("rag")
+check("cosine handles identical, perpendicular, opposite and scaled vectors",
+      math.isclose(rag.cosine([3, 4], [6, 8]), 1) and rag.cosine([1, 0], [0, 1]) == 0
+      and rag.cosine([1, 0], [-1, 0]) == -1 and math.isclose(rag.cosine([1, 0], [3, 4]), 0.6))
+invalid_vectors = [([], []), ([0, 0], [1, 0]), ([1], [1, 2]), ([math.nan], [1]), ([math.inf], [1])]
+rejected = 0
+for a, b in invalid_vectors:
+    try:
+        rag.cosine(a, b)
+    except ValueError:
+        rejected += 1
+check("cosine rejects undefined or invalid inputs", rejected == len(invalid_vectors))
+toy_document = [{'id': 'test', 'title': 'Test', 'sentences': [{'id': str(i), 'text': f'Sentence {i}.'} for i in range(5)]}]
+check("chunk boundaries and overlap preserve the actual source sentences",
+      [c['sentence_ids'] for c in rag.chunk_documents(toy_document, 3, 0)] == [['0', '1', '2'], ['3', '4']]
+      and [c['sentence_ids'] for c in rag.chunk_documents(toy_document, 3, 1)] == [['0', '1', '2'], ['2', '3', '4']]
+      and rag.chunk_documents([], 2, 1) == [])
+rejected = 0
+for size, overlap in [(1, 0), (2, 2), (3.5, 1), (True, 0)]:
+    try:
+        rag.chunk_documents(toy_document, size, overlap)
+    except ValueError:
+        rejected += 1
+check("invalid chunk settings are rejected", rejected == 4)
+toy_index = [{'id': str(i), 'source': 'Test', 'sentence_ids': [str(i)], 'text': f'Passage {i}', 'embedding': v}
+             for i, v in enumerate(([1, 0], [1, 0], [0, 1], [-1, 0]))]
+ranked, selected = rag.rank_chunks(toy_index, [1, 0], top_k=4, minimum_similarity=0)
+check("ranking keeps index order on ties, includes cutoff equality and excludes lower scores",
+      [r['chunk']['id'] for r in ranked] == ['0', '1', '2', '3']
+      and [r['chunk']['id'] for r in selected] == ['0', '1', '2'] and ranked[-1]['reason'] == 'below-cutoff')
+check("top-k, fewer-than-k and empty index selection work",
+      len(rag.rank_chunks(toy_index, [1, 0], 1)[1]) == 1
+      and len(rag.rank_chunks(toy_index[:1], [1, 0], 4)[1]) == 1
+      and rag.rank_chunks([], [1, 0])[1] == [])
+rejected = 0
+for k, cutoff in [(0, None), (5, None), (1.5, None), (2, math.nan), (2, -1.1), (2, 1.1)]:
+    try:
+        rag.rank_chunks(toy_index, [1, 0], k, cutoff)
+    except ValueError:
+        rejected += 1
+check("invalid retrieval settings are rejected", rejected == 6)
+prompt = rag.build_prompt('Which passage?', selected)
+check("prompt contains exactly selected source text and the question",
+      all(r['chunk']['text'] in prompt and r['chunk']['source'] in prompt for r in selected)
+      and 'Passage 3' not in prompt and prompt.endswith('Question: Which passage?')
+      and '(No passages passed retrieval.)' in rag.build_prompt('Unknown?', []))
+direct = rag.run(rag.QUESTIONS[0])
+partial = rag.run(rag.QUESTIONS[1], top_k=1)
+complete = rag.run(rag.QUESTIONS[1], top_k=3)
+unknown = rag.run(rag.QUESTIONS[2])
+check("simulation distinguishes supported, partial and absent evidence",
+      direct['answer']['status'] == complete['answer']['status'] == 'supported'
+      and partial['answer']['status'] == 'partial' and len(partial['answer']['claims']) == 1
+      and unknown['answer'] == {'status': 'insufficient', 'claims': []})
+selected_by_id = {r['chunk']['id']: r['chunk'] for r in complete['selected']}
+check("every simulated claim cites selected chunks containing its required evidence",
+      all(set(claim['evidence_ids']) <= {s for citation in claim['citations'] for s in selected_by_id[citation]['sentence_ids']}
+          for claim in complete['answer']['claims']))
+empty = rag.run(rag.QUESTIONS[1], minimum_similarity=1)
+check("a high cutoff produces empty context and no supported claims",
+      empty['selected'] == [] and empty['answer']['status'] == 'insufficient'
+      and '(No passages passed retrieval.)' in empty['prompt'])
+
 if failures:
     print(f"\n{len(failures)} check(s) failed:")
     for f in failures:

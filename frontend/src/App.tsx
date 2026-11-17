@@ -62,6 +62,7 @@ const LinearRegressionVisualizer = lazy(() => import("./components/ml/LinearRegr
 const KMeansVisualizer = lazy(() => import("./components/ml/KMeansVisualizer"));
 const AttentionVisualizer = lazy(() => import("./components/ml/AttentionVisualizer"));
 const SamplingVisualizer = lazy(() => import("./components/ml/SamplingVisualizer"));
+const RagVisualizer = lazy(() => import("./components/ml/RagVisualizer"));
 const DecisionTreeVisualizer = lazy(() => import("./components/ml/DecisionTreeVisualizer"));
 const NaiveBayesVisualizer = lazy(() => import("./components/ml/NaiveBayesVisualizer"));
 const RandomForestVisualizer = lazy(() => import("./components/ml/RandomForestVisualizer"));
@@ -107,6 +108,7 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   kMeans: { kind: "page", title: "K-Means Clustering", Component: KMeansVisualizer },
   attention: { kind: "page", title: "Self-Attention", Component: AttentionVisualizer },
   sampling: { kind: "page", title: "Next-Token Sampling", Component: SamplingVisualizer },
+  rag: { kind: "page", title: "RAG: Retrieval-Augmented Generation", Component: RagVisualizer },
   decisionTree: { kind: "page", title: "Decision Tree", Component: DecisionTreeVisualizer },
   naiveBayes: { kind: "page", title: "Naive Bayes", Component: NaiveBayesVisualizer },
   randomForest: { kind: "page", title: "Random Forest", Component: RandomForestVisualizer },

@@ -1,0 +1,60 @@
+{
+  "documents": [
+    {
+      "id": "returns",
+      "title": "Luma Shop · Returns",
+      "sentences": [
+        {"id": "returns-1", "text": "You can return an unused purchase within 30 days of delivery."},
+        {"id": "returns-2", "text": "The item must be unused, but its packaging may have been opened."},
+        {"id": "returns-3", "text": "Return shipping is free only when the item arrived damaged."},
+        {"id": "returns-4", "text": "For all other returns, the customer pays the return shipping cost."},
+        {"id": "returns-5", "text": "Start a return by emailing support with your order number."},
+        {"id": "returns-6", "text": "Keep your shipping receipt until the returned package reaches our warehouse."}
+      ]
+    },
+    {
+      "id": "refunds",
+      "title": "Luma Shop · Refunds",
+      "sentences": [
+        {"id": "refunds-1", "text": "A refund starts after our warehouse receives and checks the returned item."},
+        {"id": "refunds-2", "text": "The money reaches your original payment method within five business days after that check."},
+        {"id": "refunds-3", "text": "We send a confirmation email when the refund is issued."},
+        {"id": "refunds-4", "text": "An exchange sends a replacement item instead of returning money."},
+        {"id": "refunds-5", "text": "Gift purchases can be refunded to the original buyer only."},
+        {"id": "refunds-6", "text": "Our support team can look up a refund using the order number."}
+      ]
+    },
+    {
+      "id": "delivery",
+      "title": "Luma Shop · Delivery",
+      "sentences": [
+        {"id": "delivery-1", "text": "Standard delivery takes three to five business days."},
+        {"id": "delivery-2", "text": "Express delivery takes one to two business days."},
+        {"id": "delivery-3", "text": "Orders above 50 dollars qualify for free standard delivery."},
+        {"id": "delivery-4", "text": "Delivery estimates begin when the package leaves our warehouse."},
+        {"id": "delivery-5", "text": "A tracking link is emailed when your order ships."},
+        {"id": "delivery-6", "text": "Contact support if tracking says delivered but the package is missing."}
+      ]
+    },
+    {
+      "id": "warranty",
+      "title": "Luma Shop · Warranty",
+      "sentences": [
+        {"id": "warranty-1", "text": "The warranty covers manufacturing defects for one year after purchase."},
+        {"id": "warranty-2", "text": "Accidental damage and ordinary wear are not covered by the warranty."},
+        {"id": "warranty-3", "text": "Email support a photo and the order number to request a warranty assessment."},
+        {"id": "warranty-4", "text": "A warranty assessment determines whether a repair or replacement is available."},
+        {"id": "warranty-5", "text": "A warranty claim is different from returning an unused item."},
+        {"id": "warranty-6", "text": "Warranty requests do not change the shop's 30-day return window."}
+      ]
+    }
+  ],
+  "queries": [
+    {"id": "direct", "label": "A direct question", "text": "How many days do I have to return an unused purchase?", "claims": [{"text": "You can return an unused purchase within 30 days of delivery.", "evidenceIds": ["returns-1"]}]},
+    {"id": "paraphrase", "label": "Different words, same idea", "text": "I unboxed my purchase but never used it. Can I send it back?", "claims": [{"text": "Yes. Opened packaging is allowed if the item is unused, and the return must be within 30 days of delivery.", "evidenceIds": ["returns-1", "returns-2"]}]},
+    {"id": "boundary", "label": "A rule across a chunk boundary", "text": "Who pays return shipping if my item arrived damaged, and who pays for other returns?", "claims": [{"text": "Return shipping is free for an item that arrived damaged; for other returns, the customer pays.", "evidenceIds": ["returns-3", "returns-4"]}]},
+    {"id": "two-documents", "label": "Two documents are needed", "text": "What is the return deadline, and how long does a refund take after the warehouse checks the item?", "claims": [{"text": "An unused purchase can be returned within 30 days of delivery.", "evidenceIds": ["returns-1"]}, {"text": "After the warehouse receives and checks the return, the money reaches the original payment method within five business days.", "evidenceIds": ["refunds-1", "refunds-2"]}]},
+    {"id": "related", "label": "Related does not mean answered", "text": "Do I get a refund if express delivery arrives late?", "claims": []},
+    {"id": "missing", "label": "The handbook does not know", "text": "Does Luma Shop offer a student discount?", "claims": []}
+  ]
+}

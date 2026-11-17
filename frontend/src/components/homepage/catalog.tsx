@@ -91,7 +91,7 @@ export const categories: Category[] = [
   },
   {
     title: "Machine Learning & AI",
-    description: "From gradient descent to attention",
+    description: "From gradient descent to attention and RAG",
     icon: <Brain className="h-6 w-6 text-secondary-bright" />,
     key: "machineLearning",
   },
@@ -149,6 +149,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Neural Network", seoTitle: "Neural Network Training Visualizer", description: "Train a neural network interactively. Explore forward propagation, backpropagation and weight updates to see how a model learns from data.", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
     { title: "Self-Attention", seoTitle: "Self-Attention Visualizer: Query, Key and Value", description: "Explore transformer self-attention with interactive query, key and value matrices. Follow attention scores and see how tokens combine information.", icon: <ScanEye />, key: "attention", level: "Medium" },
     { title: "Next-Token Sampling", seoTitle: "LLM Sampling Visualizer: Temperature, Top-K and Top-P", description: "Explore LLM token sampling with interactive temperature, top-k and top-p controls. Follow logits, softmax probabilities, filtering and the final token draw.", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
+    { title: "RAG: Retrieval-Augmented Generation", seoTitle: "RAG Visualizer: Embeddings, Similarity Search and the Full Pipeline", description: "Learn RAG step by step with real embeddings and visual similarity search. Explore chunking, retrieval, prompts and cited answers in an offline teaching playground.", icon: <Workflow />, key: "rag", level: "Medium" },
   ],
 };
 
@@ -165,7 +166,7 @@ export type VisualizationKey =
   | "nQueens"
   | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern" | "bitsPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting" | "rag";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

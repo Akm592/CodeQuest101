@@ -42,6 +42,8 @@ import { buildMlpSteps, makeDataset } from "../ml/mlp";
 import { buildNbSteps, TEST_EMAILS, trainNb, TRAINING_EMAILS } from "../ml/naiveBayes";
 import { buildForestFrames, fitForest } from "../ml/randomForest";
 import { buildSamplingSteps, PROMPTS } from "../ml/sampling";
+import { buildRagSteps, RAG_DEFAULT, RAG_QUERIES } from "../ml/rag";
+import { ragGuide, ragGuideStepFor } from "./ragGuide";
 import {
   attentionGuide,
   attentionGuideStepFor,
@@ -89,6 +91,21 @@ function run<T extends BaseStep>(steps: T[], stageFor: (s: T) => string) {
 }
 
 const cases: [string, GuideCase][] = [
+  [
+    "retrieval-augmented generation",
+    {
+      guide: ragGuide,
+      runs: RAG_QUERIES.flatMap((query) => [
+        RAG_DEFAULT,
+        { ...RAG_DEFAULT, chunkSize: 3 as const, topK: 1, overlap: 0 as const },
+        { ...RAG_DEFAULT, chunkSize: 3 as const, topK: 1 },
+        { ...RAG_DEFAULT, chunkSize: 3 as const, topK: 3 },
+        { ...RAG_DEFAULT, minSimilarity: 1 },
+        { ...RAG_DEFAULT, minSimilarity: -1 },
+      ].map((settings) => run(buildRagSteps(query, settings), ragGuideStepFor))),
+      finalStages: ["answer"],
+    },
+  ],
   [
     "edit distance",
     {
