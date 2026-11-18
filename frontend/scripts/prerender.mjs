@@ -12,6 +12,7 @@ assert.equal(new Set(publicPages.map((page) => page.title)).size, publicPages.le
 for (const page of [...publicPages, ...utilityPages, { path: '/404', index: false }]) {
   // Utility pages contain account state; only their metadata is prerendered.
   const { html, head } = await render(page.path, page.index || page.path === '/404');
+  assert(!html.includes('\0'), `${page.path}: null bytes in prerendered HTML`);
   assert(head.includes(page.index ? 'index, follow' : 'noindex, follow'), `${page.path}: incorrect indexing`);
   assert.equal((head.match(/rel="canonical"/g) ?? []).length, page.index ? 1 : 0, `${page.path}: incorrect canonical count`);
   if (page.index) {
@@ -25,8 +26,15 @@ for (const page of [...publicPages, ...utilityPages, { path: '/404', index: fals
 }
 
 const directory = await readFile('dist/visualizations.html', 'utf8');
-for (const page of publicPages.filter((page) => page.path.startsWith('/visualize/'))) {
+for (const page of publicPages.filter((page) => /^\/visualize\/[^/]+$/.test(page.path))) {
   assert(directory.includes(`href="${page.path}"`), `Directory missing ${page.path}`);
+}
+
+for (const root of ['/visualize/advancedRag', '/visualize/aiAgents']) {
+  const overview = await readFile(`dist${root}.html`, 'utf8');
+  for (const page of publicPages.filter((page) => page.path.startsWith(`${root}/`))) {
+    assert(overview.includes(`href="${page.path}"`), `Course overview missing ${page.path}`);
+  }
 }
 
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>

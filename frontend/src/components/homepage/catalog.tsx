@@ -150,6 +150,8 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Self-Attention", seoTitle: "Self-Attention Visualizer: Query, Key and Value", description: "Explore transformer self-attention with interactive query, key and value matrices. Follow attention scores and see how tokens combine information.", icon: <ScanEye />, key: "attention", level: "Medium" },
     { title: "Next-Token Sampling", seoTitle: "LLM Sampling Visualizer: Temperature, Top-K and Top-P", description: "Explore LLM token sampling with interactive temperature, top-k and top-p controls. Follow logits, softmax probabilities, filtering and the final token draw.", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
     { title: "RAG: Retrieval-Augmented Generation", seoTitle: "RAG Visualizer: Embeddings, Similarity Search and the Full Pipeline", description: "Learn RAG step by step with real embeddings and visual similarity search. Explore chunking, retrieval, prompts and cited answers in an offline teaching playground.", icon: <Workflow />, key: "rag", level: "Medium" },
+    { title: "Advanced RAG", seoTitle: "Advanced RAG: Interactive Chapter Studio", description: "Build a deeper understanding of RAG in eight compact chapters. Explore text preparation, dense and sparse retrieval, hybrid search, reranking, query strategies, GraphRAG and evidence evaluation.", icon: <Waypoints />, key: "advancedRag", level: "Hard" },
+    { title: "AI Agents & Tool Calling", seoTitle: "AI Agents and Tool Calling: Interactive Chapter Studio", description: "Follow tool calls, explore agent memory and retries, and configure a simulated agent in an interactive visual builder.", icon: <Workflow />, key: "aiAgents", level: "Medium" },
   ],
 };
 
@@ -166,7 +168,7 @@ export type VisualizationKey =
   | "nQueens"
   | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern" | "bitsPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting" | "rag";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting" | "rag" | "advancedRag" | "aiAgents";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

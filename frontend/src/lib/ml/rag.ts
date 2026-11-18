@@ -1,6 +1,8 @@
 // Exact retrieval over recorded MiniLM embeddings; the answer is an authored teaching simulation.
 import type { BaseStep } from "../algorithms/types";
 import { RAG_DATA } from "./ragData";
+import { cosineSimilarity } from "./vectorMath";
+export { cosineSimilarity } from "./vectorMath";
 
 export interface RagSentence { id: string; text: string }
 export interface RagDocument { id: string; title: string; sentences: RagSentence[] }
@@ -85,16 +87,6 @@ export function getRagIndex(settings: Pick<RagSettings, "chunkSize" | "overlap">
   return RAG_DATA.configurations.find((c) => c.chunkSize === settings.chunkSize && c.overlap === settings.overlap)!.chunks;
 }
 
-export function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
-  if (!a.length || a.length !== b.length || !a.every(Number.isFinite) || !b.every(Number.isFinite)) {
-    throw new RangeError("Cosine requires finite, nonempty vectors of equal length.");
-  }
-  const aNorm = Math.hypot(...a);
-  const bNorm = Math.hypot(...b);
-  if (!Number.isFinite(aNorm) || !Number.isFinite(bNorm) || aNorm === 0 || bNorm === 0) throw new RangeError("Cosine requires finite, nonzero vector lengths.");
-  const similarity = a.reduce((sum, value, i) => sum + (value / aNorm) * (b[i] / bNorm), 0);
-  return Math.max(-1, Math.min(1, similarity));
-}
 
 export function rankChunks(chunks: readonly RagIndexedChunk[], queryEmbedding: readonly number[], topK: number, minSimilarity: number | null): { ranked: RagRankedChunk[]; selected: RagRankedChunk[] } {
   if (!Number.isInteger(topK) || topK < 1 || topK > 4) throw new RangeError("Top-k must be an integer from 1 to 4.");

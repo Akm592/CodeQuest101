@@ -1,0 +1,22 @@
+.agent-course .course-title-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-course .course-chapter-header h1 {
+  max-width: 32ch;
+}
+
+.agent-course .course-view-row > [role="tablist"] {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .agent-course .course-brand {
+    flex-shrink: 0;
+  }
+
+  .agent-course .course-title-link {
+    min-width: 0;
+  }
+}

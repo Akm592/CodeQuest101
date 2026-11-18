@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { allVisualizations } from "../components/homepage/catalog";
+import { ADVANCED_CHAPTERS } from "./advancedRag/curriculum";
 import { getSeoPage, publicPages, utilityPages } from "./seo";
 
 describe("page SEO", () => {
@@ -18,6 +19,19 @@ describe("page SEO", () => {
   it("normalizes trailing slashes without changing the canonical path", () => {
     expect(getSeoPage("/visualize/slidingWindow/")).toEqual(getSeoPage("/visualize/slidingWindow"));
     expect(getSeoPage("/").path).toBe("/");
+  });
+
+  it("indexes each advanced chapter separately without making lesson views separate pages", () => {
+    expect(ADVANCED_CHAPTERS).toHaveLength(8);
+    for (const chapter of ADVANCED_CHAPTERS) {
+      const path = `/visualize/advancedRag/${chapter.slug}`;
+      const page = getSeoPage(path);
+      expect(page).toEqual({ path, title: `${chapter.title} | Advanced RAG | CodeQuest101`, description: chapter.summary, index: true });
+      expect(getSeoPage(`${path}/`)).toEqual(page);
+      expect(publicPages.filter((entry) => entry.path === path)).toHaveLength(1);
+    }
+    expect(getSeoPage("/visualize/advancedRag/unknown").index).toBe(false);
+    expect(publicPages.some((page) => page.path.includes("?"))).toBe(false);
   });
 
   it("excludes account, chat and nonexistent pages from search", () => {

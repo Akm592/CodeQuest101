@@ -1,0 +1,758 @@
+{
+  "documents": [
+    {
+      "id": "D1",
+      "title": "Opened packaging and returns",
+      "kind": "policy",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Opened packaging and returns\n\n## Eligibility\nAn unused Luma Shop purchase can be returned within 30 days of delivery.\nOpened packaging is allowed, provided the item has not been used.\n\n## Return shipping\nReturn shipping is free only when the item arrived damaged.\nFor all other returns, the customer pays the return shipping cost.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D1-s1",
+          "heading": "Eligibility",
+          "text": "An unused Luma Shop purchase can be returned within 30 days of delivery."
+        },
+        {
+          "id": "D1-s2",
+          "heading": "Eligibility",
+          "text": "Opened packaging is allowed, provided the item has not been used."
+        },
+        {
+          "id": "D1-s3",
+          "heading": "Return shipping",
+          "text": "Return shipping is free only when the item arrived damaged."
+        },
+        {
+          "id": "D1-s4",
+          "heading": "Return shipping",
+          "text": "For all other returns, the customer pays the return shipping cost."
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "title": "X200 product manual",
+      "kind": "manual",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# X200 product manual\n\n## Product identity\nX200 is the Luma wireless headset model and follows the standard 30-day return policy.\nThe X200 headset supports Bluetooth and includes a USB charging cable.\n\n## Battery supplier\nThe battery inside the X200 headset is supplied by NovaCells.\nUse the order number and product model when asking support about an X200 battery.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D2-s1",
+          "heading": "Product identity",
+          "text": "X200 is the Luma wireless headset model and follows the standard 30-day return policy."
+        },
+        {
+          "id": "D2-s2",
+          "heading": "Product identity",
+          "text": "The X200 headset supports Bluetooth and includes a USB charging cable."
+        },
+        {
+          "id": "D2-s3",
+          "heading": "Battery supplier",
+          "text": "The battery inside the X200 headset is supplied by NovaCells."
+        },
+        {
+          "id": "D2-s4",
+          "heading": "Battery supplier",
+          "text": "Use the order number and product model when asking support about an X200 battery."
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "title": "Refund settlement policy",
+      "kind": "policy",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Refund settlement policy\n\n## When money arrives\nA refund starts after the warehouse receives and checks the returned item.\nThe money reaches the original payment method within five business days after that check.\n\n## Refund records\nA confirmation email is sent when the refund is issued.\nA gift purchase can be refunded only to the original buyer.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D3-s1",
+          "heading": "When money arrives",
+          "text": "A refund starts after the warehouse receives and checks the returned item."
+        },
+        {
+          "id": "D3-s2",
+          "heading": "When money arrives",
+          "text": "The money reaches the original payment method within five business days after that check."
+        },
+        {
+          "id": "D3-s3",
+          "heading": "Refund records",
+          "text": "A confirmation email is sent when the refund is issued."
+        },
+        {
+          "id": "D3-s4",
+          "heading": "Refund records",
+          "text": "A gift purchase can be refunded only to the original buyer."
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "title": "Delivery guide and fee table",
+      "kind": "table",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n# Delivery guide and fee table\n## Delivery times\nStandard delivery takes three to five business days after dispatch.\nExpress delivery takes one to two business days after dispatch.\n## Delivery fees\n| Order total | Standard delivery fee |\n| Above 50 dollars | Free |\n| 50 dollars or less | 5 dollars |\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D4-s1",
+          "heading": "Delivery times",
+          "text": "Standard delivery takes three to five business days after dispatch."
+        },
+        {
+          "id": "D4-s2",
+          "heading": "Delivery times",
+          "text": "Express delivery takes one to two business days after dispatch."
+        },
+        {
+          "id": "D4-s3",
+          "heading": "Delivery fees",
+          "text": "Orders above 50 dollars receive free standard delivery."
+        },
+        {
+          "id": "D4-s4",
+          "heading": "Delivery fees",
+          "text": "Orders of 50 dollars or less pay a 5-dollar standard delivery fee."
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "title": "Warranty coverage",
+      "kind": "policy",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Warranty coverage\n\n## Coverage\nThe warranty covers manufacturing defects for one year after purchase.\nAccidental damage and ordinary wear are not covered by the warranty.\n\n## Claim evidence\nTo request a warranty assessment, email support a photo and the order number.\nA warranty assessment determines whether repair or replacement is available; it is not an automatic refund.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D5-s1",
+          "heading": "Coverage",
+          "text": "The warranty covers manufacturing defects for one year after purchase."
+        },
+        {
+          "id": "D5-s2",
+          "heading": "Coverage",
+          "text": "Accidental damage and ordinary wear are not covered by the warranty."
+        },
+        {
+          "id": "D5-s3",
+          "heading": "Claim evidence",
+          "text": "To request a warranty assessment, email support a photo and the order number."
+        },
+        {
+          "id": "D5-s4",
+          "heading": "Claim evidence",
+          "text": "A warranty assessment determines whether repair or replacement is available; it is not an automatic refund."
+        }
+      ]
+    },
+    {
+      "id": "D6",
+      "title": "NovaCells supplier replacement policy",
+      "kind": "supplier",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# NovaCells supplier replacement policy\n\n## Replacement eligibility\nNovaCells replaces a battery with a confirmed manufacturing defect within one year of purchase.\nA NovaCells replacement request requires proof of purchase and the product serial number.\n\n## Policy limits\nNovaCells does not replace batteries damaged accidentally by the customer.\nThe supplier replacement policy is separate from Luma Shop returns and refund settlement.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D6-s1",
+          "heading": "Replacement eligibility",
+          "text": "NovaCells replaces a battery with a confirmed manufacturing defect within one year of purchase."
+        },
+        {
+          "id": "D6-s2",
+          "heading": "Replacement eligibility",
+          "text": "A NovaCells replacement request requires proof of purchase and the product serial number."
+        },
+        {
+          "id": "D6-s3",
+          "heading": "Policy limits",
+          "text": "NovaCells does not replace batteries damaged accidentally by the customer."
+        },
+        {
+          "id": "D6-s4",
+          "heading": "Policy limits",
+          "text": "The supplier replacement policy is separate from Luma Shop returns and refund settlement."
+        }
+      ]
+    },
+    {
+      "id": "D7",
+      "title": "Accessories compatibility list",
+      "kind": "catalog",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Accessories compatibility list\n\n## Headset accessories\nThe X200 travel pouch fits the X200 headset and charging cable.\nA pouch purchase does not extend the return deadline for the headset.\n\n## Other models\nThe Q100 wired headset uses a different storage case.\nThe Q100 product manual does not describe the X200 battery supplier.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D7-s1",
+          "heading": "Headset accessories",
+          "text": "The X200 travel pouch fits the X200 headset and charging cable."
+        },
+        {
+          "id": "D7-s2",
+          "heading": "Headset accessories",
+          "text": "A pouch purchase does not extend the return deadline for the headset."
+        },
+        {
+          "id": "D7-s3",
+          "heading": "Other models",
+          "text": "The Q100 wired headset uses a different storage case."
+        },
+        {
+          "id": "D7-s4",
+          "heading": "Other models",
+          "text": "The Q100 product manual does not describe the X200 battery supplier."
+        }
+      ]
+    },
+    {
+      "id": "D8",
+      "title": "Support request handbook",
+      "kind": "handbook",
+      "version": "2026-11",
+      "current": true,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Support request handbook\n\n## Start a return\nEmail support with your order number to start a return.\nKeep the shipping receipt until the returned package reaches the warehouse.\n\n## Find records\nSupport can look up a refund using the order number.\nDo not send payment-card details in a support request.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D8-s1",
+          "heading": "Start a return",
+          "text": "Email support with your order number to start a return."
+        },
+        {
+          "id": "D8-s2",
+          "heading": "Start a return",
+          "text": "Keep the shipping receipt until the returned package reaches the warehouse."
+        },
+        {
+          "id": "D8-s3",
+          "heading": "Find records",
+          "text": "Support can look up a refund using the order number."
+        },
+        {
+          "id": "D8-s4",
+          "heading": "Find records",
+          "text": "Do not send payment-card details in a support request."
+        }
+      ]
+    },
+    {
+      "id": "D9",
+      "title": "Archived extended returns policy",
+      "kind": "archived-policy",
+      "version": "2024-01 archived",
+      "current": false,
+      "rawText": "<nav>Luma Shop | Home | Account</nav>\n\n# Archived extended returns policy\n\n## Retired return window\nThe archived policy allowed unused purchases to be returned within 90 days of delivery.\nThis policy was retired and must not be used for current purchases.\n\n## Old refund language\nThe archived policy described refund timing as ten business days after inspection.\nUse the current returns and refund policies for present-day questions.\n\nPage 1 of 2\nLuma Shop — Internal handbook\nPage 1 of 2\n",
+      "sentences": [
+        {
+          "id": "D9-s1",
+          "heading": "Retired return window",
+          "text": "The archived policy allowed unused purchases to be returned within 90 days of delivery."
+        },
+        {
+          "id": "D9-s2",
+          "heading": "Retired return window",
+          "text": "This policy was retired and must not be used for current purchases."
+        },
+        {
+          "id": "D9-s3",
+          "heading": "Old refund language",
+          "text": "The archived policy described refund timing as ten business days after inspection."
+        },
+        {
+          "id": "D9-s4",
+          "heading": "Old refund language",
+          "text": "Use the current returns and refund policies for present-day questions."
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "id": "exact-id",
+      "label": "A product code and a policy",
+      "text": "Can I return an unused X200 with opened packaging?",
+      "claims": [
+        {
+          "text": "The X200 follows the standard return policy: opened packaging is allowed if the item is unused, within 30 days of delivery.",
+          "evidenceIds": [
+            "D2-s1",
+            "D1-s1",
+            "D1-s2"
+          ]
+        }
+      ],
+      "rewritten": "X200 headset standard return policy opened packaging unused 30 days",
+      "subqueries": [
+        "What return policy applies to the X200 headset?",
+        "Can an unused purchase with opened packaging be returned?"
+      ],
+      "hyde": "A product manual identifies X200 as a wireless headset. A shop return policy may allow an unused headset with opened packaging to be returned within a stated window. Retrieve the actual policy before answering.",
+      "seedEntityIds": [
+        "x200"
+      ]
+    },
+    {
+      "id": "paraphrase",
+      "label": "Same meaning, different wording",
+      "text": "I unboxed my purchase but never used it. May I send it back?",
+      "claims": [
+        {
+          "text": "Yes, opened packaging is allowed if the item is unused; the return must be within 30 days of delivery.",
+          "evidenceIds": [
+            "D1-s1",
+            "D1-s2"
+          ]
+        }
+      ],
+      "rewritten": "unused purchase opened packaging return within delivery deadline",
+      "subqueries": [
+        "Is opened packaging allowed for unused returns?",
+        "What is the return deadline?"
+      ],
+      "hyde": "A customer unboxed a product without using it. The relevant evidence is a return eligibility rule about opened packaging and unused items, together with the return deadline.",
+      "seedEntityIds": [
+        "returns"
+      ]
+    },
+    {
+      "id": "multi-part",
+      "label": "Find two parts of an answer",
+      "text": "What is the return deadline, and when will the refund reach my payment method?",
+      "claims": [
+        {
+          "text": "An unused purchase can be returned within 30 days of delivery.",
+          "evidenceIds": [
+            "D1-s1"
+          ]
+        },
+        {
+          "text": "After the warehouse receives and checks the return, the money reaches the original payment method within five business days.",
+          "evidenceIds": [
+            "D3-s1",
+            "D3-s2"
+          ]
+        }
+      ],
+      "rewritten": "current return deadline refund settlement original payment method warehouse check",
+      "subqueries": [
+        "How many days do I have to return an unused purchase?",
+        "How long after the warehouse check does a refund reach the original payment method?"
+      ],
+      "hyde": "The answer needs two policies: a return eligibility deadline measured from delivery, and a refund settlement delay measured after the warehouse receives and checks the returned product.",
+      "seedEntityIds": [
+        "returns",
+        "refunds"
+      ]
+    },
+    {
+      "id": "multi-hop",
+      "label": "Follow a supplier relationship",
+      "text": "Which supplier made the X200 battery, and what is that supplier's replacement rule?",
+      "claims": [
+        {
+          "text": "NovaCells supplies the X200 battery.",
+          "evidenceIds": [
+            "D2-s3"
+          ]
+        },
+        {
+          "text": "NovaCells replaces batteries with confirmed manufacturing defects within one year; requests need proof of purchase and the product serial number.",
+          "evidenceIds": [
+            "D6-s1",
+            "D6-s2"
+          ]
+        }
+      ],
+      "rewritten": "X200 battery supplier NovaCells manufacturing defect replacement proof of purchase serial number",
+      "subqueries": [
+        "Who supplies the X200 battery?",
+        "What are NovaCells battery replacement eligibility and evidence requirements?"
+      ],
+      "hyde": "A product can be linked to its component supplier, and the supplier can be linked to a replacement policy. The final answer must cite the X200 supplier fact and the supplier's actual eligibility rules.",
+      "seedEntityIds": [
+        "x200"
+      ]
+    },
+    {
+      "id": "noisy",
+      "label": "Read a delivery fee table",
+      "text": "My order is 40 dollars. What is the standard delivery fee?",
+      "claims": [
+        {
+          "text": "A 40-dollar order pays a 5-dollar standard delivery fee because it is at or below 50 dollars.",
+          "evidenceIds": [
+            "D4-s4"
+          ]
+        }
+      ],
+      "rewritten": "standard delivery fee orders 50 dollars or less 40 dollars",
+      "subqueries": [
+        "What is the standard delivery fee for orders of 50 dollars or less?"
+      ],
+      "hyde": "A delivery price table divides orders above a free-shipping threshold from orders at or below it. A 40-dollar order needs the lower-value order row, not the free-delivery row.",
+      "seedEntityIds": [
+        "delivery"
+      ]
+    },
+    {
+      "id": "stale",
+      "label": "Exclude an archived policy",
+      "text": "Which return deadline applies to a purchase today: 30 days or 90 days?",
+      "claims": [
+        {
+          "text": "The current return deadline is 30 days after delivery for unused purchases.",
+          "evidenceIds": [
+            "D1-s1"
+          ]
+        }
+      ],
+      "rewritten": "current policy unused purchase return deadline 30 days exclude archived 90 days",
+      "subqueries": [
+        "What is the current return deadline?",
+        "Is the 90-day extended returns policy current?"
+      ],
+      "hyde": "A current policy and a retired version can contain conflicting return windows. Current-purchase questions should search eligible current sources rather than treating an archived policy as equally authoritative.",
+      "seedEntityIds": [
+        "returns"
+      ]
+    },
+    {
+      "id": "negation",
+      "label": "Do not erase the word not",
+      "text": "Does the warranty cover damage caused by an accident?",
+      "claims": [
+        {
+          "text": "No. Accidental damage and ordinary wear are not covered by the warranty.",
+          "evidenceIds": [
+            "D5-s2"
+          ]
+        }
+      ],
+      "rewritten": "warranty accidental damage not covered exclusions",
+      "subqueries": [
+        "What kinds of damage are excluded from warranty coverage?"
+      ],
+      "hyde": "A warranty may cover manufacturing defects while explicitly excluding accidental damage. The answer depends on the exclusion sentence, including its negation.",
+      "seedEntityIds": [
+        "warranty"
+      ]
+    },
+    {
+      "id": "missing",
+      "label": "Recognize missing evidence",
+      "text": "Does Luma Shop offer a student discount on the X200?",
+      "claims": [],
+      "rewritten": "Luma Shop X200 student discount eligibility",
+      "subqueries": [
+        "Is there an X200 student discount policy?"
+      ],
+      "hyde": "A student discount policy would state eligibility and a discount amount. The available product or return documents alone cannot establish that such a policy exists.",
+      "seedEntityIds": [
+        "x200"
+      ]
+    }
+  ],
+  "graph": {
+    "entities": [
+      {
+        "id": "x200",
+        "label": "X200 headset",
+        "type": "product"
+      },
+      {
+        "id": "nova",
+        "label": "NovaCells",
+        "type": "supplier"
+      },
+      {
+        "id": "nova-replacement",
+        "label": "NovaCells replacement policy",
+        "type": "policy"
+      },
+      {
+        "id": "returns",
+        "label": "Current returns policy",
+        "type": "policy"
+      },
+      {
+        "id": "refunds",
+        "label": "Refund settlement",
+        "type": "policy"
+      },
+      {
+        "id": "delivery",
+        "label": "Delivery fees",
+        "type": "policy"
+      },
+      {
+        "id": "warranty",
+        "label": "Warranty coverage",
+        "type": "policy"
+      }
+    ],
+    "relations": [
+      {
+        "id": "x200-nova",
+        "from": "x200",
+        "to": "nova",
+        "label": "battery supplied by",
+        "evidenceIds": [
+          "D2-s3"
+        ]
+      },
+      {
+        "id": "nova-policy",
+        "from": "nova",
+        "to": "nova-replacement",
+        "label": "replacement governed by",
+        "evidenceIds": [
+          "D6-s1",
+          "D6-s2"
+        ]
+      },
+      {
+        "id": "x200-returns",
+        "from": "x200",
+        "to": "returns",
+        "label": "follows return policy",
+        "evidenceIds": [
+          "D2-s1",
+          "D1-s1",
+          "D1-s2"
+        ]
+      },
+      {
+        "id": "returns-refunds",
+        "from": "returns",
+        "to": "refunds",
+        "label": "returned item starts refund",
+        "evidenceIds": [
+          "D3-s1",
+          "D3-s2"
+        ]
+      },
+      {
+        "id": "x200-warranty",
+        "from": "x200",
+        "to": "warranty",
+        "label": "manufacturing defects covered by",
+        "evidenceIds": [
+          "D5-s1",
+          "D5-s2"
+        ]
+      },
+      {
+        "id": "returns-delivery",
+        "from": "returns",
+        "to": "delivery",
+        "label": "separate from outbound delivery fees",
+        "evidenceIds": [
+          "D1-s3",
+          "D1-s4",
+          "D4-s3",
+          "D4-s4"
+        ]
+      }
+    ]
+  },
+  "hnsw": {
+    "description": "A fixed, hand-authored two-dimensional HNSW teaching graph. Its links are proximity links, not facts; it does not demonstrate production index construction.",
+    "nodes": [
+      {
+        "id": "P0",
+        "vector": [
+          8,
+          8
+        ],
+        "level": 2
+      },
+      {
+        "id": "P1",
+        "vector": [
+          7,
+          6
+        ],
+        "level": 0
+      },
+      {
+        "id": "P2",
+        "vector": [
+          6,
+          4
+        ],
+        "level": 1
+      },
+      {
+        "id": "P3",
+        "vector": [
+          4,
+          4
+        ],
+        "level": 2
+      },
+      {
+        "id": "P4",
+        "vector": [
+          3,
+          2
+        ],
+        "level": 1
+      },
+      {
+        "id": "P5",
+        "vector": [
+          2,
+          1
+        ],
+        "level": 1
+      },
+      {
+        "id": "P6",
+        "vector": [
+          1.3,
+          1.2
+        ],
+        "level": 0
+      },
+      {
+        "id": "P7",
+        "vector": [
+          1,
+          1
+        ],
+        "level": 0
+      },
+      {
+        "id": "P8",
+        "vector": [
+          2,
+          -2
+        ],
+        "level": 0
+      },
+      {
+        "id": "P9",
+        "vector": [
+          0.4,
+          0.3
+        ],
+        "level": 0
+      },
+      {
+        "id": "P10",
+        "vector": [
+          0,
+          0
+        ],
+        "level": 0
+      },
+      {
+        "id": "P11",
+        "vector": [
+          -1,
+          -0.4
+        ],
+        "level": 0
+      }
+    ],
+    "layers": [
+      {
+        "level": 2,
+        "neighbors": {
+          "P0": [
+            "P3"
+          ],
+          "P3": [
+            "P0"
+          ]
+        }
+      },
+      {
+        "level": 1,
+        "neighbors": {
+          "P0": [
+            "P2"
+          ],
+          "P2": [
+            "P0",
+            "P3"
+          ],
+          "P3": [
+            "P2",
+            "P4"
+          ],
+          "P4": [
+            "P3",
+            "P5"
+          ],
+          "P5": [
+            "P4"
+          ]
+        }
+      },
+      {
+        "level": 0,
+        "neighbors": {
+          "P0": [
+            "P1"
+          ],
+          "P1": [
+            "P0",
+            "P2"
+          ],
+          "P2": [
+            "P1",
+            "P3"
+          ],
+          "P3": [
+            "P2",
+            "P4"
+          ],
+          "P4": [
+            "P3",
+            "P5"
+          ],
+          "P5": [
+            "P4",
+            "P6",
+            "P7"
+          ],
+          "P6": [
+            "P5",
+            "P7"
+          ],
+          "P7": [
+            "P5",
+            "P6",
+            "P8"
+          ],
+          "P8": [
+            "P7",
+            "P9"
+          ],
+          "P9": [
+            "P8",
+            "P10"
+          ],
+          "P10": [
+            "P9",
+            "P11"
+          ],
+          "P11": [
+            "P10"
+          ]
+        }
+      }
+    ],
+    "entryPoint": "P0",
+    "query": [
+      0.2,
+      0.1
+    ]
+  }
+}

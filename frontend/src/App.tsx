@@ -63,6 +63,8 @@ const KMeansVisualizer = lazy(() => import("./components/ml/KMeansVisualizer"));
 const AttentionVisualizer = lazy(() => import("./components/ml/AttentionVisualizer"));
 const SamplingVisualizer = lazy(() => import("./components/ml/SamplingVisualizer"));
 const RagVisualizer = lazy(() => import("./components/ml/RagVisualizer"));
+const AiAgentsCourse = lazy(() => import("./components/ml/aiAgents/AiAgentsCourse"));
+const AdvancedRagCourse = lazy(() => import("./components/ml/advancedRag/AdvancedRagCourse"));
 const DecisionTreeVisualizer = lazy(() => import("./components/ml/DecisionTreeVisualizer"));
 const NaiveBayesVisualizer = lazy(() => import("./components/ml/NaiveBayesVisualizer"));
 const RandomForestVisualizer = lazy(() => import("./components/ml/RandomForestVisualizer"));
@@ -87,7 +89,7 @@ const TrieVisualizer = lazy(() => import("./components/trie/TrieVisualizer"));
  * VisualizerPage wraps.
  */
 type RouteSpec =
-  | { kind: "own"; Component: React.ComponentType<{ onBack: () => void }> }
+  | { kind: "own"; Component: React.ComponentType<{ onBack: () => void }>; nested?: true }
   | { kind: "page"; title: string; Component: React.ComponentType };
 
 const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
@@ -109,6 +111,8 @@ const VISUALIZER_ROUTES: Record<VisualizationKey, RouteSpec> = {
   attention: { kind: "page", title: "Self-Attention", Component: AttentionVisualizer },
   sampling: { kind: "page", title: "Next-Token Sampling", Component: SamplingVisualizer },
   rag: { kind: "page", title: "RAG: Retrieval-Augmented Generation", Component: RagVisualizer },
+  aiAgents: { kind: "own", Component: AiAgentsCourse, nested: true },
+  advancedRag: { kind: "own", Component: AdvancedRagCourse, nested: true },
   decisionTree: { kind: "page", title: "Decision Tree", Component: DecisionTreeVisualizer },
   naiveBayes: { kind: "page", title: "Naive Bayes", Component: NaiveBayesVisualizer },
   randomForest: { kind: "page", title: "Random Forest", Component: RandomForestVisualizer },
@@ -159,7 +163,7 @@ const VisualizeWrapper = () => {
         ([key, spec]) => (
           <Route
             key={key}
-            path={key}
+            path={spec.kind === "own" && spec.nested ? `${key}/*` : key}
             element={
               spec.kind === "own" ? (
                 <Suspense fallback={<ChunkFallback />}>

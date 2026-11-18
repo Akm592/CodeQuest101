@@ -1,4 +1,6 @@
 import { allVisualizations } from "../components/homepage/catalog";
+import { ADVANCED_CHAPTERS } from "./advancedRag/curriculum";
+import { AGENT_CHAPTERS } from "./aiAgents/curriculum";
 
 export const SITE_URL = "https://codequest101.vercel.app";
 
@@ -32,6 +34,18 @@ export const publicPages: SeoPage[] = [
     path: `/visualize/${viz.key}`,
     title: `${viz.seoTitle ?? `${viz.title} Visualizer`} | CodeQuest101`,
     description: viz.description,
+    index: true,
+  })),
+  ...ADVANCED_CHAPTERS.map((chapter) => ({
+    path: `/visualize/advancedRag/${chapter.slug}`,
+    title: `${chapter.title} | Advanced RAG | CodeQuest101`,
+    description: chapter.summary,
+    index: true,
+  })),
+  ...AGENT_CHAPTERS.map((chapter) => ({
+    path: `/visualize/aiAgents/${chapter.slug}`,
+    title: `${chapter.title} | AI Agents & Tool Calling | CodeQuest101`,
+    description: chapter.summary,
     index: true,
   })),
 ];

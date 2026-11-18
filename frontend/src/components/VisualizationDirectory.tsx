@@ -14,7 +14,7 @@ export default function VisualizationDirectory() {
         </div>
         {categories.map((category) => (
           <section key={category.key} aria-labelledby={`directory-${category.key}`} className="space-y-5">
-            <h2 id={`directory-${category.key}`} className="text-2xl font-semibold">{category.title}</h2>
+            <h2 id={`directory-${category.key}`} className="scroll-mt-28 text-2xl font-semibold">{category.title}</h2>
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {visualizations[category.key].map((viz) => (
                 <li key={viz.key}>

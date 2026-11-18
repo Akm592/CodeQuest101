@@ -1,0 +1,187 @@
+.agent-workspace {
+  position: relative;
+  min-height: 0;
+}
+
+.agent-main {
+  gap: 10px;
+  overflow: auto;
+}
+
+.agent-toolbar, .agent-mode, .agent-tools, .agent-mobile-panels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-toolbar {
+  justify-content: space-between;
+}
+
+.agent-toolbar > span {
+  color: #a7f3d0;
+  font-size: 12px;
+}
+
+.agent-mode button, .agent-tools button, .agent-mobile-panels button, .agent-history button, .agent-history-trigger {
+  border: 1px solid #455672;
+  border-radius: 7px;
+  color: #dbeafe;
+  background: #19263b;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.agent-mode button[aria-pressed="true"], .agent-tools button[aria-pressed="true"], .agent-mobile-panels button[aria-pressed="true"], .agent-history button[aria-current] {
+  border-color: #2dd4bf;
+  background: #173d40;
+}
+
+.agent-settings-box, .agent-sandbox {
+  padding: 9px 12px;
+  border: 1px solid #33445e;
+  border-radius: 8px;
+  background: #142036;
+}
+
+.agent-settings-box p {
+  color: #c4d3eb;
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.agent-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: end;
+}
+
+.agent-settings label {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+  color: #c4d3eb;
+  min-width: 0;
+}
+
+.agent-settings select, .agent-settings textarea {
+  border: 1px solid #455672;
+  background: #101a2e;
+  color: #eff6ff;
+  border-radius: 5px;
+  max-width: 100%;
+  min-height: 29px;
+  padding: 3px 7px;
+}
+
+.agent-settings .agent-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+}
+
+.agent-sandbox summary {
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.agent-sandbox[open] .agent-settings {
+  margin-block: 8px;
+}
+
+.agent-sandbox textarea {
+  height: 72px;
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+}
+
+.agent-sandbox pre, .agent-inspector pre {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.agent-canvas {
+  min-height: 245px;
+  overflow: hidden;
+  border: 1px solid #33445e;
+  background: #101b2e;
+}
+
+.agent-connections:not([hidden]) {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-node {
+  width: 100%;
+  height: 100%;
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: #1c2d48;
+  color: #edf6ff;
+  border: 1px solid #526986;
+  border-radius: 10px;
+}
+
+.agent-node-active {
+  background: #164043;
+  border-color: #5eead4;
+}
+
+.agent-node button, .agent-node strong {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.agent-node button:hover { color: #99f6e4; }
+.agent-node span { color: #bfdbfe; font-size: 11px; line-height: 1.4; }
+.agent-playback { flex: none; }
+.agent-playback > p, .agent-start-note { color: #ccdfef; font-size: 13px; margin: 0 0 6px; }
+.agent-inspector { overflow: auto; }
+.agent-inspector blockquote { padding-left: 9px; border-left: 2px solid #2dd4bf; }
+.agent-outcome { border-top: 1px solid #455672; padding-top: 9px; }
+.agent-outcome small { display: block; color: #a7f3d0; }
+.agent-comparison li { margin-block: 8px; }
+.agent-comparison ol { list-style: decimal; padding-left: 24px; }
+.agent-mobile-panels { display: none; }
+
+.agent-history {
+  flex: 1;
+  overflow: auto;
+  background: #111d31;
+  border: 1px solid #455672;
+  border-radius: 12px;
+  padding: 14px;
+}
+.agent-history ol { display: grid; gap: 5px; margin-top: 10px; }
+.agent-workspace[data-panel="history"] .agent-main, .agent-workspace[data-panel="history"] .agent-inspector { display: none; }
+
+@media (max-width: 1000px) {
+  .agent-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+  .agent-mobile-panels { display: flex; grid-row: 1; }
+  .agent-workspace .agent-main { grid-row: 2; min-width: 0; }
+  .agent-workspace .agent-inspector { display: none; grid-row: 2; width: auto; min-width: 0; padding: 12px; }
+  .agent-workspace[data-panel="inspector"] .agent-inspector { display: block; }
+  .agent-workspace:not([data-panel="canvas"]) .agent-main { display: none; }
+  .agent-workspace .agent-history { position: static; grid-row: 2; }
+  .agent-history-trigger { display: none; }
+}
+@media (max-height: 700px) {
+  .agent-canvas { min-height: 230px; }
+}
