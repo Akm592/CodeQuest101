@@ -35,6 +35,7 @@ import {
   Grid,
   Layers,
   Layers3,
+  Target,
   LineChart,
   ListTree,
   MailCheck,
@@ -146,6 +147,7 @@ export const visualizations: Record<CategoryKey, Visualization[]> = {
     { title: "Naive Bayes", seoTitle: "Naive Bayes Visualizer", description: "Explore a Naive Bayes spam classifier interactively. See how word likelihoods and prior probabilities combine to classify a message.", icon: <MailCheck />, key: "naiveBayes", level: "Easy" },
     { title: "Random Forest", seoTitle: "Random Forest Visualizer", description: "Explore random forests through interactive decision trees, bootstrap samples and out-of-bag evaluation. See how individual trees vote on a prediction.", icon: <Trees />, key: "randomForest", level: "Medium" },
     { title: "Gradient Boosting", seoTitle: "Gradient Boosting Visualizer", description: "Visualize gradient boosting step by step. See how each new decision tree fits residual errors and improves the combined prediction.", icon: <Layers3 />, key: "gradientBoosting", level: "Medium" },
+    { title: "Evaluation Metrics", seoTitle: "Evaluation Metrics Visualizer: Confusion Matrix, Precision, Recall and ROC", description: "Move a threshold and watch a confusion matrix fill. Explore precision, recall, F1, ROC curves, AUC and the accuracy trap on imbalanced data.", icon: <Target />, key: "evaluationMetrics", level: "Easy" },
     { title: "Neural Network", seoTitle: "Neural Network Training Visualizer", description: "Train a neural network interactively. Explore forward propagation, backpropagation and weight updates to see how a model learns from data.", icon: <Brain />, key: "neuralNetwork", level: "Hard" },
     { title: "Self-Attention", seoTitle: "Self-Attention Visualizer: Query, Key and Value", description: "Explore transformer self-attention with interactive query, key and value matrices. Follow attention scores and see how tokens combine information.", icon: <ScanEye />, key: "attention", level: "Medium" },
     { title: "Next-Token Sampling", seoTitle: "LLM Sampling Visualizer: Temperature, Top-K and Top-P", description: "Explore LLM token sampling with interactive temperature, top-k and top-p controls. Follow logits, softmax probabilities, filtering and the final token draw.", icon: <MessageSquareText />, key: "sampling", level: "Medium" },
@@ -168,7 +170,7 @@ export type VisualizationKey =
   | "nQueens"
   | "arraysHashing" | "twoPointers" | "slidingWindow" | "stackPattern" | "binarySearchPattern" | "linkedListPattern" | "treesPattern" | "triesPattern" | "heapPattern" | "backtrackingPattern" | "graphsPattern" | "advancedGraphsPattern" | "dp1Pattern" | "dp2Pattern" | "greedyPattern" | "intervalsPattern" | "mathPattern" | "bitsPattern"
   | "binaryTree" | "linkedList" | "stack" | "tree" | "graph" | "heap" | "trie"
-  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting" | "rag" | "advancedRag" | "aiAgents";
+  | "neuralNetwork" | "gradientDescent" | "linearRegression" | "kMeans" | "attention" | "sampling" | "decisionTree" | "naiveBayes" | "randomForest" | "gradientBoosting" | "evaluationMetrics" | "rag" | "advancedRag" | "aiAgents";
 
 export const allVisualizations: Visualization[] = [
   ...visualizations.algorithms,

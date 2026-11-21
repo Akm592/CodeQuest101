@@ -455,6 +455,40 @@ check("smoothed word chances add up to 1 over the vocabulary", abs(sum(m.word_pr
 m0 = nbm.NaiveBayes(alpha=0.0).fit(["free offer", "free cash"], ["spam", "ham"])  # "offer" never appears in ham
 check("with alpha = 0 an unseen-in-class word rules the class out", m0.predict_proba("free offer")["ham"] == 0.0)
 
+print("\nevaluation metrics")
+em = load("evaluation_metrics")
+ok_counts = ok_auc = ok_roc = True
+for _ in range(80):
+    n = rng.randint(4, 40)
+    y = [rng.random() < 0.4 for _ in range(n)]
+    if all(y) or not any(y):
+        y[0], y[-1] = True, False
+    # Two decimals, so ties happen and get exercised.
+    sc = [round(rng.random(), 2) for _ in range(n)]
+    t = round(rng.random(), 2)
+    tp, fp, fn, tn = em.confusion(y, sc, t)
+    # Independent: count with list comprehensions.
+    ok_counts &= (tp, fp, fn, tn) == (
+        sum(1 for a, b in zip(y, sc) if a and b >= t),
+        sum(1 for a, b in zip(y, sc) if not a and b >= t),
+        sum(1 for a, b in zip(y, sc) if a and b < t),
+        sum(1 for a, b in zip(y, sc) if not a and b < t),
+    )
+    m = em.metrics(tp, fp, fn, tn)
+    if m["f1"] is not None:
+        ok_counts &= abs(m["f1"] - 2 * tp / (2 * tp + fp + fn)) < 1e-12
+    pts = em.roc_curve(y, sc)
+    ok_roc &= pts[0] == (0.0, 0.0) and pts[-1] == (1.0, 1.0)
+    ok_roc &= all(b[0] >= a[0] and b[1] >= a[1] for a, b in zip(pts, pts[1:]))
+    ok_auc &= abs(em.auc(pts) - em.auc_by_pairs(y, sc)) < 1e-12
+check("the four counts match a direct count, and F1 = 2TP / (2TP + FP + FN) (80 random sets)", ok_counts)
+check("ROC runs from (0, 0) to (1, 1) without stepping back, ties included", ok_roc)
+check("area under the ROC curve equals the pairwise win rate, ties counting half", ok_auc)
+check("no positive predictions leaves precision undefined, not 0", em.metrics(0, 0, 3, 7)["precision"] is None)
+y20 = [1] * 8 + [0] * 12
+s20 = [0.95, 0.91, 0.86, 0.78, 0.71, 0.62, 0.44, 0.27, 0.83, 0.66, 0.55, 0.48, 0.38, 0.33, 0.25, 0.19, 0.14, 0.09, 0.06, 0.03]
+check("the page's 20 emails give TP 6, FP 3, FN 2, TN 9 at 0.5 and AUC 82/96", em.confusion(y20, s20, 0.5) == (6, 3, 2, 9) and abs(em.auc_by_pairs(y20, s20) - 82 / 96) < 1e-12)
+
 print("\nrandom forest")
 rf = load("random_forest")
 forest = rf.RandomForest(n_trees=200, seed=3).fit([[i, 0] for i in range(80)], ["a"] * 80)

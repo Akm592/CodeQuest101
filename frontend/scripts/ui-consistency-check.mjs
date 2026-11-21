@@ -40,7 +40,7 @@ const VISUALIZERS = [
   'spiralMatrix', 'rotateImage', 'binaryTree', 'stack', 'hareTortoise',
   'tree', 'neuralNetwork', 'graph', 'heap',
   'dynamicProgramming', 'topologicalSort', 'nQueens', 'trie', 'arraysHashing', 'twoPointers', 'slidingWindow', 'stackPattern', 'binarySearchPattern', 'linkedListPattern', 'treesPattern', 'triesPattern', 'heapPattern', 'backtrackingPattern', 'graphsPattern', 'advancedGraphsPattern', 'dp1Pattern', 'dp2Pattern', 'greedyPattern', 'intervalsPattern', 'mathPattern', 'bitsPattern',
-  'gradientDescent', 'linearRegression', 'kMeans', 'attention', 'sampling', 'decisionTree', 'naiveBayes', 'randomForest', 'gradientBoosting', 'rag',
+  'gradientDescent', 'linearRegression', 'kMeans', 'attention', 'sampling', 'decisionTree', 'naiveBayes', 'randomForest', 'gradientBoosting', 'evaluationMetrics', 'rag',
 ];
 
 const PAGES = ['/', '/chat', '/login', '/about', '/no-such-page',

@@ -38,6 +38,7 @@ import { buildBoostSteps, fitBoost, waveData } from "../ml/gradientBoosting";
 import { buildGdSteps, SURFACES } from "../ml/gradientDescent";
 import { buildKMeansSteps } from "../ml/kMeans";
 import { buildLrSteps, samplePoints } from "../ml/linearRegression";
+import { buildMetricSteps, EMAILS } from "../ml/metrics";
 import { buildMlpSteps, makeDataset } from "../ml/mlp";
 import { buildNbSteps, TEST_EMAILS, trainNb, TRAINING_EMAILS } from "../ml/naiveBayes";
 import { buildForestFrames, fitForest } from "../ml/randomForest";
@@ -59,6 +60,8 @@ import {
   linearRegressionGuide,
   lrGuideStepFor,
   mlpGuideStepFor,
+  evaluationMetricsGuide,
+  evaluationMetricsGuideStepFor,
   naiveBayesGuide,
   naiveBayesGuideStepFor,
   randomForestGuide,
@@ -274,6 +277,14 @@ const cases: [string, GuideCase][] = [
         [...TEST_EMAILS.map((t) => t.text), "free zebra"].map((text) => run(buildNbSteps(trainNb(TRAINING_EMAILS, alpha), text), naiveBayesGuideStepFor)),
       ),
       finalStages: ["decide"],
+    },
+  ],
+  [
+    "evaluation metrics",
+    {
+      guide: evaluationMetricsGuide,
+      runs: [0, 0.3, 0.5, 0.8, 1.01].map((t) => run(buildMetricSteps(EMAILS, t), evaluationMetricsGuideStepFor)),
+      finalStages: ["accuracy"],
     },
   ],
   [

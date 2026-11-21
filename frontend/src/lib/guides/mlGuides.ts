@@ -11,11 +11,13 @@ import type { GdStep } from "../ml/gradientDescent";
 import type { BoostStep } from "../ml/gradientBoosting";
 import type { KMeansStep } from "../ml/kMeans";
 import type { LrStep } from "../ml/linearRegression";
+import type { MetricStep } from "../ml/metrics";
 import type { MlpStep } from "../ml/mlp";
 import type { NbStep } from "../ml/naiveBayes";
 import type { ForestStep } from "../ml/randomForest";
 import type { SamplingStep } from "../ml/sampling";
 import decisionTreePy from "./python/decision_tree.py?raw";
+import evaluationMetricsPy from "./python/evaluation_metrics.py?raw";
 import gradientBoostingPy from "./python/gradient_boosting.py?raw";
 import gradientDescentPy from "./python/gradient_descent.py?raw";
 import kMeansPy from "./python/k_means.py?raw";
@@ -501,3 +503,52 @@ export const gradientBoostingGuide: AlgorithmGuide = {
 };
 
 export const gradientBoostingGuideStepFor = (s: BoostStep) => s.phase;
+
+export const evaluationMetricsGuide: AlgorithmGuide = {
+  title: "Evaluation Metrics",
+  whenToUseHeading: ML_HEADING,
+  idea: [
+    "A classifier gives every example a score. A threshold turns the score into a decision, and comparing each decision with the truth sorts every example into one of four cells: caught (true positive), wrongly flagged (false positive), missed (false negative) or correctly left alone (true negative).",
+    "Every metric is a ratio of those four counts. Precision asks how often a flag is right. Recall asks how many of the real positives were found. They pull against each other: raise the threshold and precision usually rises while recall falls.",
+    "Accuracy counts every right answer, which sounds ideal but hides which mistakes are made, and it collapses when one class is rare. The ROC curve and its area (AUC) step back further: they judge how well the scores rank positives above negatives, across every threshold at once.",
+  ],
+  whenToUse: [
+    "Choosing a threshold for any yes/no model: spam filters, fraud alerts, medical screening, content moderation.",
+    "Comparing models: AUC for ranking quality, F1 when you need one number that respects both kinds of mistake.",
+    "Interview favourites: “why is 99% accuracy bad here?”, “precision or recall for cancer screening?”, “what does an AUC of 0.5 mean?”.",
+  ],
+  stages: [
+    { id: "threshold", title: "Pick a threshold", detail: "Every score at or above it becomes a positive prediction. Everything else is negative.", pseudo: "pred = score >= threshold" },
+    { id: "judge", title: "Sort each example into a cell", detail: "Compare the prediction with the truth. Each example lands in exactly one of TP, FP, FN or TN.", pseudo: "cell[(pred, truth)] += 1" },
+    { id: "precision", title: "Precision", detail: "Of everything predicted positive, the share that really was. False positives lower it.", pseudo: "precision = TP / (TP + FP)" },
+    { id: "recall", title: "Recall", detail: "Of everything really positive, the share that was found. False negatives lower it.", pseudo: "recall = TP / (TP + FN)" },
+    { id: "f1", title: "F1", detail: "The harmonic mean of the two, so it is only high when both are.", pseudo: "f1 = 2 * p * r / (p + r)" },
+    { id: "accuracy", title: "Accuracy", detail: "Right answers over all answers. Useful when classes are balanced and both mistakes cost the same.", pseudo: "accuracy = (TP + TN) / n" },
+  ],
+  legend: [
+    { tone: "found", label: "True positive (caught)" },
+    { tone: "idle", label: "True negative (left alone)" },
+    { tone: "compare", label: "False positive (false alarm)" },
+    { tone: "swap", label: "False negative (missed)" },
+  ],
+  complexity: {
+    time: "O(n) per threshold; O(n²) for the ROC curve as written",
+    space: "O(n)",
+    why: "Counting the cells is one pass. The Python here recounts at every distinct score, which keeps it short. Sorting the scores once and updating the counts as the threshold drops, as scikit-learn does, brings the ROC curve down to O(n log n).",
+  },
+  pitfalls: [
+    "Reporting accuracy on imbalanced data: when 1% of cases are positive, “always negative” scores 99% and finds nothing.",
+    "Forgetting that the 0.5 threshold is only a default. Choose it from what each mistake costs, on validation data, not the test set.",
+    "Treating a missing precision as 0. With no positive predictions, precision has no value; scikit-learn warns and reports 0, which can mislead.",
+    "Reading a high AUC as a good model at your threshold. AUC judges the ranking across all thresholds; you still have to pick one.",
+  ],
+  tryThis: [
+    "Drag the threshold to 0.9: precision reaches 100% while recall collapses.",
+    "Drag it to 0.1: recall reaches 100%, and false positives pile up.",
+    "In the ROC section, switch to “Coin flip” and watch the curve fall onto the diagonal.",
+    "In the accuracy trap, compare the two “models” and see which one you'd want testing you.",
+  ],
+  python: evaluationMetricsPy,
+};
+
+export const evaluationMetricsGuideStepFor = (s: MetricStep) => s.phase;
