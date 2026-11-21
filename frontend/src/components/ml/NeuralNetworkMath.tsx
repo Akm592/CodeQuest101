@@ -19,11 +19,18 @@ const NetDiagram: React.FC<{ ex: ReturnType<typeof workedExample> }> = ({ ex }) 
   const xs = [40, 190, 330];
   const inY = [55, 145];
   const hidY = [55, 145];
-  const lbl = (x1: number, y1: number, x2: number, y2: number, t: string, t2 = 0.32) => (
-    <text x={x1 + (x2 - x1) * t2} y={y1 + (y2 - y1) * t2 - 5} fontSize={11} fill={C.amber} textAnchor="middle">
-      {t}
-    </text>
-  );
+  // Each label runs along its own line, just above it, so the two crossing
+  // lines can't be confused. Crossing lines are labelled past the crossing.
+  const lbl = (x1: number, y1: number, x2: number, y2: number, t: string, t2 = 0.5) => {
+    const x = x1 + (x2 - x1) * t2;
+    const y = y1 + (y2 - y1) * t2;
+    const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+    return (
+      <text x={0} y={-5} fontSize={10} fill={C.amber} textAnchor="middle" transform={`translate(${x},${y}) rotate(${angle})`}>
+        {t}
+      </text>
+    );
+  };
   const names = ["A", "B"];
   return (
     <svg viewBox="0 0 380 200" className="block h-auto w-full max-w-lg" role="img" aria-label="The 2-2-1 network used in the worked example, with its starting weights">
@@ -33,10 +40,10 @@ const NetDiagram: React.FC<{ ex: ReturnType<typeof workedExample> }> = ({ ex }) 
       {[0, 1].map((j) => (
         <line key={`o${j}`} x1={xs[1]} y1={hidY[j]} x2={xs[2]} y2={100} stroke={C.grid} strokeWidth={1.5} />
       ))}
-      {lbl(xs[0], inY[0], xs[1], hidY[0], `w_A1 = ${ex.W1[0][0]}`, 0.45)}
-      {lbl(xs[0], inY[1], xs[1], hidY[0], `w_A2 = ${ex.W1[0][1]}`, 0.2)}
-      {lbl(xs[0], inY[0], xs[1], hidY[1], `w_B1 = ${ex.W1[1][0]}`, 0.8)}
-      {lbl(xs[0], inY[1], xs[1], hidY[1], `w_B2 = ${ex.W1[1][1]}`, 0.5)}
+      {lbl(xs[0], inY[0], xs[1], hidY[0], `w_A1 = ${ex.W1[0][0]}`)}
+      {lbl(xs[0], inY[1], xs[1], hidY[0], `w_A2 = ${ex.W1[0][1]}`, 0.69)}
+      {lbl(xs[0], inY[0], xs[1], hidY[1], `w_B1 = ${ex.W1[1][0]}`, 0.69)}
+      {lbl(xs[0], inY[1], xs[1], hidY[1], `w_B2 = ${ex.W1[1][1]}`)}
       {lbl(xs[1], hidY[0], xs[2], 100, `v_A = ${ex.W2[0]}`, 0.5)}
       {lbl(xs[1], hidY[1], xs[2], 100, `v_B = ${ex.W2[1]}`, 0.5)}
       {[0, 1].map((k) => (
@@ -117,7 +124,7 @@ const NeuralNetworkMath: React.FC = () => {
 
         <Step n={2} title="Squash with the activation" plain="Each neuron passes its total through tanh, which bends it into the range −1 to 1. This bend is what lets the network learn curves.">
           <Eq lhs="h_A" rule="tanh(z_A)" nums={`tanh(${n4(zA)})`} result={hA} />
-          <Eq lhs="h_B" rule="tanh(z_B)" nums={`tanh(${nc(zB)})`} result={hB} />
+          <Eq lhs="h_B" rule="tanh(z_B)" nums={`tanh(${n4(zB)})`} result={hB} />
         </Step>
 
         <Step n={3} title="The output neuron gives a probability" plain="The output does the same weigh-and-add with the hidden values, then a sigmoid turns the total into a probability between 0 and 1: how sure it is that the answer is 1.">

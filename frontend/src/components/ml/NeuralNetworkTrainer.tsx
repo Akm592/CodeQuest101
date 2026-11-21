@@ -90,11 +90,21 @@ const NetworkDiagram: React.FC<{ step: MlpStep; act: HiddenActivation }> = ({ st
       ))}
       {hidY.map((y, h) => {
         const a = traced?.forward.hidden[h];
+        // Grow the circle as far as the spacing allows, then shrink the text to
+        // fit inside it. With many neurons, "−.50" replaces "−0.50" to stay legible.
+        const r = Math.min(17, HT / (H + 1) / 2 - 1.5);
+        // Size from the widest possible value ("−0.00", or "−.00" when short),
+        // so every neuron's number uses the same size.
+        const fit = (chars: number) => Math.min(10, (2 * r - 7) / (chars * 0.62));
+        const short = fit(5) < 8;
+        const value = a === undefined ? "" : a.toFixed(2).replace("-", "−");
+        const label = a === undefined ? ACTIVATIONS[act].label.split(" ")[0] : short ? value.replace("0.", ".") : value;
+        const fontSize = a === undefined ? fit(label.length) : fit(short ? 4 : 5);
         return (
           <g key={h}>
-            <circle cx={xs[1]} cy={y} r={14} fill={a === undefined ? C.card : a >= 0 ? C.teal : C.red} fillOpacity={a === undefined ? 1 : 0.15 + Math.abs(a) * 0.6} stroke={C.fg} strokeWidth={1.2} />
-            <text x={xs[1]} y={y + 4} textAnchor="middle" fontSize={10} fill={C.fg}>
-              {a === undefined ? ACTIVATIONS[act].label.split(" ")[0] : a.toFixed(2)}
+            <circle cx={xs[1]} cy={y} r={r} fill={a === undefined ? C.card : a >= 0 ? C.teal : C.red} fillOpacity={a === undefined ? 1 : 0.15 + Math.abs(a) * 0.6} stroke={C.fg} strokeWidth={1.2} />
+            <text x={xs[1]} y={y + fontSize * 0.36} textAnchor="middle" fontSize={fontSize} fill={C.fg}>
+              {label}
             </text>
           </g>
         );

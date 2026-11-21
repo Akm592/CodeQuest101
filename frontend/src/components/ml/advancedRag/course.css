@@ -34,8 +34,11 @@
   outline-offset:3px;
 }
 
-.advanced-course h1:focus {
+/* The chapter heading receives focus on navigation so screen readers announce
+   it; it isn't a control, so it shows no ring (the site-wide ring is a box-shadow). */
+.advanced-course h1[tabindex="-1"]:focus {
   outline:none;
+  box-shadow:none;
 }
 
 .advanced-course h1,.advanced-course h2,.advanced-course h3,.advanced-course p {

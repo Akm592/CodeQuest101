@@ -120,6 +120,9 @@ const DecisionTreeVisualizer: React.FC = () => {
   const [maxDepth, setMaxDepth] = React.useState(3);
   const [criterion, setCriterion] = React.useState<Criterion>("gini");
   const [probe, setProbe] = React.useState<{ x: number; y: number } | null>(null);
+  // The depth chart has its own data, starting on "Noisy": on the clean
+  // default data both lines stay flat and the overfitting lesson is invisible.
+  const [curveDataset, setCurveDataset] = React.useState<TreeDatasetKey>("noisy");
 
   const info = TREE_DATASETS[dataset];
   const data = React.useMemo(() => makeTreeData(dataset, seed), [dataset, seed]);
@@ -135,14 +138,15 @@ const DecisionTreeVisualizer: React.FC = () => {
   const isDone = step.phase === "done";
   const probeResult = probe && isDone ? classify(nodes, probe) : null;
 
-  const depthCurve = React.useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => {
-        const tree = fitTree(data, { ...opts, maxDepth: i + 1 });
-        return { depth: i + 1, train: accuracyOf(tree, data), test: accuracyOf(tree, unseen) };
-      }),
-    [data, unseen, opts],
-  );
+  const depthCurve = React.useMemo(() => {
+    const train = curveDataset === dataset ? data : makeTreeData(curveDataset, seed);
+    const test = curveDataset === dataset ? unseen : makeTreeData(curveDataset, 999, 400);
+    const curveOpts = { ...opts, classes: TREE_DATASETS[curveDataset].classes };
+    return Array.from({ length: 12 }, (_, i) => {
+      const tree = fitTree(train, { ...curveOpts, maxDepth: i + 1 });
+      return { depth: i + 1, train: accuracyOf(tree, train), test: accuracyOf(tree, test) };
+    });
+  }, [curveDataset, dataset, data, unseen, seed, opts]);
 
   return (
     <div className="space-y-10">
@@ -304,11 +308,14 @@ const DecisionTreeVisualizer: React.FC = () => {
       <section aria-labelledby="dt-depth-title" className="space-y-4">
         <SectionTitle id="dt-depth-title" kicker="The big trap" title="Too deep? Training accuracy vs new points">
           <p>
-            A deep tree can memorise noisy training data. A pure leaf can contain several points of the same class; identical inputs with conflicting labels cannot be separated. The chart trains a tree at every depth from 1 to 12 on the current data and tests
-            each one on 400 new points it never saw. Try it on “Noisy”.
+            A deep tree can memorise noisy training data. A pure leaf can contain several points of the same class; identical inputs with conflicting labels cannot be separated. The chart trains a tree at every depth from 1 to 12 and tests
+            each one on 400 new points it never saw. On “Noisy”, training accuracy keeps climbing while accuracy on new points peaks early and then drops: the tree is learning the noise. Compare it with “Three groups”, where there's no noise to memorise.
           </p>
         </SectionTitle>
         <Surface variant="card" radius="2xl" className="p-4 sm:p-5">
+          <div className="mb-3">
+            <Segmented label="Data for this chart" value={curveDataset} onChange={setCurveDataset} options={(Object.keys(TREE_DATASETS) as TreeDatasetKey[]).map((k) => ({ value: k, label: TREE_DATASETS[k].label }))} />
+          </div>
           {(() => {
             const W = 520;
             const H = 220;

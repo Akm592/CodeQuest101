@@ -32,9 +32,9 @@ export const bayesFigures: ConceptFigure[] = [
       <Art label="Spam chance starting at 50 percent, rising to 74 percent after the word free and 91 percent after cash">
         <Arrowhead id="bf-a" color={C.muted} />
         <text x={12} y={20} fontSize={10} fill={C.muted}>chance it's spam</text>
-        <Bar x={12} y={30} w={150} frac={0.5} color={C.red} label="50%  before reading" />
-        <Bar x={12} y={66} w={150} frac={0.74} color={C.red} label="74%  after “free”" />
-        <Bar x={12} y={102} w={150} frac={0.91} color={C.red} label="91%  after “cash”" />
+        <Bar x={12} y={30} w={108} frac={0.5} color={C.red} label="50%  before reading" />
+        <Bar x={12} y={66} w={108} frac={0.74} color={C.red} label="74%  after “free”" />
+        <Bar x={12} y={102} w={108} frac={0.91} color={C.red} label="91%  after “cash”" />
         <line x1={20} y1={48} x2={20} y2={62} stroke={C.muted} markerEnd="url(#bf-a)" />
         <line x1={20} y1={84} x2={20} y2={98} stroke={C.muted} markerEnd="url(#bf-a)" />
       </Art>
@@ -63,15 +63,15 @@ export const bayesFigures: ConceptFigure[] = [
     caption: "For each class, multiply how common the class is by the chance of each word in it. The class with the bigger result wins.",
     art: (
       <Art label="Two rows of multiplications for spam and not spam, the spam total is bigger and wins">
-        <text x={10} y={30} fontSize={11} fill={C.red}>spam</text>
-        <text x={56} y={30} fontSize={11} fill={C.fg}>0.5 × 0.082 × 0.049</text>
-        <text x={180} y={30} fontSize={11} fill={C.red}>= 0.0020</text>
-        <text x={10} y={68} fontSize={11} fill={C.teal}>not spam</text>
-        <text x={56} y={68} fontSize={11} fill={C.fg}>0.5 × 0.029 × 0.014</text>
-        <text x={180} y={68} fontSize={11} fill={C.teal}>= 0.0002</text>
-        <text x={56} y={46} fontSize={9} fill={C.muted}>prior × P(free) × P(cash), from this page’s emails</text>
-        <rect x={60} y={96} width={120} height={30} rx={10} fill={C.red} fillOpacity={0.15} stroke={C.red} />
-        <text x={120} y={115} textAnchor="middle" fontSize={11} fill={C.fg}>bigger → spam</text>
+        <text x={10} y={20} fontSize={11} fill={C.red}>spam</text>
+        <text x={10} y={36} fontSize={11} fill={C.fg}>0.5 × 0.082 × 0.049</text>
+        <text x={230} y={36} textAnchor="end" fontSize={11} fill={C.red}>= 0.0020</text>
+        <text x={10} y={58} fontSize={11} fill={C.teal}>not spam</text>
+        <text x={10} y={74} fontSize={11} fill={C.fg}>0.5 × 0.029 × 0.014</text>
+        <text x={230} y={74} textAnchor="end" fontSize={11} fill={C.teal}>= 0.0002</text>
+        <text x={10} y={94} fontSize={9} fill={C.muted}>prior × P(free) × P(cash)</text>
+        <rect x={60} y={106} width={120} height={30} rx={10} fill={C.red} fillOpacity={0.15} stroke={C.red} />
+        <text x={120} y={125} textAnchor="middle" fontSize={11} fill={C.fg}>bigger → spam</text>
       </Art>
     ),
   },

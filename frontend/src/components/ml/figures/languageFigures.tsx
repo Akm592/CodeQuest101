@@ -73,7 +73,7 @@ export const attentionFigures: ConceptFigure[] = [
             <g key={a.to}>
               <path d={`M${from},108 Q${mid},${108 - h} ${a.to},108`} fill="none" stroke={C.green} strokeWidth={1 + a.share * 14} strokeOpacity={0.35 + a.share} strokeLinecap="round" />
               {a.label && (
-                <text x={mid} y={108 - h / 2 - 6} textAnchor="middle" fontSize={11} fill={C.green}>{a.label}</text>
+                <text x={mid} y={h < 60 ? 108 - h / 2 + 13 : 108 - h / 2 - 6} textAnchor="middle" fontSize={h < 60 ? 10 : 11} fill={C.green}>{a.label}</text>
               )}
             </g>
           );

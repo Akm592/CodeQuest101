@@ -81,8 +81,12 @@ const MiniTreePlot: React.FC<{ tree: ForestTree; data: ReturnType<typeof makeTre
 
 const RandomForestVisualizer: React.FC = () => {
   const [dataset, setDataset] = React.useState<TreeDatasetKey>("noisy");
-  const [seed, setSeed] = React.useState(1);
+  // Seed 4 opens on data where the payoff is plain: one full tree scores 62% on
+  // new points, the 50-tree forest 71%.
+  const [seed, setSeed] = React.useState(4);
   const [depth, setDepth] = React.useState(50);
+  // Flip the big map between the forest and one full tree, on the same axes.
+  const [view, setView] = React.useState<"forest" | "single">("forest");
 
   const info = TREE_DATASETS[dataset];
   const data = React.useMemo(() => makeTreeData(dataset, seed), [dataset, seed]);
@@ -133,15 +137,28 @@ const RandomForestVisualizer: React.FC = () => {
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <Surface variant="card" radius="2xl" className="min-w-0 p-3 sm:p-4">
-            <p className="mb-2 text-sm font-semibold text-foreground">The forest: average of {k} tree{k === 1 ? "" : "s"}</p>
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+              <p className="text-sm font-semibold text-foreground">
+                {view === "forest" ? `The forest: average of ${k} tree${k === 1 ? "" : "s"}` : "One full tree on all the points"}
+              </p>
+              <Segmented
+                label="Show"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "forest", label: "Forest" },
+                  { value: "single", label: "One full tree" },
+                ]}
+              />
+            </div>
             <Plot
               xDomain={[0, 10]}
               yDomain={[0, 10]}
               width={420}
               height={400}
               ticks={[0, 2, 4, 6, 8, 10]}
-              label={`The forest's boundary after ${k} trees`}
-              background={(s) => <Regions s={s} probs={(p) => forestProbs(forest, p, k)} grid={36} />}
+              label={view === "forest" ? `The forest's boundary after ${k} trees` : "One full tree's boundary"}
+              background={(s) => <Regions s={s} probs={view === "forest" ? (p) => forestProbs(forest, p, k) : leafProbs(single)} grid={36} />}
             >
               {(s) => (
                 <>
@@ -151,7 +168,11 @@ const RandomForestVisualizer: React.FC = () => {
                 </>
               )}
             </Plot>
-            <p className="mt-2 text-xs text-muted-foreground">Stronger colour means a higher average probability for the predicted class.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {view === "forest"
+                ? "Stronger colour means a higher average probability for the predicted class. Switch to “One full tree” to compare."
+                : `A single tree on all the points, ${depth === 50 ? "grown until every leaf is pure, so it carves small islands around odd points" : "limited to depth 4"}. ${pct(singleFresh)} right on new points, against ${pct(now.fresh)} for the forest of ${k}.`}
+            </p>
           </Surface>
 
           <div className="flex min-w-0 flex-col gap-4">
